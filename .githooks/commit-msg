@@ -14,20 +14,20 @@ case "$subject" in
 esac
 
 types="build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test"
-pattern="^(${types})(\([a-z0-9._/-]+\))?!?: .+"
+pattern="^(${types})(\([a-z0-9._/-]+\))?!?: ?[a-z].*"
 
 if ! printf '%s' "$subject" | grep -Eq "$pattern"; then
-  echo "------------------------------------------------------------------"
   echo "  Commit refusé : message non conforme aux Conventional Commits."
   echo ""
   echo "  Reçu   : $subject"
   echo ""
-  echo "  Format : <type>(<scope optionnel>): <description>"
+  echo "  Format : <type>(<scope optionnel>):<description>"
+  echo "  - espace après ':' optionnel"
+  echo "  - la description DOIT commencer par une minuscule (a-z)"
   echo "  Exemple: feat(server): add gui protocol parser"
   echo ""
   echo "  Types autorisés :"
   echo "    build chore ci docs feat fix perf refactor revert style test"
-  echo "------------------------------------------------------------------"
   exit 1
 fi
 
