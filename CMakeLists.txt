@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(zappy_server)
+project(zappy)
 
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -11,7 +13,9 @@ if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
 
-add_subdirectory(src)
+add_subdirectory(server)
+add_subdirectory(gui)
+add_subdirectory(ia)
 
 option(BUILD_TESTS "Build unit tests" OFF)
 
