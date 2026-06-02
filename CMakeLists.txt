@@ -13,6 +13,22 @@ if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  find_package(Git QUIET)
+  if(GIT_FOUND)
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} config core.hooksPath .githooks
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      RESULT_VARIABLE GIT_HOOKS_RESULT
+      OUTPUT_QUIET ERROR_QUIET)
+    if(GIT_HOOKS_RESULT EQUAL 0)
+      message(STATUS "Git hooks activated (core.hooksPath=.githooks)")
+    else()
+      message(WARNING "Could not set core.hooksPath; git hooks not activated")
+    endif()
+  endif()
+endif()
+
 add_subdirectory(server)
 add_subdirectory(gui)
 add_subdirectory(ia)
