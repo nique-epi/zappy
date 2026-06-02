@@ -37,4 +37,23 @@ if [ "$header_length" -gt 100 ]; then
   exit 1
 fi
 
+body=$(grep -v '^#' "$msg_file")
+
+if printf '%s\n' "$body" | grep -Eiq '^[[:space:]]*co-authored-by:'; then
+  echo "Commit refusé : trailer 'Co-Authored-By:' interdit."
+  echo "Aucun co-auteur n'est autorisé dans les messages de commit."
+  exit 1
+fi
+
+if printf '%s\n' "$body" \
+    | grep -Eiq 'generated with|claude\.com/claude-code|noreply@anthropic\.com'; then
+  echo "Commit refusé : mention d'assistant IA interdite."
+  exit 1
+fi
+
+if printf '%s\n' "$body" | grep -Fq '🤖'; then
+  echo "Commit refusé : emoji robot interdit dans le message."
+  exit 1
+fi
+
 exit 0
