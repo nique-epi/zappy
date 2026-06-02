@@ -1,0 +1,97 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "default",
+            "binaryDir": "${sourceDir}/build",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "BUILD_BONUS": "OFF"
+            }
+        },
+        {
+            "name": "test",
+            "inherits": "default",
+            "cacheVariables": {
+                "BUILD_TESTS": "ON",
+                "BUILD_BONUS": "OFF"
+            }
+        },
+        {
+            "name": "bonus",
+            "inherits": "default",
+            "cacheVariables": {
+                "BUILD_BONUS": "ON",
+                "BUILD_TESTS": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "test",
+            "configurePreset": "test"
+        },
+        {
+            "name": "bonus",
+            "configurePreset": "bonus"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "test",
+            "configurePreset": "test",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "build",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "default"
+                },
+                {
+                    "type": "build",
+                    "name": "default"
+                }
+            ]
+        },
+        {
+            "name": "bonus",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "bonus"
+                },
+                {
+                    "type": "build",
+                    "name": "bonus"
+                }
+            ]
+        },
+        {
+            "name": "test",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "test"
+                },
+                {
+                    "type": "build",
+                    "name": "test"
+                },
+                {
+                    "type": "test",
+                    "name": "test"
+                }
+            ]
+        }
+    ]
+}
