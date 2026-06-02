@@ -1,5 +1,5 @@
 ---
-name: User Story
+name: Issue
 about: Décrire une fonctionnalité sous forme de user story avec critères d'acceptation
 title: "[<module>] <short feature title in English>"
 labels: []
