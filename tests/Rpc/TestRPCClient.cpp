@@ -11,7 +11,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <utility>
 #include "MockSocket.hpp"
 #include "Rpc/Client/RPCClient.hpp"
 #include "Rpc/Message/IMessage.hpp"
@@ -33,10 +35,11 @@ struct EchoArgs {
   std::string text;
 };
 
-zappy::schema::Schema<EchoArgs> makeEchoSchema() {
+std::shared_ptr<const zappy::schema::Schema<EchoArgs>> makeEchoSchema() {
   zappy::schema::Schema<EchoArgs> schema;
   schema.field<zappy::schema::StringFieldType>("text", &EchoArgs::text);
-  return schema;
+  return std::make_shared<const zappy::schema::Schema<EchoArgs>>(
+      std::move(schema));
 }
 
 /**

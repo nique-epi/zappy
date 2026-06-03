@@ -6,7 +6,9 @@
 */
 
 #include <gtest/gtest.h>
+#include <memory>
 #include <string>
+#include <utility>
 #include "Rpc/Client/ResponseDispatcher.hpp"
 #include "Rpc/Message/IMessage.hpp"
 #include "Rpc/Message/RPCMessage.hpp"
@@ -28,16 +30,18 @@ struct CountArgs {
   std::string value;
 };
 
-zappy::schema::Schema<WelcomeArgs> makeWelcomeSchema() {
+std::shared_ptr<const zappy::schema::Schema<WelcomeArgs>> makeWelcomeSchema() {
   zappy::schema::Schema<WelcomeArgs> schema;
   schema.field<zappy::schema::StringFieldType>("name", &WelcomeArgs::name);
-  return schema;
+  return std::make_shared<const zappy::schema::Schema<WelcomeArgs>>(
+      std::move(schema));
 }
 
-zappy::schema::Schema<CountArgs> makeCountSchema() {
+std::shared_ptr<const zappy::schema::Schema<CountArgs>> makeCountSchema() {
   zappy::schema::Schema<CountArgs> schema;
   schema.field<zappy::schema::NumberFieldType>("value", &CountArgs::value);
-  return schema;
+  return std::make_shared<const zappy::schema::Schema<CountArgs>>(
+      std::move(schema));
 }
 
 }  // namespace

@@ -54,63 +54,64 @@ void GameServer::registerHandshake() {
 }
 
 void GameServer::registerGuiHandlers() {
-  server_.on(protocol::RequestMapSize,
+  server_.on(protocol::RequestMapSize(),
              [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::RequestMapContent,
+  server_.on(protocol::RequestMapContent(),
              [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::RequestTeamNames,
+  server_.on(protocol::RequestTeamNames(),
              [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::RequestTimeUnit,
+  server_.on(protocol::RequestTimeUnit(),
              [](Session &, zappy::rpc::IMessage &) {});
 
-  server_.on(protocol::RequestTileContent,
+  server_.on(protocol::RequestTileContent(),
              [](Session &, const protocol::TileRequestArgs &) {});
-  server_.on(protocol::RequestPlayerPosition,
+  server_.on(protocol::RequestPlayerPosition(),
              [](Session &, const protocol::PlayerNumberArgs &) {});
-  server_.on(protocol::RequestPlayerLevel,
+  server_.on(protocol::RequestPlayerLevel(),
              [](Session &, const protocol::PlayerNumberArgs &) {});
-  server_.on(protocol::RequestPlayerInventory,
+  server_.on(protocol::RequestPlayerInventory(),
              [](Session &, const protocol::PlayerNumberArgs &) {});
-  server_.on(protocol::SetTimeUnit,
+  server_.on(protocol::SetTimeUnit(),
              [](Session &, const protocol::TimeUnitArgs &) {});
 }
 
 void GameServer::registerAiHandlers() {
-  server_.on(protocol::ai::Forward, [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::Right, [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::Left, [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::Look, [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::Inventory, [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::ConnectNbr,
+  server_.on(protocol::ai::Forward(), [](Session &, zappy::rpc::IMessage &) {});
+  server_.on(protocol::ai::Right(), [](Session &, zappy::rpc::IMessage &) {});
+  server_.on(protocol::ai::Left(), [](Session &, zappy::rpc::IMessage &) {});
+  server_.on(protocol::ai::Look(), [](Session &, zappy::rpc::IMessage &) {});
+  server_.on(protocol::ai::Inventory(),
              [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::Fork, [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::Eject, [](Session &, zappy::rpc::IMessage &) {});
-  server_.on(protocol::ai::Incantation,
+  server_.on(protocol::ai::ConnectNbr(),
+             [](Session &, zappy::rpc::IMessage &) {});
+  server_.on(protocol::ai::Fork(), [](Session &, zappy::rpc::IMessage &) {});
+  server_.on(protocol::ai::Eject(), [](Session &, zappy::rpc::IMessage &) {});
+  server_.on(protocol::ai::Incantation(),
              [](Session &, zappy::rpc::IMessage &) {});
 
-  server_.on(protocol::ai::Take,
+  server_.on(protocol::ai::Take(),
              [](Session &, const protocol::ai::ObjectArgs &) {});
-  server_.on(protocol::ai::Set,
+  server_.on(protocol::ai::Set(),
              [](Session &, const protocol::ai::ObjectArgs &) {});
-  server_.on(protocol::ai::Broadcast,
+  server_.on(protocol::ai::Broadcast(),
              [](Session &, const protocol::ai::BroadcastTextArgs &) {});
 }
 
 void GameServer::registerFallbacks() {
   server_.onUnknown([](Session &session, zappy::rpc::IMessage &) {
     if (session.ctx().type == ClientType::Ai) {
-      session.send(protocol::ai::Ko.opcode());
+      session.send(protocol::ai::Ko().opcode());
       return;
     }
-    session.send(protocol::UnknownCommand.opcode());
+    session.send(protocol::UnknownCommand().opcode());
   });
 
   server_.onInvalid([](Session &session, zappy::rpc::IMessage &) {
     if (session.ctx().type == ClientType::Ai) {
-      session.send(protocol::ai::Ko.opcode());
+      session.send(protocol::ai::Ko().opcode());
       return;
     }
-    session.send(protocol::BadParameter.opcode());
+    session.send(protocol::BadParameter().opcode());
   });
 }
 

@@ -46,12 +46,15 @@ class ResponseDispatcher {
   template <typename T>
   ResponseDispatcher &on(const TypedMessage<T> &message,
                          std::function<void(const T &)> handler) {
-    const schema::Schema<T> *boundSchema = &message.schema();
+    auto boundSchema = message.schemaPtr();
     on(message.opcode(),
        [boundSchema, captured = std::move(handler)](IMessage &incoming) {
-         auto &asBase = static_cast<AMessage &>(incoming);
+         auto *asBase = dynamic_cast<AMessage *>(&incoming);
+         if (asBase == nullptr) {
+           return;
+         }
          T value{};
-         auto error = boundSchema->parseInto(asBase.args(), value);
+         auto error = boundSchema->parseInto(asBase->args(), value);
          if (error) {
            return;
          }

@@ -29,6 +29,8 @@ class LoopbackClient {
 
   LoopbackClient(const LoopbackClient &) = delete;
   LoopbackClient &operator=(const LoopbackClient &) = delete;
+  LoopbackClient(LoopbackClient &&) = delete;
+  LoopbackClient &operator=(LoopbackClient &&) = delete;
 
   /**
    * @brief Send a line, appending a trailing newline.

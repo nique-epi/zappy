@@ -6,6 +6,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include "Rpc/Message/WireFormat.hpp"
@@ -35,4 +36,16 @@ TEST(WireFormat, InnerQuoteIsEscaped) {
 TEST(WireFormat, MixedPlainAndQuotedTokens) {
   EXPECT_EQ(buildWireLine("op", {"plain", "needs space"}),
             "op plain \"needs space\"");
+}
+
+TEST(WireFormat, NewlineInArgumentIsRejected) {
+  EXPECT_THROW(buildWireLine("smg", {"line1\nline2"}), std::invalid_argument);
+}
+
+TEST(WireFormat, CarriageReturnInArgumentIsRejected) {
+  EXPECT_THROW(buildWireLine("smg", {"line\rinjected"}), std::invalid_argument);
+}
+
+TEST(WireFormat, LineBreakInOpcodeIsRejected) {
+  EXPECT_THROW(buildWireLine("bad\nop", {}), std::invalid_argument);
 }

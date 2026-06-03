@@ -25,8 +25,8 @@ RPCClient::RPCClient(const std::string &ipAddress, int port, bool pollStdin)
       [this](const std::string &line) { dispatcher_(line); });
 }
 
-RPCClient::RPCClient(int stdinFd, int serverFd, network::ISocket &io)
-    : connection_(std::nullopt), loop_(stdinFd, serverFd, io) {
+RPCClient::RPCClient(int stdinFd, int serverFd, network::ISocket &socketBackend)
+    : connection_(std::nullopt), loop_(stdinFd, serverFd, socketBackend) {
   loop_.setResponseHandler(
       [this](const std::string &line) { dispatcher_(line); });
 }

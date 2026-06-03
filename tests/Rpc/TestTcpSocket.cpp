@@ -5,8 +5,9 @@
 ** Unit tests for zappy::network::TcpSocket
 */
 
+#include <fcntl.h>
 #include <gtest/gtest.h>
-#include <sys/socket.h>
+#include <cerrno>
 #include <utility>
 #include "Network/Socket/TcpSocket.hpp"
 
@@ -23,8 +24,8 @@ TEST(TcpSocket, DestructorClosesFd) {
     TcpSocket socket;
     fd = socket.fd();
   }
-  char byte = 0;
-  EXPECT_LT(recv(fd, &byte, 1, MSG_DONTWAIT), 0);
+  EXPECT_EQ(fcntl(fd, F_GETFD), -1);
+  EXPECT_EQ(errno, EBADF);
 }
 
 TEST(TcpSocket, MoveTransfersOwnership) {

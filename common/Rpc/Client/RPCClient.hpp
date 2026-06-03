@@ -47,9 +47,15 @@ class RPCClient {
    * @brief Inject a pre-connected fd and ISocket backend (e.g. a mock).
    * @param stdinFd fd to poll for stdin input; negative to disable.
    * @param serverFd Pre-connected server fd, owned by the caller.
-   * @param io I/O backend, owned by the caller.
+   * @param socketBackend I/O backend, owned by the caller.
    */
-  RPCClient(int stdinFd, int serverFd, network::ISocket &io);
+  RPCClient(int stdinFd, int serverFd, network::ISocket &socketBackend);
+
+  ~RPCClient() = default;
+  RPCClient(const RPCClient &) = delete;
+  RPCClient &operator=(const RPCClient &) = delete;
+  RPCClient(RPCClient &&) = delete;
+  RPCClient &operator=(RPCClient &&) = delete;
 
   /**
    * @brief Register a typed handler bound to a TypedMessage<T>.

@@ -6,7 +6,9 @@
 */
 
 #include <gtest/gtest.h>
+#include <memory>
 #include <string>
+#include <utility>
 #include "LoopbackClient.hpp"
 #include "Network/Exceptions.hpp"
 #include "Rpc/Message/IMessage.hpp"
@@ -49,16 +51,18 @@ void drive(RPCServer<Ctx> &server, int iterations) {
   }
 }
 
-zappy::schema::Schema<EchoArgs> makeEchoSchema() {
+std::shared_ptr<const zappy::schema::Schema<EchoArgs>> makeEchoSchema() {
   zappy::schema::Schema<EchoArgs> schema;
   schema.field<zappy::schema::StringFieldType>("text", &EchoArgs::text);
-  return schema;
+  return std::make_shared<const zappy::schema::Schema<EchoArgs>>(
+      std::move(schema));
 }
 
-zappy::schema::Schema<NumberArgs> makeNumberSchema() {
+std::shared_ptr<const zappy::schema::Schema<NumberArgs>> makeNumberSchema() {
   zappy::schema::Schema<NumberArgs> schema;
   schema.field<zappy::schema::NumberFieldType>("value", &NumberArgs::value);
-  return schema;
+  return std::make_shared<const zappy::schema::Schema<NumberArgs>>(
+      std::move(schema));
 }
 
 }  // namespace

@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 #include "Rpc/Message/TypedMessage.hpp"
 #include "Schema/Schema.hpp"
@@ -30,8 +32,9 @@ class RPCMessage {
    * @brief Bind a Schema<T> — returns a TypedMessage<T> with this opcode.
    */
   template <typename T>
-  TypedMessage<T> schema(const schema::Schema<T> &boundSchema) const {
-    return TypedMessage<T>{opcode_, boundSchema};
+  TypedMessage<T> schema(
+      std::shared_ptr<const schema::Schema<T>> boundSchema) const {
+    return TypedMessage<T>{opcode_, std::move(boundSchema)};
   }
 
   const std::string &opcode() const;

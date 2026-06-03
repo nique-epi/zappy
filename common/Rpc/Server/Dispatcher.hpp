@@ -48,12 +48,15 @@ class Dispatcher {
   template <typename T>
   Dispatcher &on(const TypedMessage<T> &message,
                  std::function<void(Session<Ctx> &, const T &)> handler) {
-    const schema::Schema<T> *boundSchema = &message.schema();
+    auto boundSchema = message.schemaPtr();
     on(message.opcode(), [this, boundSchema, captured = std::move(handler)](
                              Session<Ctx> &session, IMessage &incoming) {
-      auto &asBase = static_cast<AMessage &>(incoming);
+      auto *asBase = dynamic_cast<AMessage *>(&incoming);
+      if (asBase == nullptr) {
+        return;
+      }
       T value{};
-      auto error = boundSchema->parseInto(asBase.args(), value);
+      auto error = boundSchema->parseInto(asBase->args(), value);
       if (error) {
         if (invalidHandler_) {
           invalidHandler_(session, incoming);

@@ -208,8 +208,10 @@ class RPCServer {
     if (port_ == 0) {
       struct sockaddr_in bound;
       socklen_t length = sizeof(bound);
-      getsockname(socket_.fd(), reinterpret_cast<struct sockaddr *>(&bound),
-                  &length);
+      if (getsockname(socket_.fd(), reinterpret_cast<struct sockaddr *>(&bound),
+                      &length) < 0) {
+        throw network::BindError("getsockname() failed");
+      }
       port_ = ntohs(bound.sin_port);
     }
     if (listen(socket_.fd(), SOMAXCONN) < 0) {

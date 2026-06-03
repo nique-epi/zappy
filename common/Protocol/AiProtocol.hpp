@@ -28,25 +28,22 @@ struct BroadcastTextArgs {
   std::string text;
 };
 
-extern const zappy::schema::Schema<ObjectArgs> ObjectSchema;
-extern const zappy::schema::Schema<BroadcastTextArgs> BroadcastTextSchema;
+const zappy::rpc::TypedMessage<ObjectArgs> &Take();
+const zappy::rpc::TypedMessage<ObjectArgs> &Set();
+const zappy::rpc::TypedMessage<BroadcastTextArgs> &Broadcast();
 
-extern const zappy::rpc::TypedMessage<ObjectArgs> Take;
-extern const zappy::rpc::TypedMessage<ObjectArgs> Set;
-extern const zappy::rpc::TypedMessage<BroadcastTextArgs> Broadcast;
+const zappy::rpc::RPCMessage &Forward();
+const zappy::rpc::RPCMessage &Right();
+const zappy::rpc::RPCMessage &Left();
+const zappy::rpc::RPCMessage &Look();
+const zappy::rpc::RPCMessage &Inventory();
+const zappy::rpc::RPCMessage &ConnectNbr();
+const zappy::rpc::RPCMessage &Fork();
+const zappy::rpc::RPCMessage &Eject();
+const zappy::rpc::RPCMessage &Incantation();
 
-extern const zappy::rpc::RPCMessage Forward;
-extern const zappy::rpc::RPCMessage Right;
-extern const zappy::rpc::RPCMessage Left;
-extern const zappy::rpc::RPCMessage Look;
-extern const zappy::rpc::RPCMessage Inventory;
-extern const zappy::rpc::RPCMessage ConnectNbr;
-extern const zappy::rpc::RPCMessage Fork;
-extern const zappy::rpc::RPCMessage Eject;
-extern const zappy::rpc::RPCMessage Incantation;
-
-extern const zappy::rpc::RPCMessage Ok;
-extern const zappy::rpc::RPCMessage Ko;
-extern const zappy::rpc::RPCMessage Dead;
+const zappy::rpc::RPCMessage &Ok();
+const zappy::rpc::RPCMessage &Ko();
+const zappy::rpc::RPCMessage &Dead();
 
 }  // namespace zappy::protocol::ai

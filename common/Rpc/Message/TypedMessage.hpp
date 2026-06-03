@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "Rpc/Message/IMessage.hpp"
@@ -19,17 +20,24 @@ namespace zappy::rpc {
  * @brief An RPC message bound to a Schema<T>.
  *
  * Produced by RPCMessage::schema(Schema<T>) — never constructed directly.
- * Holds an opcode and a Schema<T> that validates and populates T from a
- * protocol line. Pass it to RPCServer::on() to get a typed handler.
+ * Holds an opcode and shared ownership of the Schema<T> that validates and
+ * populates T from a protocol line. Owning the schema (rather than referencing
+ * it) means a TypedMessage stays valid for its whole lifetime regardless of
+ * where the originating schema was declared. Pass it to RPCServer::on() to get
+ * a typed handler.
  */
 template <typename T>
 class TypedMessage {
  public:
-  TypedMessage(std::string opcode, const schema::Schema<T> &schema)
-      : opcode_(std::move(opcode)), schema_(&schema) {}
+  TypedMessage(std::string opcode,
+               std::shared_ptr<const schema::Schema<T>> schema)
+      : opcode_(std::move(opcode)), schema_(std::move(schema)) {}
 
   const std::string &opcode() const { return opcode_; }
   const schema::Schema<T> &schema() const { return *schema_; }
+  const std::shared_ptr<const schema::Schema<T>> &schemaPtr() const {
+    return schema_;
+  }
 
   /**
    * @brief Parse and validate args from an already-dispatched AMessage.
@@ -47,7 +55,7 @@ class TypedMessage {
 
  private:
   std::string opcode_;
-  const schema::Schema<T> *schema_;
+  std::shared_ptr<const schema::Schema<T>> schema_;
 };
 
 }  // namespace zappy::rpc

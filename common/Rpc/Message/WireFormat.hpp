@@ -21,6 +21,8 @@ namespace zappy::rpc {
  * @param opcode Message opcode placed first on the line.
  * @param args Ordered argument values.
  * @returns The encoded line.
+ * @throws std::invalid_argument if the opcode or any value contains a CR or LF,
+ *         which would otherwise let a caller inject extra protocol lines.
  */
 std::string buildWireLine(const std::string &opcode,
                           const std::vector<std::string> &args);
