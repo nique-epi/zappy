@@ -29,6 +29,7 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
   endif()
 endif()
 
+add_subdirectory(common)
 add_subdirectory(server)
 add_subdirectory(gui)
 add_subdirectory(ia)
