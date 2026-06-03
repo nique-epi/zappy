@@ -29,6 +29,13 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
   endif()
 endif()
 
+option(COVERAGE "Instrument binaries for llvm source-based coverage" OFF)
+
+if(COVERAGE)
+  add_compile_options(-fprofile-instr-generate -fcoverage-mapping -O0 -g)
+  add_link_options(-fprofile-instr-generate)
+endif()
+
 add_subdirectory(common)
 add_subdirectory(server)
 add_subdirectory(gui)
@@ -37,6 +44,20 @@ add_subdirectory(ia)
 option(BUILD_TESTS "Build unit tests" OFF)
 
 if(BUILD_TESTS)
+  find_package(GTest QUIET)
+  if(NOT GTest_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz
+      URL_HASH SHA256=7b42b4d6ed48810c5362c265a17faebe90dc2373c885e5216439d37927f02926
+      DOWNLOAD_EXTRACT_TIMESTAMP ON
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+  endif()
   enable_testing()
   add_subdirectory(tests)
 endif()

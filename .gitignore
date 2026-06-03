@@ -8,3 +8,6 @@ build/
 /zappy_server
 /zappy_gui
 /zappy_ai
+
+zappy_network_tests
+zappy_rpc_tests
