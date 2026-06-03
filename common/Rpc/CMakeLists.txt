@@ -3,6 +3,8 @@ add_library(zappy_rpc STATIC
   Message/WireFormat.cpp
   Message/RPCMessage.cpp
   Message/MessageParser.cpp
+  Client/ResponseDispatcher.cpp
+  Client/RPCClient.cpp
 )
 
 target_include_directories(zappy_rpc PUBLIC ${ZAPPY_COMMON_INCLUDE_DIR})

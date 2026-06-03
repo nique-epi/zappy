@@ -4,6 +4,8 @@ add_executable(zappy_network_tests
   Network/TestPollLoop.cpp
   Network/TestRealSocket.cpp
   Network/TestExceptions.cpp
+  Network/TestConnection.cpp
+  Network/TestClientLoop.cpp
 )
 
 target_include_directories(zappy_network_tests
@@ -18,15 +20,19 @@ target_link_libraries(zappy_network_tests
 )
 
 add_executable(zappy_rpc_tests
+  Network/mocks/MockSocket.cpp
   Rpc/mocks/LoopbackClient.cpp
   Rpc/TestTcpSocket.cpp
   Rpc/TestRPCServer.cpp
   Rpc/TestWireFormat.cpp
+  Rpc/TestResponseDispatcher.cpp
+  Rpc/TestRPCClient.cpp
 )
 
 target_include_directories(zappy_rpc_tests
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Rpc/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}/Network/mocks
 )
 
 target_link_libraries(zappy_rpc_tests
