@@ -65,7 +65,7 @@ jobs:
   push_to_mirror:
     name: Push to Mirror Repository
     runs-on: ubuntu-latest
-    needs: [build]
+    needs: [build, python-lint, sonarqube]
     if: ${{ github.event_name == 'push' }}
 
     env:
