@@ -32,6 +32,11 @@
             "configurePreset": "default"
         },
         {
+            "name": "gui",
+            "configurePreset": "default",
+            "targets": ["zappy_gui"]
+        },
+        {
             "name": "test",
             "configurePreset": "test"
         },
@@ -50,6 +55,19 @@
         }
     ],
     "workflowPresets": [
+        {
+            "name": "gui",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "default"
+                },
+                {
+                    "type": "build",
+                    "name": "gui"
+                }
+            ]
+        },
         {
             "name": "build",
             "steps": [
