@@ -49,7 +49,7 @@ jobs:
         run: flake8 ia/
 
       - name: Run pylint
-        run: pylint ia/
+        run: pylint ia/ --fail-under=8.0
   sonarqube:
     name: SonarQube
     runs-on: ubuntu-latest
