@@ -23,6 +23,14 @@ namespace zappy::schema {
  */
 class BoundedNumberFieldType : public IFieldType {
  public:
+  /**
+   * @brief Build a field type accepting integers in `[minimum, maximum]`.
+   *
+   * @param name    Field name surfaced in SchemaError.
+   * @param minimum Inclusive lower bound.
+   * @param maximum Inclusive upper bound.
+   * @throws std::invalid_argument if @p minimum is greater than @p maximum.
+   */
   BoundedNumberFieldType(std::string name, std::int64_t minimum,
                          std::int64_t maximum);
   const std::string &name() const override;

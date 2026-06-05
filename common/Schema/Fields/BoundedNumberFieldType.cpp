@@ -8,6 +8,7 @@
 #include "Schema/Fields/BoundedNumberFieldType.hpp"
 #include <charconv>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -20,7 +21,13 @@ BoundedNumberFieldType::BoundedNumberFieldType(std::string name,
       typeName_("number in [" + std::to_string(minimum) + ", " +
                 std::to_string(maximum) + "]"),
       minimum_(minimum),
-      maximum_(maximum) {}
+      maximum_(maximum) {
+  if (minimum > maximum) {
+    throw std::invalid_argument(
+        "BoundedNumberFieldType: minimum (" + std::to_string(minimum) +
+        ") must not exceed maximum (" + std::to_string(maximum) + ")");
+  }
+}
 
 const std::string &BoundedNumberFieldType::name() const { return base_.name(); }
 

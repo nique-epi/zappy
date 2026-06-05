@@ -6,6 +6,7 @@
 */
 
 #include <gtest/gtest.h>
+#include <stdexcept>
 #include <string>
 #include "Schema/Fields/BoundedNumberFieldType.hpp"
 
@@ -34,6 +35,11 @@ TEST(BoundedNumberFieldType, RejectsNonIntegerAndOverflow) {
   EXPECT_FALSE(field.validate("abc"));
   EXPECT_FALSE(field.validate("12x"));
   EXPECT_FALSE(field.validate("99999999999999999999"));
+}
+
+TEST(BoundedNumberFieldType, RejectsInvertedBoundsAtConstruction) {
+  EXPECT_THROW(BoundedNumberFieldType("bad", 10, 1), std::invalid_argument);
+  EXPECT_NO_THROW(BoundedNumberFieldType("ok", 5, 5));
 }
 
 TEST(BoundedNumberFieldType, ExposesBoundsAndRangeTypeName) {
