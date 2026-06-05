@@ -89,6 +89,13 @@ TEST(ArgsParser, NonIntegerValueIsRejected) {
                InvalidValueException);
 }
 
+TEST(ArgsParser, SignedNumberIsValueNotOption) {
+  EXPECT_THROW(parse({"zappy_server", "-p", "-1", "-n", "red"}),
+               InvalidValueException);
+  EXPECT_THROW(parse({"zappy_server", "-x", "-5", "-n", "red"}),
+               InvalidValueException);
+}
+
 TEST(ArgsParser, OutOfRangeValueIsRejected) {
   EXPECT_THROW(parse({"zappy_server", "-p", "0", "-n", "red"}),
                InvalidValueException);

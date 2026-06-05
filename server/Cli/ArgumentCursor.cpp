@@ -12,7 +12,11 @@ namespace zappy::server {
 
 namespace {
 
-bool isOption(const char *token) { return token[0] == '-' && token[1] != '\0'; }
+bool isDigit(char character) { return character >= '0' && character <= '9'; }
+
+bool isOption(const char *token) {
+  return token[0] == '-' && token[1] != '\0' && !isDigit(token[1]);
+}
 
 }  // namespace
 
