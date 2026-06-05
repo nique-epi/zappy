@@ -7,8 +7,8 @@
 
 #include <exception>
 #include <iostream>
-#include "App/ArgsParser.hpp"
 #include "App/GameServer.hpp"
+#include "Cli/ArgsParser.hpp"
 
 int main(int argc, char **argv) {
   try {
