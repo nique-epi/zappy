@@ -24,6 +24,7 @@ namespace zappy::server {
  * @param[in] timeUnits Action cost in game time units (>= 0).
  * @param[in] frequency Reciprocal time unit `f` (> 0).
  * @returns The wall-clock delay to wait before the action executes.
+ * @throws InvalidActionCostException if @p timeUnits is negative.
  * @throws InvalidFrequencyException if @p frequency is not strictly positive.
  */
 std::chrono::nanoseconds actionDuration(int timeUnits, int frequency);

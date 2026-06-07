@@ -19,4 +19,9 @@ InvalidFrequencyException::InvalidFrequencyException(int frequency)
                          std::to_string(frequency) +
                          error::messages::INVALID_FREQUENCY_SUFFIX) {}
 
+InvalidActionCostException::InvalidActionCostException(int timeUnits)
+    : SchedulerException(error::messages::INVALID_ACTION_COST_PREFIX +
+                         std::to_string(timeUnits) +
+                         error::messages::INVALID_ACTION_COST_SUFFIX) {}
+
 }  // namespace zappy::server

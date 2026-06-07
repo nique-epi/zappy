@@ -12,6 +12,9 @@ namespace zappy::server {
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 std::chrono::nanoseconds actionDuration(int timeUnits, int frequency) {
+  if (timeUnits < 0) {
+    throw InvalidActionCostException(timeUnits);
+  }
   if (frequency <= 0) {
     throw InvalidFrequencyException(frequency);
   }

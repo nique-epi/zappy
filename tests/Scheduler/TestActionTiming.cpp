@@ -11,6 +11,7 @@
 #include "App/Scheduler/Exceptions/SchedulerException.hpp"
 
 using zappy::server::actionDuration;
+using zappy::server::InvalidActionCostException;
 using zappy::server::InvalidFrequencyException;
 using zappy::server::SchedulerException;
 
@@ -45,6 +46,11 @@ TEST(ActionTiming, RejectsNonPositiveFrequency) {
   EXPECT_THROW(actionDuration(7, -100), InvalidFrequencyException);
 }
 
-TEST(ActionTiming, InvalidFrequencyIsCatchableAsSchedulerException) {
+TEST(ActionTiming, RejectsNegativeTimeUnits) {
+  EXPECT_THROW(actionDuration(-1, 100), InvalidActionCostException);
+}
+
+TEST(ActionTiming, InvalidInputIsCatchableAsSchedulerException) {
   EXPECT_THROW(actionDuration(7, 0), SchedulerException);
+  EXPECT_THROW(actionDuration(-1, 100), SchedulerException);
 }

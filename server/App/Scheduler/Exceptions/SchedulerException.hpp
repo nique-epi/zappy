@@ -32,4 +32,13 @@ class InvalidFrequencyException : public SchedulerException {
   explicit InvalidFrequencyException(int frequency);
 };
 
+/**
+ * @brief Thrown when an action cost (in game time units) is negative; a cost
+ *        must be >= 0.
+ */
+class InvalidActionCostException : public SchedulerException {
+ public:
+  explicit InvalidActionCostException(int timeUnits);
+};
+
 }  // namespace zappy::server
