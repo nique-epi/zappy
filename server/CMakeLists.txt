@@ -3,6 +3,10 @@ add_library(zappy_server_app STATIC
   Cli/ArgumentCursor.cpp
   Cli/Validators/OptionSchema.cpp
   Cli/Exceptions/ParserException.cpp
+  App/World/Resources/ResourceType.cpp
+  App/World/Tile/Tile.cpp
+  App/World/Map/Map.cpp
+  App/World/Exceptions/WorldException.cpp
   App/GameServer.cpp
 )
 

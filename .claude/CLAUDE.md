@@ -647,3 +647,67 @@ ViewportRunner.cpp
 Framebuffer.hpp
 RenderSettings.hpp
 ```
+
+### R12 — Gestion d'erreur : exceptions custom dans `Exceptions/`, jamais de `std::` brut
+
+**Règle :** toute erreur levée par du code métier doit l'être via une **classe
+d'exception custom** définie dans un dossier `Exceptions/` du module concerné.
+Il est **interdit de `throw` directement une exception de la bibliothèque
+standard** (`std::invalid_argument`, `std::runtime_error`, `std::out_of_range`,
+`std::logic_error`, etc.). Chaque module possède une **exception racine** qui
+hérite de `std::runtime_error`, et des **sous-classes spécifiques** par cas
+d'erreur. Avant d'en créer une, vérifier si elle existe déjà — sinon
+l'**étendre** plutôt que d'en multiplier. Les messages utilisateur vont dans
+`common/Error/Messages/<Module>Messages.hpp` (namespace
+`zappy::error::messages`, `inline constexpr const char *`), **jamais** en dur
+dans le `throw`.
+
+**Pourquoi :** une exception `std::` générique levée depuis le métier ne porte
+aucune information de domaine : l'appelant ne peut pas distinguer « dimensions
+de carte invalides » d'une autre `std::invalid_argument` venue d'ailleurs, et
+ne peut pas catcher *la famille* d'erreurs d'un module en un seul `catch`. La
+hiérarchie custom (racine `…Exception` + filles) donne un `catch` par famille,
+des messages cohérents et centralisés (testables, traduisibles, sans
+duplication), et empêche une exception std de fuiter à travers une frontière de
+module. C'est déjà le pattern du projet (`ParserException` +
+`ParserMessages.hpp`) ; on le généralise.
+
+**À appliquer :** tout code qui lève une erreur, dans tous les modules. Quand on
+s'apprête à écrire `throw std::…`, c'est le signal qu'il faut une classe dans
+le `Exceptions/` du module (la créer si absente). Le `Exceptions/` et le
+`<Module>Messages.hpp` sont ajoutés à la lib CMake du module.
+
+**Exemple interdit :**
+
+```cpp
+// Map.cpp — INTERDIT : std brut + message en dur
+Map::Map(int width, int height) : width_(width), height_(height) {
+    if (width <= 0 || height <= 0) {
+        throw std::invalid_argument("Map dimensions must be strictly positive");
+    }
+    // …
+}
+```
+
+**Exemple correct :**
+
+```cpp
+// server/App/World/Exceptions/WorldException.hpp
+namespace zappy::world {
+class WorldException : public std::runtime_error {
+ public:
+    explicit WorldException(const std::string &message);
+};
+class InvalidMapDimensionsException : public WorldException {
+ public:
+    InvalidMapDimensionsException(int width, int height);
+};
+}  // namespace zappy::world
+```
+
+```cpp
+// Map.cpp — métier : on lève l'exception de domaine
+if (width <= 0 || height <= 0) {
+    throw InvalidMapDimensionsException(width, height);
+}
+```

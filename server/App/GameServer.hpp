@@ -40,7 +40,7 @@ class GameServer {
   /**
    * @brief Return the port the server is listening on.
    */
-  int port() const;
+  [[nodiscard]] int port() const;
 
  private:
   void registerHandshake();
