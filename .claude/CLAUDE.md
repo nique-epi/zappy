@@ -711,3 +711,63 @@ if (width <= 0 || height <= 0) {
     throw InvalidMapDimensionsException(width, height);
 }
 ```
+
+### R13 — Texte Git/GitHub en anglais et template de PR respectée
+
+**Règle :** tout texte qui atterrit dans Git/GitHub — **messages de commit**,
+**titres de PR** et **descriptions de PR** — est rédigé en **anglais**, quelle
+que soit la langue de la conversation avec l'utilisateur. Toute description de PR
+doit suivre **exactement** la structure de `.github/PULL_REQUEST_TEMPLATE.md` :
+**toutes** les sections, **dans l'ordre**, avec les cases à cocher remplies
+honnêtement (cocher uniquement ce qui est vrai). Si la template évolue, c'est la
+version courante du fichier qui fait foi.
+
+**Pourquoi :** l'historique git et les PR sont publics (jury Epitech, repo
+mirror, futurs collaborateurs) et **déjà 100 % en anglais** (cf. `git log`) ; y
+injecter du français casse la cohérence et trahit un texte produit hors process.
+La template existe pour rendre les PR comparables et relisables : la contourner
+fait sauter les sections (Summary / Changes / Type of Change / Testing /
+Checklist) qui structurent la revue. La langue du chat n'a aucune incidence sur
+ce qui est écrit dans le repo.
+
+**À appliquer :** chaque commit, chaque titre et chaque description de PR. Avant
+d'ouvrir ou de mettre à jour une PR, **lire** `.github/PULL_REQUEST_TEMPLATE.md`
+et calquer la description dessus.
+
+**Périmètre :** la règle vise le texte **Git/GitHub** uniquement. Les **docs
+d'architecture sous `doc/`** restent en **français**, comme l'existant
+(`ARCHITECTURE.cRPC.md`, `SERVER_ISSUES.md`…) — ne pas les traduire.
+
+**Exemple interdit (description de PR) :**
+
+```md
+## Résumé
+Cette PR ajoute le monde torique et le scheduler.
+
+## Modifications
+- ...
+```
+
+**Exemple correct (description de PR) :**
+
+```md
+## Summary
+Adds the toroidal world model and the action scheduler.
+
+Closes #
+
+## Changes
+- ...
+
+## Type of Change
+- [x] New feature
+
+## Testing
+`ctest --test-dir build` -> 152/152 passing.
+
+## Checklist
+- [x] Code compiles without errors
+- [x] No new warnings introduced
+- [x] Tests pass
+- [x] Self-reviewed the diff
+```
