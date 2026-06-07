@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "App/Scheduler/Scheduler.hpp"
 #include "App/ServerConfig.hpp"
 #include "Net/ClientContext.hpp"
 #include "Rpc/Server/RPCServer.hpp"
@@ -32,10 +33,19 @@ class GameServer {
   void start();
 
   /**
-   * @brief Enter the poll loop.
-   * @param timeoutMs Poll wake-up timeout; -1 blocks until socket activity.
+   * @brief Enter the main loop until @ref stop is called.
+   *
+   * Each iteration blocks in poll() for at most the delay until the next
+   * scheduled game event (or indefinitely when none is pending), then executes
+   * whatever events became due. The wake-up therefore happens only on socket
+   * activity or on an event deadline — never by busy-waiting.
    */
-  void run(int timeoutMs = -1);
+  void run();
+
+  /**
+   * @brief Request the main loop to exit after the current iteration.
+   */
+  void stop();
 
   /**
    * @brief Return the port the server is listening on.
@@ -50,6 +60,8 @@ class GameServer {
 
   ServerConfig config_;
   zappy::rpc::RPCServer<ClientContext> server_;
+  Scheduler scheduler_;
+  bool running_{false};
 };
 
 }  // namespace zappy::server

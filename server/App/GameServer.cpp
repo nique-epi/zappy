@@ -31,7 +31,15 @@ GameServer::GameServer(const ServerConfig &config)
 
 void GameServer::start() { server_.start(); }
 
-void GameServer::run(int timeoutMs) { server_.run(timeoutMs); }
+void GameServer::run() {
+  running_ = true;
+  while (running_) {
+    server_.runOnce(scheduler_.timeoutUntilNext(Scheduler::Clock::now()));
+    scheduler_.runDue(Scheduler::Clock::now());
+  }
+}
+
+void GameServer::stop() { running_ = false; }
 
 int GameServer::port() const { return server_.port(); }
 

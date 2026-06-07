@@ -8,6 +8,7 @@
 #include "Network/Server/PollLoop.hpp"
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <array>
 #include <cerrno>
 #include "Network/Exceptions.hpp"
 
@@ -70,7 +71,7 @@ void PollLoop::runOnce(int timeoutMs) {
     }
     if (revents & POLLIN) {
       handleClientRead(fd);
-      if (clients_.find(fd) == clients_.end()) {
+      if (!clients_.contains(fd)) {
         dirty_ = true;
         break;
       }
@@ -117,14 +118,14 @@ void PollLoop::handleNewConnection() {
 }
 
 void PollLoop::handleClientRead(int fd) {
-  char buffer[readBufferSize];
-  ssize_t received = io_.doReceive(fd, buffer, sizeof(buffer), 0);
+  std::array<char, readBufferSize> buffer{};
+  ssize_t received = io_.doReceive(fd, buffer.data(), buffer.size(), 0);
   if (received <= 0) {
     removeClient(fd);
     return;
   }
   Client &client = clients_.at(fd);
-  client.appendInput(buffer, static_cast<std::size_t>(received));
+  client.appendInput(buffer.data(), static_cast<std::size_t>(received));
 
   std::string line;
   while (client.consumeLine(line)) {
