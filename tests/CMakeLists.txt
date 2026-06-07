@@ -41,11 +41,38 @@ target_link_libraries(zappy_rpc_tests
     GTest::gtest_main
 )
 
+add_executable(zappy_schema_tests
+  Schema/TestBoundedNumberFieldType.cpp
+)
+
+target_link_libraries(zappy_schema_tests
+  PRIVATE
+    zappy_schema
+    GTest::gtest_main
+)
+
+add_executable(zappy_server_tests
+  Cli/TestParserException.cpp
+  Cli/TestArgsParser.cpp
+)
+
+target_link_libraries(zappy_server_tests
+  PRIVATE
+    zappy_server_app
+    GTest::gtest_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(zappy_network_tests
   DISCOVERY_MODE PRE_TEST
 )
 gtest_discover_tests(zappy_rpc_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_schema_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_server_tests
   DISCOVERY_MODE PRE_TEST
 )
 

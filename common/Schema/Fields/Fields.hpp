@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "Schema/Fields/BoundedNumberFieldType.hpp"
 #include "Schema/Fields/IFieldType.hpp"
 #include "Schema/Fields/LongStringFieldType.hpp"
 #include "Schema/Fields/NumberFieldType.hpp"

@@ -3,6 +3,7 @@ add_library(zappy_schema STATIC
   SchemaError.cpp
   Fields/StringFieldType.cpp
   Fields/NumberFieldType.cpp
+  Fields/BoundedNumberFieldType.cpp
   Fields/LongStringFieldType.cpp
 )
 

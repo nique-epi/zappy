@@ -8,6 +8,7 @@
 #include "Schema/Fields/NumberFieldType.hpp"
 #include <cstddef>
 #include <utility>
+#include "Error/Messages/SchemaMessages.hpp"
 
 namespace zappy::schema {
 
@@ -15,7 +16,9 @@ NumberFieldType::NumberFieldType(std::string name) : name_(std::move(name)) {}
 
 const std::string &NumberFieldType::name() const { return name_; }
 
-const char *NumberFieldType::typeName() const { return "number"; }
+const char *NumberFieldType::typeName() const {
+  return error::messages::NUMBER_TYPE;
+}
 
 bool NumberFieldType::validate(const std::string &value) const {
   if (value.empty()) {

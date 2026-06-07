@@ -12,6 +12,12 @@
 
 namespace zappy::server {
 
+constexpr int defaultPort = 4242;
+constexpr int defaultWidth = 10;
+constexpr int defaultHeight = 10;
+constexpr int defaultClientsPerTeam = 1;
+constexpr int defaultFrequency = 100;
+
 /**
  * @brief Command-line configuration of the server.
  *
@@ -19,11 +25,11 @@ namespace zappy::server {
  * -n team names, -c clients per team, -f frequency (reciprocal time unit).
  */
 struct ServerConfig {
-  int port{4242};
-  int width{10};
-  int height{10};
-  int clientsPerTeam{1};
-  int frequency{100};
+  int port{defaultPort};
+  int width{defaultWidth};
+  int height{defaultHeight};
+  int clientsPerTeam{defaultClientsPerTeam};
+  int frequency{defaultFrequency};
   std::vector<std::string> teamNames;
 };
 

@@ -1,9 +1,18 @@
-add_executable(zappy_server
-  main.cpp
-  App/ArgsParser.cpp
+add_library(zappy_server_app STATIC
+  Cli/ArgsParser.cpp
+  Cli/ArgumentCursor.cpp
+  Cli/Validators/OptionSchema.cpp
+  Cli/Exceptions/ParserException.cpp
   App/GameServer.cpp
 )
 
-target_include_directories(zappy_server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(zappy_server PRIVATE zappy_protocol)
+target_include_directories(zappy_server_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(zappy_server_app PUBLIC zappy_protocol zappy_schema)
+target_compile_options(zappy_server_app PRIVATE -Wall -Wextra -Werror)
+
+add_executable(zappy_server
+  main.cpp
+)
+
+target_link_libraries(zappy_server PRIVATE zappy_server_app)
 target_compile_options(zappy_server PRIVATE -Wall -Wextra -Werror)
