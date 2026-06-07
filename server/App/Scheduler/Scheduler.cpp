@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 #include <utility>
+#include <vector>
 
 namespace zappy::server {
 
@@ -35,9 +36,13 @@ int Scheduler::timeoutUntilNext(TimePoint now) const {
 }
 
 void Scheduler::runDue(TimePoint now) {
+  std::vector<Callback> due;
+
   while (!events_.empty() && events_.begin()->first <= now) {
-    const Callback action = std::move(events_.begin()->second);
+    due.push_back(std::move(events_.begin()->second));
     events_.erase(events_.begin());
+  }
+  for (const Callback &action : due) {
     action();
   }
 }

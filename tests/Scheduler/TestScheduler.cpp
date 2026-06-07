@@ -105,3 +105,30 @@ TEST(Scheduler, CallbackMayScheduleAFollowUpEvent) {
   scheduler.runDue(base() + 200ms);
   EXPECT_EQ(fired, 2);
 }
+
+TEST(Scheduler, SelfReschedulingAtNowDoesNotStarveTheLoop) {
+  Scheduler scheduler;
+  int fired = 0;
+  scheduler.scheduleAt(base(), [&] {
+    fired++;
+    scheduler.scheduleAt(base(), [&] { fired++; });
+  });
+
+  scheduler.runDue(base());
+
+  EXPECT_EQ(fired, 1);
+  EXPECT_EQ(scheduler.pendingCount(), 1U);
+}
+
+TEST(Scheduler, ManyEventsDueAtNowAllRunInOneCall) {
+  Scheduler scheduler;
+  int fired = 0;
+  for (int i = 0; i < 5; i++) {
+    scheduler.scheduleAt(base(), [&] { fired++; });
+  }
+
+  scheduler.runDue(base());
+
+  EXPECT_EQ(fired, 5);
+  EXPECT_TRUE(scheduler.empty());
+}

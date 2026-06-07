@@ -59,8 +59,11 @@ class Scheduler {
   /**
    * @brief Run every action due at or before @p now, earliest first.
    *
-   * Each action is removed from the queue before being invoked, so a callback
-   * may safely schedule further events.
+   * Only the events already present when the call starts are run: the set of
+   * due events is captured up front, so an action that schedules a new event
+   * (even one already due at @p now) defers it to the next call. This bounds
+   * the work per call and prevents a self-rescheduling callback from looping
+   * here and starving the poll / network loop.
    *
    * @param[in] now The current time reference.
    */
