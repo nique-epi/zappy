@@ -12,6 +12,7 @@
 #include "Cli/ArgumentCursor.hpp"
 #include "Cli/Exceptions/ParserException.hpp"
 #include "Cli/Validators/OptionSchema.hpp"
+#include "Error/Messages/ParserMessages.hpp"
 #include "Schema/Fields/IFieldType.hpp"
 
 namespace zappy::server {
@@ -32,7 +33,8 @@ void validateValue(const zappy::schema::IFieldType &fieldType,
                    const std::string &flag, const std::string &value) {
   if (!fieldType.validate(value)) {
     throw InvalidValueException(
-        flag, value, std::string("expected ") + fieldType.typeName());
+        flag, value,
+        std::string(error::messages::EXPECTED_PREFIX) + fieldType.typeName());
   }
 }
 

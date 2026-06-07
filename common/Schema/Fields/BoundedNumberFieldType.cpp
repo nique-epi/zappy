@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include "Error/Messages/SchemaMessages.hpp"
 
 namespace zappy::schema {
 
@@ -18,14 +19,17 @@ BoundedNumberFieldType::BoundedNumberFieldType(std::string name,
                                                std::int64_t minimum,
                                                std::int64_t maximum)
     : base_(std::move(name)),
-      typeName_("number in [" + std::to_string(minimum) + ", " +
-                std::to_string(maximum) + "]"),
+      typeName_(
+          error::messages::BOUNDED_NUMBER_PREFIX + std::to_string(minimum) +
+          error::messages::BOUNDED_NUMBER_SEPARATOR + std::to_string(maximum) +
+          error::messages::BOUNDED_NUMBER_SUFFIX),
       minimum_(minimum),
       maximum_(maximum) {
   if (minimum > maximum) {
     throw std::invalid_argument(
-        "BoundedNumberFieldType: minimum (" + std::to_string(minimum) +
-        ") must not exceed maximum (" + std::to_string(maximum) + ")");
+        error::messages::INVERTED_BOUNDS_PREFIX + std::to_string(minimum) +
+        error::messages::INVERTED_BOUNDS_INFIX + std::to_string(maximum) +
+        error::messages::INVERTED_BOUNDS_SUFFIX);
   }
 }
 
