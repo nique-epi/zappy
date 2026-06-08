@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include "INetworkClient.hpp"
 #include "Network/Client/ClientLoop.hpp"
 #include "Network/Socket/RealSocket.hpp"
 
@@ -24,9 +25,9 @@ namespace zappy::gui {
  * Internally wraps a ClientLoop with stdinFd = -1 (GUI drives its own
  * input). Call @ref runOnce each frame to drain any pending server data.
  */
-class NetworkManager {
+class NetworkManager : public INetworkClient {
  public:
-  using ResponseHandler = zappy::network::ClientLoop::ResponseHandler;
+  using ResponseHandler = INetworkClient::ResponseHandler;
 
   /**
    * @brief Resolve @p hostname and connect to @p port with a timeout.
@@ -47,7 +48,7 @@ class NetworkManager {
   /**
    * @brief Register the handler called for each line received from the server.
    */
-  void setResponseHandler(ResponseHandler handler);
+  void setResponseHandler(ResponseHandler handler) override;
 
   /**
    * @brief Poll the server socket once without blocking.
@@ -62,7 +63,7 @@ class NetworkManager {
   /**
    * @brief Send a raw line to the server (newline appended automatically).
    */
-  void sendLine(const std::string& line);
+  void sendLine(const std::string& line) override;
 
   /**
    * @brief Signal the loop to stop on the next @ref runOnce call.

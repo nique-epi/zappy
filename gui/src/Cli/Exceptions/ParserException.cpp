@@ -7,13 +7,14 @@
 
 #include "Cli/Exceptions/ParserException.hpp"
 #include "Cli/ParserMessages.hpp"
+#include "Exceptions/GuiException.hpp"
 
 namespace zappy::gui {
 
 namespace msg = zappy::gui::messages;
 
 ParserException::ParserException(const std::string& message)
-    : std::runtime_error(message) {}
+    : GuiException(message) {}
 
 UnknownOptionException::UnknownOptionException(const std::string& option)
     : ParserException(msg::UNKNOWN_OPTION + option) {}

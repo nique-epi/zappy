@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <stdexcept>
 #include <string>
+#include "Exceptions/GuiException.hpp"
 
 namespace zappy::gui {
 
@@ -19,7 +19,7 @@ namespace zappy::gui {
  * malformed, missing, unknown, or out-of-range option surfaces as a subclass
  * of @ref ParserException so callers can catch the whole family at once.
  */
-class ParserException : public std::runtime_error {
+class ParserException : public GuiException {
  public:
   explicit ParserException(const std::string& message);
 };

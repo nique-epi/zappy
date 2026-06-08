@@ -24,6 +24,7 @@ if(NOT EXISTS ${RAYGUI_HEADER})
 endif()
 
 add_library(zappy_gui_cli STATIC
+    src/Exceptions/GuiException.cpp
     src/Cli/ArgsParser.cpp
     src/Cli/ArgumentCursor.cpp
     src/Cli/Exceptions/ParserException.cpp
@@ -34,6 +35,19 @@ target_include_directories(zappy_gui_cli PUBLIC
 )
 
 target_compile_options(zappy_gui_cli PRIVATE -Wall -Wextra -Werror)
+
+add_library(zappy_gui_handshake STATIC
+    src/ServerHandshake.cpp
+    src/Exceptions/HandshakeException.cpp
+)
+
+target_include_directories(zappy_gui_handshake PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(zappy_gui_handshake PUBLIC zappy_gui_cli)
+
+target_compile_options(zappy_gui_handshake PRIVATE -Wall -Wextra -Werror)
 
 add_executable(zappy_gui
     main.cpp
@@ -46,6 +60,6 @@ set_source_files_properties(src/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 
-target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_network raylib)
+target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_gui_handshake zappy_network raylib)
 
 target_compile_options(zappy_gui PRIVATE -Wall -Wextra -Werror)
