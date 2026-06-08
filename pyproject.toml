@@ -4,12 +4,16 @@ version = "0.1.0"
 description = "Zappy AI client"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "autopep8>=2.3.2",
+]
 
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
     "pylint>=3.0.0",
+    "autopep8>=2.0.0",
 ]
 
 [tool.pytest.ini_options]

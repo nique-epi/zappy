@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 class Bot:
     """Class representing the AI bot."""
+
     def __init__(
         self,
         width: int,
@@ -17,18 +18,16 @@ class Bot:
         client: "ZappyClient",
     ) -> None:
         self._client = client
-        self.width   = width
-        self.height  = height
+        self.width = width
+        self.height = height
         self.client_num = client_num
 
-
-        self.level  = 1
-        self.pos    = (0, 0)
+        self.level = 1
+        self.pos = (0, 0)
         self.orientation = Direction.NORTH
 
         self.map: list[list[dict]] = self._init_map()
         self.role: str = self._assign_role(client_num)
-
 
     def _init_map(self) -> list[list[dict]]:
         """Creates an empty width×height grid. (ZAP-19 Bonus, stub)"""
@@ -44,7 +43,6 @@ class Bot:
         """
         # Placeholder — will be replaced by real specialization logic
         return "generic"
-
 
     def run(self) -> None:
         """FSM entry point. To be connected to core/fsm.py."""

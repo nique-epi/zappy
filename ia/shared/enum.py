@@ -1,6 +1,7 @@
 """Shared enumerations for the Zappy bot."""
 from enum import Enum
 
+
 class Direction(Enum):
     """Enumeration of possible directions for the bot."""
     NORTH = 1

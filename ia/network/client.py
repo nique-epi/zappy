@@ -3,8 +3,10 @@ import socket
 
 CONST_BUFFER_SIZE = 4096
 
+
 class ZappyClient:
     """Network client for communicating with the Zappy server."""
+
     def __init__(self, host: str, port: int) -> None:
         self._host = host
         self._port = port
@@ -19,7 +21,8 @@ class ZappyClient:
         try:
             self._sock.connect((self._host, self._port))
         except OSError as e:
-            raise ConnectionError(f"Cannot connect to {self._host}:{self._port} — {e}") from e
+            raise ConnectionError(
+                f"Cannot connect to {self._host}:{self._port} — {e}") from e
 
         welcome = self._recv_line()
         if welcome != "WELCOME":
@@ -33,13 +36,15 @@ class ZappyClient:
         try:
             client_num = int(client_num_line)
         except ValueError as e:
-            raise ConnectionError(f"Server refused connection: {client_num_line!r}") from e
+            raise ConnectionError(
+                f"Server refused connection: {client_num_line!r}") from e
 
         world_line = self._recv_line()
         try:
             width, height = map(int, world_line.split())
         except (ValueError, AttributeError) as e:
-            raise ConnectionError(f"Invalid world dimensions: {world_line!r}") from e
+            raise ConnectionError(
+                f"Invalid world dimensions: {world_line!r}") from e
 
         return client_num, width, height
 

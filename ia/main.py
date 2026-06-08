@@ -1,8 +1,9 @@
 """Main entry point for the Zappy AI client."""
 import argparse
 import sys
-from network.client import ZappyClient
-from core.bot import Bot
+from .network.client import ZappyClient
+from .core.bot import Bot
+
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments.
@@ -10,10 +11,15 @@ def parse_arguments() -> argparse.Namespace:
     Returns:
         argparse.Namespace: Parsed arguments.
     """
-    parser = argparse.ArgumentParser(prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine")
-    parser.add_argument("-p", type=int, required=True,  dest="port",    help="port number")
-    parser.add_argument("-n", type=str, required=True,  dest="name",    help="team name")
-    parser.add_argument("-h", type=str, default="localhost", dest="host", help="hostname")
+    parser = argparse.ArgumentParser(
+        prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine",
+        add_help=False)
+    parser.add_argument("-p", type=int, required=True,
+                        dest="port",    help="port number")
+    parser.add_argument("-n", type=str, required=True,
+                        dest="name",    help="team name")
+    parser.add_argument("-h", type=str, default="localhost",
+                        dest="host", help="hostname")
 
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
@@ -22,6 +28,7 @@ def parse_arguments() -> argparse.Namespace:
         parser.error("Team name cannot be empty")
 
     return args
+
 
 def main() -> None:
     """Main entry point."""
