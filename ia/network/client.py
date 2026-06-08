@@ -4,6 +4,7 @@ from typing import Callable
 
 CONST_BUFFER_SIZE = 4096
 
+
 class ZappyClient:
     """Network client for communicating with the Zappy server."""
 
