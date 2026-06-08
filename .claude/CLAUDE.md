@@ -647,3 +647,39 @@ ViewportRunner.cpp
 Framebuffer.hpp
 RenderSettings.hpp
 ```
+
+### R12 — Le code Python doit passer pylint (≥ 8.0) et flake8 sans erreur
+
+**Règle :** tout fichier Python produit ou modifié doit passer
+`flake8` sans avertissement et `pylint` avec un score ≥ 8.0.
+Aucun `# pylint: disable` ni `# noqa` ne doit être ajouté pour
+faire taire un avertissement légitime — la bonne réponse est de
+corriger le code.
+
+**Pourquoi :** la CI lint (`python-lint`) vérifie ces deux outils
+sur les fichiers modifiés à chaque PR. Un `disable` en dur déplace
+le problème sans le résoudre, masque les vrais défauts et pollue
+l'historique. Les seuls silences acceptables sont ceux qui couvrent
+une contrainte technique documentée (ex. `redefined-outer-name` sur
+les fixtures pytest quand le nom de fixture est intentionnellement
+identique à un nom externe — et encore, la préférence va à renommer).
+
+**À appliquer :** tous les fichiers `.py` du projet, sans exception.
+
+**Exemple interdit :**
+
+```python
+# pylint: disable=redefined-outer-name   # INTERDIT : renommer la variable
+# pylint: disable=protected-access       # INTERDIT : revoir la conception
+x=1  # noqa: E225                        # INTERDIT : corriger l'espacement
+```
+
+**Exemple correct :**
+
+```python
+# fixture pytest : nom identique voulu — seul cas où disable est toléré
+# pylint: disable=redefined-outer-name
+@pytest.fixture
+def client():
+    return FakeClient()
+```
