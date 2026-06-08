@@ -1,0 +1,28 @@
+[project]
+name = "zappy-ai"
+version = "0.1.0"
+description = "Zappy AI client"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pylint>=3.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests/IA"]
+
+[tool.pylint.master]
+ignore = ["tests/IA"]
+variable-rgx = "^[a-z_][a-z0-9_]{0,30}$"
+
+[tool.pylint.messages_control]
+disable = [
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+]

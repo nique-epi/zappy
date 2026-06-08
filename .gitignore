@@ -11,3 +11,5 @@ build/
 
 zappy_network_tests
 zappy_rpc_tests
+
+*.pyc

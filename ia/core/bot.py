@@ -1,7 +1,7 @@
 """Core bot logic for the Zappy AI client."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from shared.enum import Direction
+from ..shared.enum import Direction
 
 if TYPE_CHECKING:
     from network.client import ZappyClient
@@ -45,10 +45,12 @@ class Bot:
         # Placeholder — will be replaced by real specialization logic
         return "generic"
 
-    # ------------------------------------------------------------------ #
-    #  Main loop (stub — will be replaced by the FSM)                    #
-    # ------------------------------------------------------------------ #
 
     def run(self) -> None:
         """FSM entry point. To be connected to core/fsm.py."""
         # TODO: instantiate and launch the FSM here (ZAP-2)
+        while True:
+            line = self._client.recv()
+            if line is None:
+                break
+            print(f"Received: {line}")
