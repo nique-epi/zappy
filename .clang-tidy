@@ -16,7 +16,8 @@ Checks: "*,
   -altera-id-dependent-backward-branch,
   -portability-avoid-pragma-once,
   -modernize-use-trailing-return-type,
-  -llvm-include-order"
+  -llvm-include-order,
+  -llvm-prefer-static-over-anonymous-namespace"
 
 # Treat warnings as errors so the CI fails on bad code
 WarningsAsErrors: "*"

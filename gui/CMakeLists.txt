@@ -37,6 +37,7 @@ target_compile_options(zappy_gui_cli PRIVATE -Wall -Wextra -Werror)
 
 add_executable(zappy_gui
     main.cpp
+    src/NetworkManager.cpp
     src/MockWorld.cpp
     src/Raygui.cpp
 )
@@ -45,6 +46,6 @@ set_source_files_properties(src/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 
-target_link_libraries(zappy_gui PRIVATE zappy_gui_cli raylib)
+target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_network raylib)
 
 target_compile_options(zappy_gui PRIVATE -Wall -Wextra -Werror)
