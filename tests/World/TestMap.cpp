@@ -12,6 +12,7 @@
 
 using zappy::world::InvalidMapDimensionsException;
 using zappy::world::Map;
+using zappy::world::MapAllocationException;
 using zappy::world::ResourceType;
 using zappy::world::WorldException;
 
@@ -31,6 +32,11 @@ TEST(Map, RejectsNonPositiveDimensions) {
 
 TEST(Map, InvalidDimensionsAreCatchableAsWorldException) {
   EXPECT_THROW(Map(0, 0), WorldException);
+}
+
+TEST(Map, TranslatesAllocationFailureToWorldException) {
+  EXPECT_THROW(Map(2000000000, 2000000000), MapAllocationException);
+  EXPECT_THROW(Map(2000000000, 2000000000), WorldException);
 }
 
 TEST(Map, DistinctCoordinatesAreDistinctTiles) {

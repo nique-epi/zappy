@@ -21,4 +21,10 @@ InvalidMapDimensionsException::InvalidMapDimensionsException(int width,
                      std::to_string(width) + "x" + std::to_string(height) +
                      error::messages::INVALID_MAP_DIMENSIONS_SUFFIX) {}
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+MapAllocationException::MapAllocationException(int width, int height)
+    : WorldException(error::messages::MAP_ALLOCATION_FAILED_PREFIX +
+                     std::to_string(width) + "x" + std::to_string(height) +
+                     error::messages::MAP_ALLOCATION_FAILED_SUFFIX) {}
+
 }  // namespace zappy::world
