@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2026
 ** zappy
 ** File description:
-** Unit tests for the zappy::server parser exception hierarchy
+** Unit tests for the zappy::cli parser exception hierarchy
 */
 
 #include <gtest/gtest.h>
@@ -10,10 +10,10 @@
 #include <string>
 #include "Cli/Exceptions/ParserException.hpp"
 
-using zappy::server::InvalidValueException;
-using zappy::server::MissingValueException;
-using zappy::server::ParserException;
-using zappy::server::UnknownOptionException;
+using zappy::cli::InvalidValueException;
+using zappy::cli::MissingValueException;
+using zappy::cli::ParserException;
+using zappy::cli::UnknownOptionException;
 
 TEST(ParserExceptions, MessagesAreComposed) {
   EXPECT_EQ(std::string(ParserException("root").what()), "root");

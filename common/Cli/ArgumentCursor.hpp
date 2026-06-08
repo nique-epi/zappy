@@ -9,14 +9,15 @@
 
 #include <string>
 
-namespace zappy::gui {
+namespace zappy::cli {
 
 /**
  * @brief Forward, single-pass cursor over the argument vector (argv).
  *
  * The cursor starts positioned on the program name and walks the remaining
- * tokens left to right. An option handler consumes its value through
- * @ref requireValue.
+ * tokens left to right. An option applier consumes its own values through
+ * @ref requireValue (exactly one value) or @ref nextIsValue / @ref nextToken
+ * (zero or more values up to the next option flag).
  */
 class ArgumentCursor {
  public:
@@ -60,4 +61,4 @@ class ArgumentCursor {
   int index_;
 };
 
-}  // namespace zappy::gui
+}  // namespace zappy::cli

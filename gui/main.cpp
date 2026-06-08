@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 #include "Cli/ArgsParser.hpp"
-#include "Cli/Exceptions/ParserException.hpp"
+#include "Cli/Exceptions/ParserException.hpp"  // NOLINT(misc-include-cleaner)
 #include "NetworkManager.hpp"
 #include "ServerHandshake.hpp"
 #include "WindowConfig.hpp"
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     }
 
     CloseWindow();
-  } catch (const zappy::gui::ParserException& error) {
+  } catch (const zappy::cli::ParserException& error) {
     std::cerr << error.what() << '\n';
     std::cerr << USAGE << '\n';
     return EXIT_CODE_ERROR;

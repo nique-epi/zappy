@@ -64,6 +64,7 @@ add_executable(zappy_server_tests
 target_link_libraries(zappy_server_tests
   PRIVATE
     zappy_server_app
+    zappy_cli
     GTest::gtest_main
 )
 
@@ -75,6 +76,7 @@ add_executable(zappy_gui_tests
 target_link_libraries(zappy_gui_tests
   PRIVATE
     zappy_gui_cli
+    zappy_cli
     GTest::gtest_main
 )
 

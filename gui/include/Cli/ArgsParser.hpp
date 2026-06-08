@@ -16,14 +16,17 @@ namespace zappy::gui {
  *
  * Recognises -p (TCP port, integer in [1, 65535]) and -h (server hostname,
  * non-empty string). Both flags are mandatory. Every failure surfaces as a
- * @ref ParserException subclass; no standard-library exception escapes.
+ * @ref zappy::cli::ParserException subclass; no standard-library exception
+ * escapes.
  *
  * @param argumentCount Number of entries in @p arguments (argc).
  * @param arguments     Argument vector (argv).
  * @returns The populated configuration.
- * @throws UnknownOptionException On an unrecognised flag.
- * @throws MissingValueException  When a required flag or its value is absent.
- * @throws InvalidValueException  When the port is not a valid in-range integer.
+ * @throws zappy::cli::UnknownOptionException On an unrecognised flag.
+ * @throws zappy::cli::MissingValueException  When a required flag or its
+ *         value is absent.
+ * @throws zappy::cli::InvalidValueException  When the port is not a valid
+ *         in-range integer.
  */
 GuiConfig parseArguments(int argumentCount, char** arguments);
 

@@ -6,27 +6,24 @@
 */
 
 #include "Cli/Exceptions/ParserException.hpp"
-#include "Cli/ParserMessages.hpp"
-#include "Exceptions/GuiException.hpp"
+#include "Error/Messages/ParserMessages.hpp"
 
-namespace zappy::gui {
-
-namespace msg = zappy::gui::messages;
+namespace zappy::cli {
 
 ParserException::ParserException(const std::string& message)
-    : GuiException(message) {}
+    : std::runtime_error(message) {}
 
 UnknownOptionException::UnknownOptionException(const std::string& option)
-    : ParserException(msg::UNKNOWN_OPTION + option) {}
+    : ParserException(error::messages::UNKNOWN_OPTION + option) {}
 
 MissingValueException::MissingValueException(const std::string& option)
-    : ParserException(msg::MISSING_VALUE + option) {}
+    : ParserException(error::messages::MISSING_VALUE + option) {}
 
 InvalidValueException::InvalidValueException(const std::string& option,
                                              const std::string& value,
                                              const std::string& reason)
-    : ParserException(msg::INVALID_VALUE_PREFIX + value +
-                      msg::INVALID_VALUE_INFIX + option +
-                      msg::REASON_SEPARATOR + reason) {}
+    : ParserException(error::messages::INVALID_VALUE_PREFIX + value +
+                      error::messages::INVALID_VALUE_INFIX + option +
+                      error::messages::REASON_SEPARATOR + reason) {}
 
-}  // namespace zappy::gui
+}  // namespace zappy::cli

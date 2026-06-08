@@ -11,12 +11,12 @@
 #include "Cli/ArgsParser.hpp"
 #include "Cli/Exceptions/ParserException.hpp"
 
+using zappy::cli::InvalidValueException;
+using zappy::cli::MissingValueException;
+using zappy::cli::ParserException;
+using zappy::cli::UnknownOptionException;
 using zappy::gui::GuiConfig;
-using zappy::gui::InvalidValueException;
-using zappy::gui::MissingValueException;
 using zappy::gui::parseArguments;
-using zappy::gui::ParserException;
-using zappy::gui::UnknownOptionException;
 
 namespace {
 

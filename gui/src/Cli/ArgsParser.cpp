@@ -7,60 +7,62 @@
 
 #include "Cli/ArgsParser.hpp"
 #include <charconv>
-#include <format>
+#include <cstdint>
+#include <limits>
+#include <memory>
 #include <string>
-#include "Cli/ArgumentCursor.hpp"
+#include <vector>
 #include "Cli/Exceptions/ParserException.hpp"
+#include "Cli/OptionSchema.hpp"
+#include "GuiConfig.hpp"
+#include "Schema/Fields/BoundedNumberFieldType.hpp"
+#include "Schema/Fields/StringFieldType.hpp"
 
 namespace zappy::gui {
 
 namespace {
 
-constexpr int portMinimum = 1;
-constexpr int portMaximum = 65535;
+std::vector<zappy::cli::OptionSchema<GuiConfig>> buildGuiOptionSchema() {
+  constexpr std::int64_t maxPort = 65535;
+  return {
+      {.flag = "-p",
+       .description = "server TCP port",
+       .arity = zappy::cli::OptionArity::SingleValue,
+       .fieldType = std::make_shared<zappy::schema::BoundedNumberFieldType>(
+           "port", 1, maxPort),
+       .apply =
+           [](GuiConfig& config, const std::vector<std::string>& values) {
+             int result = 0;
+             const char* begin = values.front().data();
+             std::from_chars(begin, begin + values.front().size(), result);
+             config.port = result;
+           }},
+      {.flag = "-h",
+       .description = "server hostname",
+       .arity = zappy::cli::OptionArity::SingleValue,
+       .fieldType =
+           std::make_shared<zappy::schema::StringFieldType>("hostname"),
+       .apply =
+           [](GuiConfig& config, const std::vector<std::string>& values) {
+             config.hostname = values.front();
+           }},
+  };
+}
 
-int parsePort(const std::string& value) {
-  int result = 0;
-  const char* begin = value.data();
-  const char* end = begin + value.size();
-  const auto [ptr, errorCode] = std::from_chars(begin, end, result);
-  if (errorCode != std::errc{} || ptr != end || result < portMinimum ||
-      result > portMaximum) {
-    throw InvalidValueException(
-        "-p", value,
-        std::format("expected port in [{}, {}]", portMinimum, portMaximum));
+void validateGuiConfig(const GuiConfig& config) {
+  if (config.port == 0) {
+    throw zappy::cli::MissingValueException("-p");
   }
-  return result;
+  if (config.hostname.empty()) {
+    throw zappy::cli::MissingValueException("-h");
+  }
 }
 
 }  // namespace
 
 GuiConfig parseArguments(int argumentCount, char** arguments) {
-  GuiConfig config{.port = 0, .hostname = {}};
-  bool portProvided = false;
-  bool hostnameProvided = false;
-
-  ArgumentCursor cursor(argumentCount, arguments);
-  while (cursor.hasNextToken()) {
-    const std::string flag = cursor.nextToken();
-    if (flag == "-p") {
-      config.port = parsePort(cursor.requireValue("-p"));
-      portProvided = true;
-    } else if (flag == "-h") {
-      config.hostname = cursor.requireValue("-h");
-      hostnameProvided = true;
-    } else {
-      throw UnknownOptionException(flag);
-    }
-  }
-
-  if (!portProvided) {
-    throw MissingValueException("-p");
-  }
-  if (!hostnameProvided) {
-    throw MissingValueException("-h");
-  }
-  return config;
+  return zappy::cli::parseWithSchema<GuiConfig>(
+      argumentCount, arguments, buildGuiOptionSchema(), validateGuiConfig);
 }
 
 }  // namespace zappy::gui

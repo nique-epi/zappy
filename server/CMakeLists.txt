@@ -1,8 +1,6 @@
 add_library(zappy_server_app STATIC
   Cli/ArgsParser.cpp
-  Cli/ArgumentCursor.cpp
   Cli/Validators/OptionSchema.cpp
-  Cli/Exceptions/ParserException.cpp
   App/World/Resources/ResourceType.cpp
   App/World/Tile/Tile.cpp
   App/World/Map/Map.cpp
@@ -14,7 +12,7 @@ add_library(zappy_server_app STATIC
 )
 
 target_include_directories(zappy_server_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(zappy_server_app PUBLIC zappy_protocol zappy_schema)
+target_link_libraries(zappy_server_app PUBLIC zappy_cli zappy_protocol zappy_schema)
 target_compile_options(zappy_server_app PRIVATE -Wall -Wextra -Werror)
 
 add_executable(zappy_server

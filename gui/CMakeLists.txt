@@ -26,13 +26,13 @@ endif()
 add_library(zappy_gui_cli STATIC
     src/Exceptions/GuiException.cpp
     src/Cli/ArgsParser.cpp
-    src/Cli/ArgumentCursor.cpp
-    src/Cli/Exceptions/ParserException.cpp
 )
 
 target_include_directories(zappy_gui_cli PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+target_link_libraries(zappy_gui_cli PUBLIC zappy_cli zappy_schema)
 
 target_compile_options(zappy_gui_cli PRIVATE -Wall -Wextra -Werror)
 

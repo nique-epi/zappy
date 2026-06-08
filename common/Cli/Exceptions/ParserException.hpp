@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <string>
-#include "Exceptions/GuiException.hpp"
 
-namespace zappy::gui {
+namespace zappy::cli {
 
 /**
  * @brief Root exception for every command-line parsing error.
@@ -19,7 +19,7 @@ namespace zappy::gui {
  * malformed, missing, unknown, or out-of-range option surfaces as a subclass
  * of @ref ParserException so callers can catch the whole family at once.
  */
-class ParserException : public GuiException {
+class ParserException : public std::runtime_error {
  public:
   explicit ParserException(const std::string& message);
 };
@@ -42,7 +42,7 @@ class MissingValueException : public ParserException {
 };
 
 /**
- * @brief Thrown when an option value is not a valid integer or is out of range.
+ * @brief Thrown when an option value is not valid or out of range.
  */
 class InvalidValueException : public ParserException {
  public:
@@ -50,4 +50,4 @@ class InvalidValueException : public ParserException {
                         const std::string& reason);
 };
 
-}  // namespace zappy::gui
+}  // namespace zappy::cli
