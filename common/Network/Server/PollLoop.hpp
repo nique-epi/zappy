@@ -55,7 +55,7 @@ class PollLoop {
   void sendTo(int clientFd, const std::string &data);
   void broadcast(const std::string &data);
 
-  std::size_t clientCount() const;
+  [[nodiscard]] std::size_t clientCount() const;
 
  private:
   void handleNewConnection();
