@@ -9,7 +9,6 @@ build/
 /zappy_gui
 /zappy_ai
 
-zappy_network_tests
-zappy_rpc_tests
+*_tests
 
 *.pyc

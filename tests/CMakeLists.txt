@@ -54,6 +54,11 @@ target_link_libraries(zappy_schema_tests
 add_executable(zappy_server_tests
   Cli/TestParserException.cpp
   Cli/TestArgsParser.cpp
+  World/TestResourceType.cpp
+  World/TestTile.cpp
+  World/TestMap.cpp
+  Scheduler/TestScheduler.cpp
+  Scheduler/TestActionTiming.cpp
 )
 
 target_link_libraries(zappy_server_tests
