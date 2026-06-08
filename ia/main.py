@@ -12,7 +12,8 @@ def parse_arguments() -> argparse.Namespace:
         argparse.Namespace: Parsed arguments.
     """
     parser = argparse.ArgumentParser(
-        prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine")
+        prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine"
+        , add_help=False)
     parser.add_argument("-p", type=int, required=True,
                         dest="port",    help="port number")
     parser.add_argument("-n", type=str, required=True,
