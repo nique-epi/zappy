@@ -23,6 +23,18 @@ if(NOT EXISTS ${RAYGUI_HEADER})
     endif()
 endif()
 
+add_library(zappy_gui_cli STATIC
+    src/Cli/ArgsParser.cpp
+    src/Cli/ArgumentCursor.cpp
+    src/Cli/Exceptions/ParserException.cpp
+)
+
+target_include_directories(zappy_gui_cli PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_compile_options(zappy_gui_cli PRIVATE -Wall -Wextra -Werror)
+
 add_executable(zappy_gui
     main.cpp
     src/MockWorld.cpp
@@ -33,10 +45,6 @@ set_source_files_properties(src/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 
-target_include_directories(zappy_gui PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-target_link_libraries(zappy_gui PRIVATE raylib)
+target_link_libraries(zappy_gui PRIVATE zappy_gui_cli raylib)
 
 target_compile_options(zappy_gui PRIVATE -Wall -Wextra -Werror)

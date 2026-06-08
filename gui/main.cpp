@@ -8,15 +8,32 @@
 #include <raylib.h>
 #include <cstdlib>
 #include <format>
+#include <iostream>
 #include <string>
+#include <string_view>
+#include "Cli/ArgsParser.hpp"
+#include "Cli/Exceptions/ParserException.hpp"
 #include "WindowConfig.hpp"
 #include "WorldState.hpp"
 #include "raygui.h"
 
 namespace cfg = zappy::gui::config;
 
-int main() {
+static constexpr std::string_view USAGE =
+    "USAGE: ./zappy_gui -p port -h machine";
+static constexpr int EXIT_PARSE_ERROR = 84;
+
+int main(int argc, char** argv) {
+  for (int i = 1; i < argc; ++i) {
+    if (std::string_view(argv[i]) == "--help") {
+      std::cout << USAGE << '\n';
+      return EXIT_SUCCESS;
+    }
+  }
+
   try {
+    const zappy::gui::GuiConfig config = zappy::gui::parseArguments(argc, argv);
+
     InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
     SetTargetFPS(cfg::TARGET_FPS);
 
@@ -24,8 +41,9 @@ int main() {
 
     while (!WindowShouldClose()) {
       const std::string hudText =
-          std::format("Map: {}x{}  |  Players: {}  |  Teams: {}", world.width,
-                      world.height, world.players.size(), world.teams.size());
+          std::format("{}:{}  |  Map: {}x{}  |  Players: {}  |  Teams: {}",
+                      config.hostname, config.port, world.width, world.height,
+                      world.players.size(), world.teams.size());
 
       BeginDrawing();
       ClearBackground(RAYWHITE);
@@ -37,6 +55,10 @@ int main() {
     }
 
     CloseWindow();
+  } catch (const zappy::gui::ParserException& error) {
+    std::cerr << error.what() << '\n';
+    std::cerr << USAGE << '\n';
+    return EXIT_PARSE_ERROR;
   } catch (...) {
     return EXIT_FAILURE;
   }
