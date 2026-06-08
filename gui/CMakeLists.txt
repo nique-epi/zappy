@@ -9,7 +9,7 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_GAMES    OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
 
-set(RAYGUI_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/include/raygui.h)
+set(RAYGUI_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/raygui.h)
 if(NOT EXISTS ${RAYGUI_HEADER})
     message(STATUS "Downloading raygui.h...")
     file(DOWNLOAD
@@ -19,17 +19,17 @@ if(NOT EXISTS ${RAYGUI_HEADER})
     )
     list(GET RAYGUI_DOWNLOAD_STATUS 0 RAYGUI_DOWNLOAD_CODE)
     if(NOT RAYGUI_DOWNLOAD_CODE EQUAL 0)
-        message(FATAL_ERROR "Failed to download raygui.h — place it manually in gui/include/raygui.h")
+        message(FATAL_ERROR "Failed to download raygui.h — place it manually in gui/raygui.h")
     endif()
 endif()
 
 add_library(zappy_gui_cli STATIC
-    src/Exceptions/GuiException.cpp
-    src/Cli/ArgsParser.cpp
+    Exceptions/GuiException.cpp
+    Cli/ArgsParser.cpp
 )
 
 target_include_directories(zappy_gui_cli PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(zappy_gui_cli PUBLIC zappy_cli zappy_schema)
@@ -37,12 +37,12 @@ target_link_libraries(zappy_gui_cli PUBLIC zappy_cli zappy_schema)
 target_compile_options(zappy_gui_cli PRIVATE -Wall -Wextra -Werror)
 
 add_library(zappy_gui_handshake STATIC
-    src/ServerHandshake.cpp
-    src/Exceptions/HandshakeException.cpp
+    ServerHandshake.cpp
+    Exceptions/HandshakeException.cpp
 )
 
 target_include_directories(zappy_gui_handshake PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(zappy_gui_handshake PUBLIC zappy_gui_cli)
@@ -51,12 +51,12 @@ target_compile_options(zappy_gui_handshake PRIVATE -Wall -Wextra -Werror)
 
 add_executable(zappy_gui
     main.cpp
-    src/NetworkManager.cpp
-    src/MockWorld.cpp
-    src/Raygui.cpp
+    NetworkManager.cpp
+    MockWorld.cpp
+    Raygui.cpp
 )
 
-set_source_files_properties(src/Raygui.cpp PROPERTIES
+set_source_files_properties(Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 
