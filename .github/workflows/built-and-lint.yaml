@@ -50,16 +50,16 @@ jobs:
       - name: Get changed Python files
         id: changed-files
         run: |
-          FILES=$(git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD -- '*.py' | grep '^ia/' || true)
+          FILES=$(git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD -- '*.py' | grep '^ia/' | tr '\n' ' ' || true)
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
       - name: Run flake8
         if: steps.changed-files.outputs.files != ''
-        run: echo "${{ steps.changed-files.outputs.files }}" | xargs flake8
+        run: flake8 ${{ steps.changed-files.outputs.files }}
 
       - name: Run pylint
         if: steps.changed-files.outputs.files != ''
-        run: echo "${{ steps.changed-files.outputs.files }}" | xargs pylint --fail-under=8.0
+        run: pylint ${{ steps.changed-files.outputs.files }} --fail-under=8.0
   python-coverage:
     name: Python Coverage
     runs-on: ubuntu-latest
