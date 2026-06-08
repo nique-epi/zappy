@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from ..shared.enum import Direction
 
 if TYPE_CHECKING:
-    from network.client import ZappyClient
+    from ..network.client import ZappyClient
 
 
 class Bot:

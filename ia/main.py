@@ -12,8 +12,7 @@ def parse_arguments() -> argparse.Namespace:
         argparse.Namespace: Parsed arguments.
     """
     parser = argparse.ArgumentParser(
-        prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine",
-        add_help=False)
+        prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine")
     parser.add_argument("-p", type=int, required=True,
                         dest="port",    help="port number")
     parser.add_argument("-n", type=str, required=True,
@@ -43,7 +42,10 @@ def main() -> None:
         sys.exit(1)
 
     bot = Bot(width, height, client_num, client)
-    bot.run()
+    try:
+        bot.run()
+    finally:
+        client.close()
 
 
 if __name__ == "__main__":

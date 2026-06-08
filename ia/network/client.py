@@ -16,7 +16,7 @@ class ZappyClient:
     def connect(self, team_name: str) -> tuple[int, int, int]:
         """Performs the complete handshake.
         Returns (client_num, width, height).
-        Raises ConnectionError if the server refuses or responds incorrectly."""
+        Raises ConnectionError if the server responds incorrectly."""
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self._sock.connect((self._host, self._port))
@@ -79,3 +79,4 @@ class ZappyClient:
         if self._sock:
             self._sock.close()
             self._sock = None
+            self._recv_buf = ""
