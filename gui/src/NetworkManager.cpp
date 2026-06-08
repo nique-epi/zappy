@@ -151,13 +151,21 @@ int connectCandidate(const addrinfo& candidate, const std::string& hostname,
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 int connectToServer(const std::string& hostname, int port) {
   const AddrInfoGuard guard = resolveHostname(hostname, port);
+  std::string lastError;
   for (const addrinfo* candidate = guard.get(); candidate != nullptr;
        candidate = candidate->ai_next) {
-    const int socketFd =  // NOLINT(cppcoreguidelines-init-variables)
-        connectCandidate(*candidate, hostname, port);
-    if (socketFd >= 0) {
-      return socketFd;
+    try {
+      const int socketFd =  // NOLINT(cppcoreguidelines-init-variables)
+          connectCandidate(*candidate, hostname, port);
+      if (socketFd >= 0) {
+        return socketFd;
+      }
+    } catch (const zappy::network::ConnectError& error) {
+      lastError = error.what();
     }
+  }
+  if (!lastError.empty()) {
+    throw zappy::network::ConnectError(lastError);
   }
   throw zappy::network::ConnectError(
       std::format(errorCouldNotConnect, hostname, port,
