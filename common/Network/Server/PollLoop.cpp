@@ -8,6 +8,7 @@
 #include "Network/Server/PollLoop.hpp"
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <array>
 #include <cerrno>
 #include "Network/Exceptions.hpp"
 
@@ -17,7 +18,7 @@ namespace {
 constexpr std::size_t readBufferSize = 4096;
 }
 
-PollLoop::PollLoop(int serverFd, ISocket &io)
+PollLoop::PollLoop(int serverFd, ISocket& io)
     : serverFd_(serverFd), io_(io), running_(false), dirty_(true) {}
 
 void PollLoop::setHandler(CommandHandler handler) {
@@ -70,7 +71,7 @@ void PollLoop::runOnce(int timeoutMs) {
     }
     if (revents & POLLIN) {
       handleClientRead(fd);
-      if (clients_.find(fd) == clients_.end()) {
+      if (!clients_.contains(fd)) {
         dirty_ = true;
         break;
       }
@@ -81,7 +82,7 @@ void PollLoop::runOnce(int timeoutMs) {
   }
 }
 
-void PollLoop::sendTo(int clientFd, const std::string &data) {
+void PollLoop::sendTo(int clientFd, const std::string& data) {
   auto it = clients_.find(clientFd);
   if (it == clients_.end()) {
     return;
@@ -90,8 +91,8 @@ void PollLoop::sendTo(int clientFd, const std::string &data) {
   dirty_ = true;
 }
 
-void PollLoop::broadcast(const std::string &data) {
-  for (auto &[fd, client] : clients_) {
+void PollLoop::broadcast(const std::string& data) {
+  for (auto& [fd, client] : clients_) {
     client.appendOutput(data);
   }
   if (!clients_.empty()) {
@@ -105,7 +106,7 @@ void PollLoop::handleNewConnection() {
   struct sockaddr_in address = {};
   socklen_t length = sizeof(address);
   int clientFd = io_.doAccept(
-      serverFd_, reinterpret_cast<struct sockaddr *>(&address), &length);
+      serverFd_, reinterpret_cast<struct sockaddr*>(&address), &length);
   if (clientFd < 0) {
     throw AcceptError("accept() failed");
   }
@@ -117,14 +118,14 @@ void PollLoop::handleNewConnection() {
 }
 
 void PollLoop::handleClientRead(int fd) {
-  char buffer[readBufferSize];
-  ssize_t received = io_.doReceive(fd, buffer, sizeof(buffer), 0);
+  std::array<char, readBufferSize> buffer{};
+  ssize_t received = io_.doReceive(fd, buffer.data(), buffer.size(), 0);
   if (received <= 0) {
     removeClient(fd);
     return;
   }
-  Client &client = clients_.at(fd);
-  client.appendInput(buffer, static_cast<std::size_t>(received));
+  Client& client = clients_.at(fd);
+  client.appendInput(buffer.data(), static_cast<std::size_t>(received));
 
   std::string line;
   while (client.consumeLine(line)) {
@@ -139,8 +140,8 @@ void PollLoop::handleClientWrite(int fd) {
   if (it == clients_.end()) {
     return;
   }
-  Client &client = it->second;
-  const std::string &data = client.peekOutput();
+  Client& client = it->second;
+  const std::string& data = client.peekOutput();
   ssize_t sent = io_.doSend(fd, data.c_str(), data.size(), MSG_NOSIGNAL);
   if (sent < 0) {
     removeClient(fd);
@@ -163,7 +164,7 @@ void PollLoop::removeClient(int fd) {
 void PollLoop::rebuildFds() {
   fds_.clear();
   fds_.push_back({serverFd_, POLLIN, 0});
-  for (auto &[fd, client] : clients_) {
+  for (auto& [fd, client] : clients_) {
     short events = POLLIN;
     if (client.hasPendingOutput()) {
       events |= POLLOUT;

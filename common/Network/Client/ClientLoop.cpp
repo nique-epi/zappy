@@ -18,7 +18,7 @@ namespace {
 constexpr std::size_t readBufferSize = 4096;
 }
 
-ClientLoop::ClientLoop(int stdinFd, int serverFd, ISocket &io)
+ClientLoop::ClientLoop(int stdinFd, int serverFd, ISocket& io)
     : stdinFd_(stdinFd), serverFd_(serverFd), io_(io), running_(false) {}
 
 void ClientLoop::setCommandHandler(CommandHandler handler) {
@@ -29,7 +29,7 @@ void ClientLoop::setResponseHandler(ResponseHandler handler) {
   responseHandler_ = std::move(handler);
 }
 
-void ClientLoop::sendLine(const std::string &line) {
+void ClientLoop::sendLine(const std::string& line) {
   outputBuffer_ += line + "\n";
 }
 
@@ -48,19 +48,19 @@ void ClientLoop::runOnce(int timeoutMs) {
     serverEvents |= POLLOUT;
   }
 
-  struct pollfd fds[2];
+  std::array<struct pollfd, 2> fds{};
   nfds_t count = 0;
   nfds_t stdinIndex = 0;
   if (stdinFd_ >= 0) {
-    fds[count] = {stdinFd_, POLLIN, 0};
+    fds[count] = {.fd = stdinFd_, .events = POLLIN, .revents = 0};
     stdinIndex = count;
     count++;
   }
   nfds_t serverIndex = count;
-  fds[count] = {serverFd_, serverEvents, 0};
+  fds[count] = {.fd = serverFd_, .events = serverEvents, .revents = 0};
   count++;
 
-  int ready = io_.doPoll(fds, count, timeoutMs);
+  int ready = io_.doPoll(fds.data(), count, timeoutMs);
   if (ready < 0) {
     if (errno == EINTR) {
       return;
@@ -84,14 +84,14 @@ void ClientLoop::runOnce(int timeoutMs) {
 }
 
 void ClientLoop::handleStdin() {
-  char buffer[readBufferSize];
-  ssize_t received = io_.doReceive(stdinFd_, buffer, sizeof(buffer), 0);
+  std::array<char, readBufferSize> buffer{};
+  ssize_t received = io_.doReceive(stdinFd_, buffer.data(), buffer.size(), 0);
   if (received <= 0) {
     running_ = false;
     return;
   }
-  stdinBuffer_.append(buffer, static_cast<std::size_t>(received));
-  std::string::size_type position;
+  stdinBuffer_.append(buffer.data(), static_cast<std::size_t>(received));
+  std::string::size_type position = 0;
   while ((position = stdinBuffer_.find('\n')) != std::string::npos) {
     std::string line = stdinBuffer_.substr(0, position);
     stdinBuffer_.erase(0, position + 1);
@@ -102,14 +102,14 @@ void ClientLoop::handleStdin() {
 }
 
 void ClientLoop::handleServerRead() {
-  char buffer[readBufferSize];
-  ssize_t received = io_.doReceive(serverFd_, buffer, sizeof(buffer), 0);
+  std::array<char, readBufferSize> buffer{};
+  ssize_t received = io_.doReceive(serverFd_, buffer.data(), buffer.size(), 0);
   if (received <= 0) {
     running_ = false;
     return;
   }
-  serverBuffer_.append(buffer, static_cast<std::size_t>(received));
-  std::string::size_type position;
+  serverBuffer_.append(buffer.data(), static_cast<std::size_t>(received));
+  std::string::size_type position = 0;
   while ((position = serverBuffer_.find('\n')) != std::string::npos) {
     std::string line = serverBuffer_.substr(0, position);
     serverBuffer_.erase(0, position + 1);

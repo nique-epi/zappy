@@ -647,3 +647,127 @@ ViewportRunner.cpp
 Framebuffer.hpp
 RenderSettings.hpp
 ```
+
+### R12 — Gestion d'erreur : exceptions custom dans `Exceptions/`, jamais de `std::` brut
+
+**Règle :** toute erreur levée par du code métier doit l'être via une **classe
+d'exception custom** définie dans un dossier `Exceptions/` du module concerné.
+Il est **interdit de `throw` directement une exception de la bibliothèque
+standard** (`std::invalid_argument`, `std::runtime_error`, `std::out_of_range`,
+`std::logic_error`, etc.). Chaque module possède une **exception racine** qui
+hérite de `std::runtime_error`, et des **sous-classes spécifiques** par cas
+d'erreur. Avant d'en créer une, vérifier si elle existe déjà — sinon
+l'**étendre** plutôt que d'en multiplier. Les messages utilisateur vont dans
+`common/Error/Messages/<Module>Messages.hpp` (namespace
+`zappy::error::messages`, `inline constexpr const char *`), **jamais** en dur
+dans le `throw`.
+
+**Pourquoi :** une exception `std::` générique levée depuis le métier ne porte
+aucune information de domaine : l'appelant ne peut pas distinguer « dimensions
+de carte invalides » d'une autre `std::invalid_argument` venue d'ailleurs, et
+ne peut pas catcher *la famille* d'erreurs d'un module en un seul `catch`. La
+hiérarchie custom (racine `…Exception` + filles) donne un `catch` par famille,
+des messages cohérents et centralisés (testables, traduisibles, sans
+duplication), et empêche une exception std de fuiter à travers une frontière de
+module. C'est déjà le pattern du projet (`ParserException` +
+`ParserMessages.hpp`) ; on le généralise.
+
+**À appliquer :** tout code qui lève une erreur, dans tous les modules. Quand on
+s'apprête à écrire `throw std::…`, c'est le signal qu'il faut une classe dans
+le `Exceptions/` du module (la créer si absente). Le `Exceptions/` et le
+`<Module>Messages.hpp` sont ajoutés à la lib CMake du module.
+
+**Exemple interdit :**
+
+```cpp
+// Map.cpp — INTERDIT : std brut + message en dur
+Map::Map(int width, int height) : width_(width), height_(height) {
+    if (width <= 0 || height <= 0) {
+        throw std::invalid_argument("Map dimensions must be strictly positive");
+    }
+    // …
+}
+```
+
+**Exemple correct :**
+
+```cpp
+// server/App/World/Exceptions/WorldException.hpp
+namespace zappy::world {
+class WorldException : public std::runtime_error {
+ public:
+    explicit WorldException(const std::string &message);
+};
+class InvalidMapDimensionsException : public WorldException {
+ public:
+    InvalidMapDimensionsException(int width, int height);
+};
+}  // namespace zappy::world
+```
+
+```cpp
+// Map.cpp — métier : on lève l'exception de domaine
+if (width <= 0 || height <= 0) {
+    throw InvalidMapDimensionsException(width, height);
+}
+```
+
+### R13 — Texte Git/GitHub en anglais et template de PR respectée
+
+**Règle :** tout texte qui atterrit dans Git/GitHub — **messages de commit**,
+**titres de PR** et **descriptions de PR** — est rédigé en **anglais**, quelle
+que soit la langue de la conversation avec l'utilisateur. Toute description de PR
+doit suivre **exactement** la structure de `.github/PULL_REQUEST_TEMPLATE.md` :
+**toutes** les sections, **dans l'ordre**, avec les cases à cocher remplies
+honnêtement (cocher uniquement ce qui est vrai). Si la template évolue, c'est la
+version courante du fichier qui fait foi.
+
+**Pourquoi :** l'historique git et les PR sont publics (jury Epitech, repo
+mirror, futurs collaborateurs) et **déjà 100 % en anglais** (cf. `git log`) ; y
+injecter du français casse la cohérence et trahit un texte produit hors process.
+La template existe pour rendre les PR comparables et relisables : la contourner
+fait sauter les sections (Summary / Changes / Type of Change / Testing /
+Checklist) qui structurent la revue. La langue du chat n'a aucune incidence sur
+ce qui est écrit dans le repo.
+
+**À appliquer :** chaque commit, chaque titre et chaque description de PR. Avant
+d'ouvrir ou de mettre à jour une PR, **lire** `.github/PULL_REQUEST_TEMPLATE.md`
+et calquer la description dessus.
+
+**Périmètre :** la règle vise le texte **Git/GitHub** uniquement. Les **docs
+d'architecture sous `doc/`** restent en **français**, comme l'existant
+(`ARCHITECTURE.cRPC.md`, `SERVER_ISSUES.md`…) — ne pas les traduire.
+
+**Exemple interdit (description de PR) :**
+
+```md
+## Résumé
+Cette PR ajoute le monde torique et le scheduler.
+
+## Modifications
+- ...
+```
+
+**Exemple correct (description de PR) :**
+
+```md
+## Summary
+Adds the toroidal world model and the action scheduler.
+
+Closes #
+
+## Changes
+- ...
+
+## Type of Change
+- [x] New feature
+
+## Testing
+`ctest --test-dir build` -> 152/152 passing.
+
+## Checklist
+- [x] Code compiles without errors
+- [x] No new warnings introduced
+- [x] Tests pass
+- [x] Self-reviewed the diff
+```
