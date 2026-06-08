@@ -11,3 +11,7 @@ build/
 
 zappy_network_tests
 zappy_rpc_tests
+
+zappy_gui_tests
+zappy_schema_tests
+zappy_server_tests
