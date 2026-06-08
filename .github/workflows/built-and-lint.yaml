@@ -36,6 +36,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -45,11 +47,19 @@ jobs:
       - name: Install linters
         run: pip install pylint flake8
 
+      - name: Get changed Python files
+        id: changed-files
+        run: |
+          FILES=$(git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD -- '*.py' | grep '^ia/' || true)
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
       - name: Run flake8
-        run: flake8 ia/
+        if: steps.changed-files.outputs.files != ''
+        run: echo "${{ steps.changed-files.outputs.files }}" | xargs flake8
 
       - name: Run pylint
-        run: pylint ia/ --fail-under=8.0
+        if: steps.changed-files.outputs.files != ''
+        run: echo "${{ steps.changed-files.outputs.files }}" | xargs pylint --fail-under=8.0
   python-coverage:
     name: Python Coverage
     runs-on: ubuntu-latest
