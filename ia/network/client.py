@@ -1,8 +1,8 @@
 """Client for the Zappy game server protocol."""
 import socket
-from typing import Callable
+from typing import Callable, Final
 
-CONST_BUFFER_SIZE = 4096
+BUFFER_SIZE: Final = 4096
 
 
 class ZappyClient:
@@ -67,7 +67,7 @@ class ZappyClient:
         Buffers partial data.
         """
         while "\n" not in self._recv_buf:
-            chunk = self._sock.recv(CONST_BUFFER_SIZE).decode(errors="replace")
+            chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
             if not chunk:
                 return None
             self._recv_buf += chunk

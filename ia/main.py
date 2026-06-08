@@ -1,8 +1,8 @@
 """Main entry point for the Zappy AI client."""
 import argparse
 import sys
-from .network.client import ZappyClient
-from .core.bot import Bot
+from ia.network.client import ZappyClient
+from ia.core.bot import Bot
 
 
 def parse_arguments(argv=None) -> argparse.Namespace:

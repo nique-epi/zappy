@@ -1,10 +1,10 @@
 """Core bot logic for the Zappy AI client."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from ..shared.enum import Direction
+from ia.shared.enum import Direction
 
 if TYPE_CHECKING:
-    from ..network.client import ZappyClient
+    from ia.network.client import ZappyClient
 
 
 class Bot:
