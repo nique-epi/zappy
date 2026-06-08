@@ -75,8 +75,19 @@ def test_pop_line_strips_carriage_return():
     """
     Given a buffer fed with a CRLF-terminated line
     When pop_line is called
-    Then the trailing carriage return is stripped
+    Then only the trailing carriage return is stripped
     """
     buf = Buffer()
     buf.feed("hello\r\n")
     assert buf.pop_line() == "hello"
+
+
+def test_pop_line_preserves_significant_spaces():
+    """
+    Given a buffer fed with a line carrying leading and trailing spaces
+    When pop_line is called
+    Then only the line terminator is removed and the spaces are preserved
+    """
+    buf = Buffer()
+    buf.feed("  message 0,  hi there  \r\n")
+    assert buf.pop_line() == "  message 0,  hi there  "

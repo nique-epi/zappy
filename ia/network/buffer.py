@@ -35,4 +35,4 @@ class Buffer:
         if "\n" not in self._data:
             return None
         line, self._data = self._data.split("\n", 1)
-        return line.strip()
+        return line.rstrip("\r")
