@@ -34,7 +34,8 @@ constexpr const char* errorConnectionTimedOut = "connection to {}:{} timed out";
 constexpr const char* errorConnectionFailed = "connection to {}:{} failed: {}";
 constexpr const char* errorCouldNotConnect = "could not connect to {}:{}: {}";
 
-struct AddrInfoGuard {
+class AddrInfoGuard {
+ public:
   explicit AddrInfoGuard(addrinfo* resolved) : info_(resolved) {}
   ~AddrInfoGuard() {
     if (info_ != nullptr) {
