@@ -807,3 +807,46 @@ Closes #
 - [x] Tests pass
 - [x] Self-reviewed the diff
 ```
+
+### R15 — Docstrings de test au format Given / When / Then
+
+**Règle :** toute fonction de test (pytest `test_*`, et plus largement tout cas
+de test du projet) doit porter une **docstring structurée en trois temps
+`Given` / `When` / `Then`** : une clause par ligne — le contexte initial
+(`Given`), l'action déclenchée (`When`), le résultat attendu (`Then`).
+
+**Pourquoi :** le nom d'un test décrit *quoi*, pas *dans quelles conditions* ni
+*ce qui est attendu*. Le triptyque Given/When/Then rend explicites le pré-état,
+l'action et l'assertion : la docstring sert de mini-spec lisible, accélère la
+revue et le diagnostic d'un échec, et pousse à ne valider qu'**un seul**
+comportement par test.
+
+**À appliquer :** tout nouveau test et tout test touché lors d'un refactoring.
+Le format prime sur la longueur : une ligne par clause suffit. S'applique à tous
+les langages de test du projet (pytest côté IA, GoogleTest côté C++ via un
+commentaire `// Given / When / Then` au-dessus du corps si le framework n'a pas
+de docstring).
+
+**Exemple interdit :**
+
+```python
+def test_pop_line_single():
+    """Test pop_line."""
+    buf = Buffer()
+    buf.feed("Forward\n")
+    assert buf.pop_line() == "Forward"
+```
+
+**Exemple correct :**
+
+```python
+def test_pop_line_single():
+    """
+    Given a buffer fed with a single newline-terminated line
+    When pop_line is called
+    Then it returns the line without its newline
+    """
+    buf = Buffer()
+    buf.feed("Forward\n")
+    assert buf.pop_line() == "Forward"
+```

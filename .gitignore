@@ -12,3 +12,6 @@ build/
 *_tests
 
 *.pyc
+__pycache__/
+.coverage
+.pytest_cache/

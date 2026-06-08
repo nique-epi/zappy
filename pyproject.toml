@@ -21,6 +21,7 @@ pythonpath = ["."]
 testpaths = ["tests/IA"]
 
 [tool.pylint.master]
+source-roots = ["."]
 ignore = ["tests/IA"]
 variable-rgx = "^[a-z_][a-z0-9_]{0,30}$"
 

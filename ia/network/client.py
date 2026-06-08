@@ -1,8 +1,12 @@
 """Client for the Zappy game server protocol."""
 import socket
 from typing import Callable, Final
+from ia.network.buffer import Buffer
+from ia.network.command_queue import CommandQueue
+from ia.network.exceptions import PlayerDeadError
 
 BUFFER_SIZE: Final = 4096
+DEAD_MESSAGE: Final = "dead"
 
 
 class ZappyClient:
@@ -19,8 +23,9 @@ class ZappyClient:
         self._host = host
         self._port = port
         self._sock: socket.socket | None = None
-        self._recv_buf = ""
         self._sock_factory = sock_factory
+        self._buffer = Buffer()
+        self._queue = CommandQueue()
 
     def connect(self, team_name: str) -> tuple[int, int, int]:
         """Performs the complete handshake.
@@ -61,31 +66,60 @@ class ZappyClient:
         """Sends a line terminated by \\n."""
         self._sock.sendall((msg + "\n").encode())
 
-    def _recv_line(self) -> str | None:
-        """
-        Reads a complete line from the socket.
-        Buffers partial data.
-        """
-        while "\n" not in self._recv_buf:
-            chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
-            if not chunk:
-                return None
-            self._recv_buf += chunk
+    def _fill_buffer(self) -> bool:
+        """Reads one chunk from the socket into the reception buffer.
 
-        line, self._recv_buf = self._recv_buf.split("\n", 1)
-        return line.strip()
+        Returns:
+            True if data was read, False if the server closed the connection.
+        """
+        chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
+        if not chunk:
+            return False
+        self._buffer.feed(chunk)
+        return True
+
+    def _recv_line(self) -> str | None:
+        """Reads a complete line, blocking on the socket only when needed.
+
+        Returns:
+            The next complete line, or None if the connection was closed.
+        """
+        while not self._buffer.has_line():
+            if not self._fill_buffer():
+                return None
+        return self._buffer.pop_line()
+
+    def _flush(self) -> None:
+        """Transmits queued commands while a pending slot is available."""
+        while (command := self._queue.pop_sendable()) is not None:
+            self._send_line(command)
 
     def send(self, command: str) -> None:
-        """Public API used by the bot to send commands."""
-        self._send_line(command)
+        """Queues a command and transmits it while below the pending limit."""
+        self._queue.enqueue(command)
+        self._flush()
 
     def recv(self) -> str | None:
-        """Public API: reads a response from the server."""
-        return self._recv_line()
+        """Reads one server response, freeing a pending command slot.
+
+        Returns:
+            The next command response line, or None if the connection closed.
+        Raises:
+            PlayerDeadError: When the server reports the player is dead.
+        """
+        line = self._recv_line()
+        if line is None:
+            return None
+        if line == DEAD_MESSAGE:
+            raise PlayerDeadError()
+        self._queue.on_response()
+        self._flush()
+        return line
 
     def close(self) -> None:
-        """Closes the socket."""
+        """Closes the socket and resets the buffering state."""
         if self._sock:
             self._sock.close()
             self._sock = None
-            self._recv_buf = ""
+            self._buffer = Buffer()
+            self._queue = CommandQueue()
