@@ -18,23 +18,15 @@ const std::array<ResourceType, resourceTypeCount> &allResourceTypes() {
 }
 
 std::string_view resourceName(ResourceType type) {
-  switch (type) {
-    case ResourceType::Food:
-      return "food";
-    case ResourceType::Linemate:
-      return "linemate";
-    case ResourceType::Deraumere:
-      return "deraumere";
-    case ResourceType::Sibur:
-      return "sibur";
-    case ResourceType::Mendiane:
-      return "mendiane";
-    case ResourceType::Phiras:
-      return "phiras";
-    case ResourceType::Thystame:
-      return "thystame";
-  }
-  return "";
+  static constexpr std::array names{
+      std::string_view("food"),      std::string_view("linemate"),
+      std::string_view("deraumere"), std::string_view("sibur"),
+      std::string_view("mendiane"),  std::string_view("phiras"),
+      std::string_view("thystame")};
+  static_assert(names.size() == resourceTypeCount,
+                "resourceName table out of sync with ResourceType");
+
+  return names[static_cast<std::size_t>(type)];
 }
 
 }  // namespace zappy::world
