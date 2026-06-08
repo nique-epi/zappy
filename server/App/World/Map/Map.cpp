@@ -6,6 +6,8 @@
 */
 
 #include "App/World/Map/Map.hpp"
+#include <new>
+#include <stdexcept>
 #include "App/World/Exceptions/WorldException.hpp"
 
 namespace zappy::world {
@@ -14,8 +16,14 @@ Map::Map(int width, int height) : width_(width), height_(height) {
   if (width <= 0 || height <= 0) {
     throw InvalidMapDimensionsException(width, height);
   }
-  tiles_.resize(static_cast<std::size_t>(width) *
-                static_cast<std::size_t>(height));
+  try {
+    tiles_.resize(static_cast<std::size_t>(width) *
+                  static_cast<std::size_t>(height));
+  } catch (const std::bad_alloc &) {
+    throw MapAllocationException(width, height);
+  } catch (const std::length_error &) {
+    throw MapAllocationException(width, height);
+  }
 }
 
 int Map::width() const { return width_; }
