@@ -1,67 +1,85 @@
 """
 Unit tests for the main module.
 """
-from unittest.mock import patch, MagicMock
 import pytest
 from ia.main import parse_arguments, main
 
+
+class FakeClient:
+    """Minimal ZappyClient stand-in for main() tests."""
+
+    def __init__(self, host, port, connect_result=(1, 10, 20), connect_error=None):
+        self.host = host
+        self.port = port
+        self._connect_result = connect_result
+        self._connect_error = connect_error
+        self.connect_arg = None
+        self.closed = False
+
+    def connect(self, team_name):
+        self.connect_arg = team_name
+        if self._connect_error:
+            raise self._connect_error
+        return self._connect_result
+
+    def close(self):
+        self.closed = True
+
+
+class FakeBot:
+    """Minimal Bot stand-in for main() tests."""
+
+    def __init__(self, width, height, client_num, client):
+        self.width = width
+        self.height = height
+        self.client_num = client_num
+        self.client = client
+        self.ran = False
+
+    def run(self):
+        self.ran = True
+
+
 def test_parse_arguments_success():
-    """Test successful argument parsing."""
-    test_args = ["prog", "-p", "4242", "-n", "team1", "-h", "localhost"]
-    with patch("sys.argv", test_args):
-        args = parse_arguments()
-        assert args.port == 4242
-        assert args.name == "team1"
-        assert args.host == "localhost"
+    args = parse_arguments(["-p", "4242", "-n", "team1", "-h", "localhost"])
+    assert args.port == 4242
+    assert args.name == "team1"
+    assert args.host == "localhost"
+
 
 def test_parse_arguments_invalid_port():
-    """Test argument parsing with invalid port."""
-    test_args = ["prog", "-p", "70000", "-n", "team1"]
-    with patch("sys.argv", test_args):
-        with pytest.raises(SystemExit):
-            parse_arguments()
+    with pytest.raises(SystemExit):
+        parse_arguments(["-p", "70000", "-n", "team1"])
+
 
 def test_parse_arguments_empty_name():
-    """Test argument parsing with empty team name."""
-    test_args = ["prog", "-p", "4242", "-n", "  "]
-    with patch("sys.argv", test_args):
-        with pytest.raises(SystemExit):
-            parse_arguments()
+    with pytest.raises(SystemExit):
+        parse_arguments(["-p", "4242", "-n", "  "])
 
-@patch("ia.main.parse_arguments")
-@patch("ia.main.ZappyClient")
-@patch("ia.main.Bot")
-def test_main_success(mock_bot_class, mock_client_class, mock_parse_args):
-    """Test the main function's successful execution path."""
-    mock_args = MagicMock()
-    mock_args.port = 4242
-    mock_args.name = "team1"
-    mock_args.host = "localhost"
-    mock_parse_args.return_value = mock_args
 
-    mock_client = MagicMock()
-    mock_client.connect.return_value = (1, 10, 10)
-    mock_client_class.return_value = mock_client
+def test_main_success():
+    created = {}
 
-    mock_bot = MagicMock()
-    mock_bot_class.return_value = mock_bot
+    def client_factory(host, port):
+        created["client"] = FakeClient(host, port)
+        return created["client"]
 
-    main()
+    def bot_factory(*a):
+        created["bot"] = FakeBot(*a)
+        return created["bot"]
 
-    mock_client.connect.assert_called_with("team1")
-    mock_bot.run.assert_called_once()
+    main(["-p", "4242", "-n", "team1", "-h", "localhost"],
+         client_factory=client_factory, bot_factory=bot_factory)
 
-@patch("ia.main.parse_arguments")
-@patch("ia.main.ZappyClient")
-def test_main_connection_error(mock_client_class, mock_parse_args):
-    """Test main function handling of connection errors."""
-    mock_args = MagicMock()
-    mock_parse_args.return_value = mock_args
+    assert created["client"].connect_arg == "team1"
+    assert created["bot"].ran is True
+    assert created["client"].closed is True
 
-    mock_client = MagicMock()
-    mock_client.connect.side_effect = ConnectionError("Fail")
-    mock_client_class.return_value = mock_client
+
+def test_main_connection_error():
+    def client_factory(host, port):
+        return FakeClient(host, port, connect_error=ConnectionError("Fail"))
 
     with pytest.raises(SystemExit) as exc:
-        main()
+        main(argv=["-p", "4242", "-n", "team1"], client_factory=client_factory)
     assert exc.value.code == 1

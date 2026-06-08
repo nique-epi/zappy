@@ -5,7 +5,7 @@ from .network.client import ZappyClient
 from .core.bot import Bot
 
 
-def parse_arguments() -> argparse.Namespace:
+def parse_arguments(argv=None) -> argparse.Namespace:
     """Parse command line arguments.
 
     Returns:
@@ -21,7 +21,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("-h", type=str, default="localhost",
                         dest="host", help="hostname")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if not 1 <= args.port <= 65535:
         parser.error(f"Invalid port: {args.port}")
     if not args.name.strip():
@@ -30,11 +30,11 @@ def parse_arguments() -> argparse.Namespace:
     return args
 
 
-def main() -> None:
+def main(argv=None, client_factory=ZappyClient, bot_factory=Bot) -> None:
     """Main entry point."""
-    args = parse_arguments()
+    args = parse_arguments(argv)
 
-    client = ZappyClient(args.host, args.port)
+    client = client_factory(args.host, args.port)
 
     try:
         client_num, width, height = client.connect(args.name)
@@ -42,7 +42,7 @@ def main() -> None:
         print(f"[ERROR] {e}", file=sys.stderr)
         sys.exit(1)
 
-    bot = Bot(width, height, client_num, client)
+    bot = bot_factory(width, height, client_num, client)
     try:
         bot.run()
     finally:

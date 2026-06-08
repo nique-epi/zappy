@@ -1,5 +1,6 @@
 """Client for the Zappy game server protocol."""
 import socket
+from typing import Callable
 
 CONST_BUFFER_SIZE = 4096
 
@@ -7,17 +8,25 @@ CONST_BUFFER_SIZE = 4096
 class ZappyClient:
     """Network client for communicating with the Zappy server."""
 
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        sock_factory: Callable[[], socket.socket] = lambda: socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM
+        ),
+    ) -> None:
         self._host = host
         self._port = port
         self._sock: socket.socket | None = None
         self._recv_buf = ""
+        self._sock_factory = sock_factory
 
     def connect(self, team_name: str) -> tuple[int, int, int]:
         """Performs the complete handshake.
         Returns (client_num, width, height).
         Raises ConnectionError if the server responds incorrectly."""
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock = self._sock_factory()
         try:
             self._sock.connect((self._host, self._port))
         except OSError as e:
