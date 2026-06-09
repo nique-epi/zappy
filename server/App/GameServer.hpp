@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "App/Loot/LootService.hpp"
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/ServerConfig.hpp"
 #include "App/World/Map/Map.hpp"
@@ -60,8 +61,9 @@ class GameServer {
   void registerFallbacks();
 
   ServerConfig config_;
-  world::Map map_;
   zappy::rpc::RPCServer<ClientContext> server_;
+  world::Map world_;
+  loot::LootService loot_;
   Scheduler scheduler_;
   bool running_{false};
 };

@@ -24,6 +24,7 @@ add_executable(zappy_rpc_tests
   Rpc/mocks/LoopbackClient.cpp
   Rpc/TestTcpSocket.cpp
   Rpc/TestRPCServer.cpp
+  Rpc/TestServerPreDispatch.cpp
   Rpc/TestWireFormat.cpp
   Rpc/TestResponseDispatcher.cpp
   Rpc/TestRPCClient.cpp
@@ -57,9 +58,14 @@ add_executable(zappy_server_tests
   World/TestResourceType.cpp
   World/TestTile.cpp
   World/TestMap.cpp
+  Loot/TestResourceDensity.cpp
+  Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp
   Scheduler/TestActionTiming.cpp
+  Net/TestActionQueue.cpp
+  Net/TestAiActionPipeline.cpp
   Net/TestGuiQueryHandlers.cpp
+  App/TestActionCosts.cpp
   Rpc/mocks/LoopbackClient.cpp
   Network/mocks/MockSocket.cpp
 )
