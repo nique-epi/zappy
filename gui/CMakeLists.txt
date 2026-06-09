@@ -9,7 +9,7 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_GAMES    OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
 
-set(RAYGUI_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/raygui.h)
+set(RAYGUI_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Render/raygui.h)
 if(NOT EXISTS ${RAYGUI_HEADER})
     message(STATUS "Downloading raygui.h...")
     file(DOWNLOAD
@@ -19,7 +19,7 @@ if(NOT EXISTS ${RAYGUI_HEADER})
     )
     list(GET RAYGUI_DOWNLOAD_STATUS 0 RAYGUI_DOWNLOAD_CODE)
     if(NOT RAYGUI_DOWNLOAD_CODE EQUAL 0)
-        message(FATAL_ERROR "Failed to download raygui.h — place it manually in gui/raygui.h")
+        message(FATAL_ERROR "Failed to download raygui.h — place it manually in gui/Render/raygui.h")
     endif()
 endif()
 
@@ -37,7 +37,7 @@ target_link_libraries(zappy_gui_cli PUBLIC zappy_cli zappy_schema)
 target_compile_options(zappy_gui_cli PRIVATE -Wall -Wextra -Werror)
 
 add_library(zappy_gui_handshake STATIC
-    ServerHandshake.cpp
+    Network/ServerHandshake.cpp
     Exceptions/HandshakeException.cpp
 )
 
@@ -51,12 +51,12 @@ target_compile_options(zappy_gui_handshake PRIVATE -Wall -Wextra -Werror)
 
 add_executable(zappy_gui
     main.cpp
-    NetworkManager.cpp
-    MockWorld.cpp
-    Raygui.cpp
+    Network/NetworkManager.cpp
+    World/MockWorld.cpp
+    Render/Raygui.cpp
 )
 
-set_source_files_properties(Raygui.cpp PROPERTIES
+set_source_files_properties(Render/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 

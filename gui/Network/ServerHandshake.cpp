@@ -5,7 +5,7 @@
 ** ServerHandshake — handshake state machine for the Zappy server protocol
 */
 
-#include "ServerHandshake.hpp"
+#include "Network/ServerHandshake.hpp"
 #include <chrono>
 #include <string>
 #include "Exceptions/HandshakeException.hpp"

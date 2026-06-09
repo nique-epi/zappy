@@ -5,7 +5,7 @@
 ** NetworkManager — non-blocking TCP connection to the Zappy server
 */
 
-#include "NetworkManager.hpp"
+#include "Network/NetworkManager.hpp"
 #include <fcntl.h>
 #include <netdb.h>
 #include <netinet/tcp.h>

@@ -10,7 +10,7 @@
 #include <chrono>
 #include <cstdint>
 #include <string>
-#include "INetworkClient.hpp"
+#include "Network/INetworkClient.hpp"
 
 namespace zappy::gui {
 

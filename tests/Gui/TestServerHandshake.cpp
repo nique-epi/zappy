@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 #include "Exceptions/HandshakeException.hpp"
-#include "INetworkClient.hpp"
-#include "ServerHandshake.hpp"
+#include "Network/INetworkClient.hpp"
+#include "Network/ServerHandshake.hpp"
 
 namespace {
 

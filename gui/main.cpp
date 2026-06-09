@@ -12,11 +12,11 @@
 #include <string_view>
 #include "Cli/ArgsParser.hpp"
 #include "Cli/Exceptions/ParserException.hpp"  // NOLINT(misc-include-cleaner)
-#include "NetworkManager.hpp"
-#include "ServerHandshake.hpp"
-#include "WindowConfig.hpp"
-#include "WorldState.hpp"
-#include "raygui.h"
+#include "Network/NetworkManager.hpp"
+#include "Network/ServerHandshake.hpp"
+#include "Render/WindowConfig.hpp"
+#include "Render/raygui.h"
+#include "World/WorldState.hpp"
 
 namespace cfg = zappy::gui::config;
 

@@ -9,8 +9,8 @@
 
 #include <memory>
 #include <string>
-#include "INetworkClient.hpp"
 #include "Network/Client/ClientLoop.hpp"
+#include "Network/INetworkClient.hpp"
 #include "Network/Socket/RealSocket.hpp"
 
 namespace zappy::gui {
