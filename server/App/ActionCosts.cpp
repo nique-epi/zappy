@@ -18,7 +18,7 @@ struct OpcodeCost {
   int cost;
 };
 
-constexpr std::array<OpcodeCost, 13> opcodeCostTable{{
+constexpr std::array<OpcodeCost, 12> opcodeCostTable{{
     {.opcode = "Forward", .cost = 7},
     {.opcode = "Right", .cost = 7},
     {.opcode = "Left", .cost = 7},
@@ -31,7 +31,6 @@ constexpr std::array<OpcodeCost, 13> opcodeCostTable{{
     {.opcode = "Take", .cost = 7},
     {.opcode = "Set", .cost = 7},
     {.opcode = "Incantation", .cost = 300},
-    {.opcode = "ConnectNbr", .cost = 0},
 }};
 
 }  // namespace
