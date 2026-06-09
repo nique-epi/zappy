@@ -5,6 +5,8 @@ add_library(zappy_server_app STATIC
   App/World/Tile/Tile.cpp
   App/World/Map/Map.cpp
   App/World/Exceptions/WorldException.cpp
+  App/Loot/ResourceDensity.cpp
+  App/Loot/LootService.cpp
   App/Scheduler/Scheduler.cpp
   App/Scheduler/ActionTiming.cpp
   App/Scheduler/Exceptions/SchedulerException.cpp
