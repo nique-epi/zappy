@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from ia.shared.enum import Direction
+from ia.network.exceptions import PlayerDeadError
 
 if TYPE_CHECKING:
     from ia.network.client import ZappyClient
@@ -45,10 +46,12 @@ class Bot:
         return "generic"
 
     def run(self) -> None:
-        """FSM entry point. To be connected to core/fsm.py."""
-        # TODO: instantiate and launch the FSM here (ZAP-2)
-        while True:
-            line = self._client.recv()
-            if line is None:
-                break
-            print(f"Received: {line}")
+        """Main reception loop; exits cleanly when the player dies."""
+        try:
+            while True:
+                line = self._client.recv()
+                if line is None:
+                    break
+                print(f"Received: {line}")
+        except PlayerDeadError:
+            pass
