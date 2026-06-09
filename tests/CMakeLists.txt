@@ -59,6 +59,7 @@ add_executable(zappy_server_tests
   World/TestMap.cpp
   Scheduler/TestScheduler.cpp
   Scheduler/TestActionTiming.cpp
+  Net/TestActionQueue.cpp
 )
 
 target_link_libraries(zappy_server_tests
