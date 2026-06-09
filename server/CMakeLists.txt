@@ -13,6 +13,7 @@ add_library(zappy_server_app STATIC
   App/ActionCosts.cpp
   App/GameServer.cpp
   Net/ActionQueue.cpp
+  Net/AiActionPipeline.cpp
 )
 
 target_include_directories(zappy_server_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

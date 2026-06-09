@@ -200,6 +200,19 @@ class RPCServer {
   void broadcast(const std::string& line) { loop_.broadcast(line + "\n"); }
 
   /**
+   * @brief Lookup a session by its file descriptor.
+   * @returns Pointer to the session, or nullptr when no client owns @p fd
+   *          (e.g. the client disconnected since the fd was captured).
+   */
+  Session<Ctx>* session(int fd) {
+    auto it = sessions_.find(fd);
+    if (it == sessions_.end()) {
+      return nullptr;
+    }
+    return &it->second;
+  }
+
+  /**
    * @brief Iterate over all connected sessions.
    */
   template <typename Fn>
