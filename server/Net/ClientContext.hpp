@@ -8,6 +8,7 @@
 #pragma once
 
 #include <string>
+#include "Net/ActionQueue.hpp"
 
 namespace zappy::server {
 
@@ -27,6 +28,23 @@ enum class ClientType { Pending, Gui, Ai };
 struct ClientContext {
   ClientType type{ClientType::Pending};
   std::string teamName;
+
+  /**
+   * @brief Pending command lines for AI sessions, bounded at
+   *        @ref maxPendingActions.
+   *
+   * Unused for GUI sessions: GUI commands have no action cost and dispatch
+   * immediately.
+   */
+  ActionQueue pendingActions;
+
+  /**
+   * @brief Whether an AI action is currently executing for this session.
+   *
+   * Set to true while the scheduler holds a deadline callback for the player;
+   * cleared when the callback runs and the next pending action is drained.
+   */
+  bool actionInFlight{false};
 };
 
 }  // namespace zappy::server

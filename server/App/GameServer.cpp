@@ -7,6 +7,7 @@
 
 #include "App/GameServer.hpp"
 #include <string>
+#include "Net/AiActionPipeline.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Protocol/GuiProtocol.hpp"
 #include "Rpc/Message/IMessage.hpp"
@@ -27,6 +28,7 @@ GameServer::GameServer(const ServerConfig& config)
   registerGuiHandlers();
   registerAiHandlers();
   registerFallbacks();
+  installAiActionPipeline(server_, scheduler_, config_.frequency);
 }
 
 void GameServer::start() { server_.start(); }
