@@ -1,7 +1,7 @@
 """
-Unit tests for the Direction enum.
+Unit tests for the Direction enum and RESOURCES constant.
 """
-from ia.shared.enum import Direction
+from ia.shared.enum import Direction, RESOURCES
 
 def test_direction_values():
     """
@@ -13,3 +13,31 @@ def test_direction_values():
     assert Direction.EAST.value == 2
     assert Direction.SOUTH.value == 3
     assert Direction.WEST.value == 4
+
+
+def test_resources_contains_food():
+    """
+    Given the RESOURCES constant
+    When it is inspected
+    Then it contains the food resource
+    """
+    assert "food" in RESOURCES
+
+
+def test_resources_contains_all_seven_minerals():
+    """
+    Given the RESOURCES constant
+    When it is inspected
+    Then it contains the 6 mineral resources from the Zappy protocol
+    """
+    minerals = {"linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"}
+    assert minerals.issubset(set(RESOURCES))
+
+
+def test_resources_has_seven_entries():
+    """
+    Given the RESOURCES constant
+    When its length is checked
+    Then it has exactly 7 entries (food + 6 minerals)
+    """
+    assert len(RESOURCES) == 7

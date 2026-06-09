@@ -72,11 +72,11 @@ def test_bot_run_exit_on_none(client):
     assert client.recv_calls == 1
 
 
-def test_bot_run_processes_lines_then_exits(client, capsys):
+def test_bot_run_processes_lines_then_exits(client):
     """
     Given a client returning a couple of lines then a closed connection
     When the bot runs its loop
-    Then each line is processed and printed before exiting
+    Then all lines are consumed and recv is called until None is returned
     """
     client._responses = ["ok", "ko"]
     bot = Bot(10, 20, 1, client)
@@ -84,7 +84,6 @@ def test_bot_run_processes_lines_then_exits(client, capsys):
     bot.run()
 
     assert client.recv_calls == 3
-    assert "Received: ok" in capsys.readouterr().out
 
 
 def test_bot_run_exit_on_dead():
@@ -97,3 +96,50 @@ def test_bot_run_exit_on_dead():
     bot = Bot(10, 20, 1, client)
     bot.run()
     assert client.recv_calls == 1
+
+
+def test_bot_inventory_initialised_to_zeros(client):
+    """
+    Given a freshly created Bot
+    When its inventory attribute is inspected
+    Then every resource is set to 0
+    """
+    from ia.shared.enum import RESOURCES
+    bot = Bot(10, 20, 1, client)
+    assert bot.inventory == {resource: 0 for resource in RESOURCES}
+
+
+def test_bot_handle_response_updates_inventory_on_inventory_line(client):
+    """
+    Given a bot and a server inventory response line
+    When _handle_response is called with that line
+    Then the bot's inventory reflects the parsed values
+    """
+    bot = Bot(10, 20, 1, client)
+    bot._handle_response("[food 10, linemate 2, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]")
+    assert bot.inventory["food"] == 10
+    assert bot.inventory["linemate"] == 2
+
+
+def test_bot_handle_response_ignores_non_inventory_line(client):
+    """
+    Given a bot and a non-inventory server response
+    When _handle_response is called with that line
+    Then the bot's inventory remains all zeros
+    """
+    from ia.shared.enum import RESOURCES
+    bot = Bot(10, 20, 1, client)
+    bot._handle_response("ok")
+    assert bot.inventory == {resource: 0 for resource in RESOURCES}
+
+
+def test_bot_run_updates_inventory_from_server_line(client):
+    """
+    Given a client returning an inventory line then closing
+    When the bot runs its loop
+    Then the bot's inventory is updated to reflect the server response
+    """
+    client._responses = ["[food 7, linemate 0, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]"]
+    bot = Bot(10, 20, 1, client)
+    bot.run()
+    assert bot.inventory["food"] == 7

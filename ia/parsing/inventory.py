@@ -1,5 +1,5 @@
-from config import FOOD_THRESHOLD, FOOD_SAFE_THRESHOLD
-from shared.enum import RESOURCES
+from ia.config import FOOD_THRESHOLD, FOOD_SAFE_THRESHOLD
+from ia.shared.enum import RESOURCES
 
 
 def parse_inventory(response: str) -> dict[str, int]:
