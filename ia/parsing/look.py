@@ -30,9 +30,8 @@ def parse_look(
     tiles = _split_tiles(response)
     return [
         {
-            "coords": _tile_index_to_abs_coords(index, pos, direction,
-                                                level),
-            "objects": tiles[index],
+            "coords": _tile_index_to_abs_coords(index, pos, direction, level),
+            "objects": tile,
         }
-        for index in range(len(tiles))
+        for index, tile in enumerate(tiles)
     ]
