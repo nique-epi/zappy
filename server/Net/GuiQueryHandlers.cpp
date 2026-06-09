@@ -6,7 +6,10 @@
 */
 
 #include "Net/GuiQueryHandlers.hpp"
+#include <charconv>
 #include <string>
+#include <string_view>
+#include <system_error>
 #include "App/World/Resources/ResourceType.hpp"
 #include "App/World/Tile/Tile.hpp"
 #include "Protocol/GuiProtocol.hpp"
@@ -19,6 +22,14 @@ using GuiSession = zappy::rpc::Session<ClientContext>;
 using GuiServer = zappy::rpc::RPCServer<ClientContext>;
 
 namespace {
+
+bool parseCoordinate(const std::string& text, int& out) {
+  const std::string_view view{text};
+  const auto* begin = view.data();
+  const auto* end = begin + view.size();
+  const auto result = std::from_chars(begin, end, out);
+  return result.ec == std::errc{} && result.ptr == end;
+}
 
 std::string formatTileContent(int column, int row, const world::Tile& tile) {
   std::string line =
@@ -69,8 +80,14 @@ void installGuiQueryHandlers(GuiServer& server, const ServerConfig& config,
 
   server.on(protocol::RequestTileContent(),
             [&map](GuiSession& session, const protocol::TileRequestArgs& args) {
-              sendTileContent(session, std::stoi(args.positionX),
-                              std::stoi(args.positionY), map);
+              int column = 0;
+              int row = 0;
+              if (!parseCoordinate(args.positionX, column) ||
+                  !parseCoordinate(args.positionY, row)) {
+                session.send(protocol::BadParameter().opcode());
+                return;
+              }
+              sendTileContent(session, column, row, map);
             });
 
   server.on(protocol::RequestMapContent(),

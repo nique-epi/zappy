@@ -171,6 +171,23 @@ TEST(GuiQueryHandlers, BctSerializesResourcesInProtocolOrder) {
   EXPECT_EQ(collectLine(client), "bct 0 0 2 1 1 1 1 1 1\n");
 }
 
+TEST(GuiQueryHandlers, BctRejectsOverflowingCoordinatesWithSbp) {
+  /*
+   * Given a coordinate that parses as a number but overflows int
+   * When a GUI client sends bct with that value
+   * Then the server replies sbp instead of throwing out_of_range
+   */
+  GuiHarness harness(4, 4, {});
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("bct 99999999999999999999 0");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "sbp\n");
+}
+
 TEST(GuiQueryHandlers, BctRejectsNonNumericCoordinatesWithSbp) {
   /*
    * Given the GUI invalid-parameter convention (sbp)
