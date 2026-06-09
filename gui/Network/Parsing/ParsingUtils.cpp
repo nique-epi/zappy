@@ -7,6 +7,7 @@
 
 #include "Network/Parsing/ParsingUtils.hpp"
 #include <algorithm>
+#include <iterator>
 #include <sstream>
 #include <string>
 #include "World/WorldState.hpp"
