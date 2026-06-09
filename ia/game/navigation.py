@@ -14,11 +14,10 @@ def _shortest_lateral(lateral: int, width: int | None) -> int:
     """Reduce a lateral offset to its shortest toroidal equivalent."""
     if width is None:
         return lateral
-    if lateral > 0 and width - lateral < lateral:
-        return lateral - width
-    if lateral < 0 and width + lateral < -lateral:
-        return lateral + width
-    return lateral
+    reduced = lateral % width
+    if width - reduced < reduced:
+        return reduced - width
+    return reduced
 
 
 def tile_to_moves(index: int, width: int | None = None) -> list[Move]:

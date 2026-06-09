@@ -93,6 +93,17 @@ def test_wrapping_takes_the_short_lateral_way():
     )
 
 
+def test_wrapping_reduces_offsets_larger_than_width():
+    """
+    Given a tile whose lateral offset exceeds the map width (index 35)
+    When the move sequence is built with a width-3 toroidal map
+    Then the offset is fully reduced to the shortest signed step
+    """
+    assert tile_to_moves(35, width=3) == (
+        [Move.FORWARD] * 5 + [Move.LEFT] + [Move.FORWARD]
+    )
+
+
 def test_without_width_lateral_is_not_wrapped():
     """
     Given the same tile but no map width supplied
