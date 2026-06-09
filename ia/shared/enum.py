@@ -17,6 +17,12 @@ class Move(Enum):
     LEFT = "Left"
 
 
-RESOURCES = [
-    "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"
-]
+class Resource(Enum):
+    """Resources found on the Zappy map."""
+    FOOD = "food"
+    LINEMATE = "linemate"
+    DERAUMERE = "deraumere"
+    SIBUR = "sibur"
+    MENDIANE = "mendiane"
+    PHIRAS = "phiras"
+    THYSTAME = "thystame"

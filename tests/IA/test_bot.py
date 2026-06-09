@@ -3,7 +3,7 @@
 import pytest
 from ia.core.bot import Bot
 from ia.network.exceptions import PlayerDeadError
-from ia.shared.enum import RESOURCES
+from ia.shared.enum import Resource
 
 
 class FakeClient:
@@ -104,7 +104,7 @@ def test_bot_inventory_initialised_to_zeros(fake_client):
     Then every resource is set to 0
     """
     bot = Bot(10, 20, 1, fake_client)
-    assert bot.inventory == {resource: 0 for resource in RESOURCES}
+    assert bot.inventory == dict.fromkeys(Resource, 0)
 
 
 def test_bot_handle_response_updates_inventory_on_inventory_line(fake_client):
@@ -118,8 +118,8 @@ def test_bot_handle_response_updates_inventory_on_inventory_line(fake_client):
     )
     bot = Bot(10, 20, 1, fake_client)
     bot._handle_response(inventory_line)  # pylint: disable=protected-access
-    assert bot.inventory["food"] == 10
-    assert bot.inventory["linemate"] == 2
+    assert bot.inventory[Resource.FOOD] == 10
+    assert bot.inventory[Resource.LINEMATE] == 2
 
 
 def test_bot_handle_response_ignores_non_inventory_line(fake_client):
@@ -130,7 +130,7 @@ def test_bot_handle_response_ignores_non_inventory_line(fake_client):
     """
     bot = Bot(10, 20, 1, fake_client)
     bot._handle_response("ok")  # pylint: disable=protected-access
-    assert bot.inventory == {resource: 0 for resource in RESOURCES}
+    assert bot.inventory == dict.fromkeys(Resource, 0)
 
 
 def test_bot_run_updates_inventory_from_server_line(fake_client):
@@ -145,4 +145,4 @@ def test_bot_run_updates_inventory_from_server_line(fake_client):
     fake_client.responses = [inventory_line]
     bot = Bot(10, 20, 1, fake_client)
     bot.run()
-    assert bot.inventory["food"] == 7
+    assert bot.inventory[Resource.FOOD] == 7

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from ia.network.exceptions import PlayerDeadError
 from ia.parsing.inventory import needs_food, parse_inventory
-from ia.shared.enum import RESOURCES, Direction
+from ia.shared.enum import Direction, Resource
 
 if TYPE_CHECKING:
     from ia.network.client import ZappyClient
@@ -34,7 +34,7 @@ class Bot:
 
         self.map: list[list[dict]] = self._init_map()
         self.role: str = self._assign_role(client_num)
-        self.inventory: dict[str, int] = dict.fromkeys(RESOURCES, 0)
+        self.inventory: dict[Resource, int] = dict.fromkeys(Resource, 0)
 
     def _init_map(self) -> list[list[dict]]:
         """Creates an empty width×height grid. (ZAP-19 Bonus, stub)"""

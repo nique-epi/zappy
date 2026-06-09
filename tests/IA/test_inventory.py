@@ -1,6 +1,6 @@
 """Unit tests for inventory parsing and food threshold helpers."""
 from ia.parsing.inventory import parse_inventory, needs_food, needs_food_safe
-from ia.shared.enum import RESOURCES
+from ia.shared.enum import Resource
 from ia.config import FOOD_THRESHOLD, FOOD_SAFE_THRESHOLD
 
 
@@ -11,7 +11,7 @@ def test_parse_inventory_all_zeros_on_empty_response():
     Then every resource is initialised to 0
     """
     result = parse_inventory("")
-    assert result == {resource: 0 for resource in RESOURCES}
+    assert result == dict.fromkeys(Resource, 0)
 
 
 def test_parse_inventory_parses_all_resources():
@@ -22,13 +22,13 @@ def test_parse_inventory_parses_all_resources():
     """
     response = "[food 10, linemate 1, deraumere 2, sibur 3, mendiane 4, phiras 5, thystame 6]"
     result = parse_inventory(response)
-    assert result["food"] == 10
-    assert result["linemate"] == 1
-    assert result["deraumere"] == 2
-    assert result["sibur"] == 3
-    assert result["mendiane"] == 4
-    assert result["phiras"] == 5
-    assert result["thystame"] == 6
+    assert result[Resource.FOOD] == 10
+    assert result[Resource.LINEMATE] == 1
+    assert result[Resource.DERAUMERE] == 2
+    assert result[Resource.SIBUR] == 3
+    assert result[Resource.MENDIANE] == 4
+    assert result[Resource.PHIRAS] == 5
+    assert result[Resource.THYSTAME] == 6
 
 
 def test_parse_inventory_unknown_resource_is_ignored():
@@ -38,8 +38,9 @@ def test_parse_inventory_unknown_resource_is_ignored():
     Then the unknown resource is silently ignored
     """
     result = parse_inventory("[food 3, unknownstuff 99]")
-    assert "unknownstuff" not in result
-    assert result["food"] == 3
+    assert Resource.FOOD in result
+    assert result[Resource.FOOD] == 3
+    assert len(result) == len(Resource)
 
 
 def test_parse_inventory_missing_resource_defaults_to_zero():
@@ -49,18 +50,28 @@ def test_parse_inventory_missing_resource_defaults_to_zero():
     Then the missing resources are 0
     """
     result = parse_inventory("[food 5]")
-    assert result["linemate"] == 0
-    assert result["thystame"] == 0
+    assert result[Resource.LINEMATE] == 0
+    assert result[Resource.THYSTAME] == 0
 
 
-def test_parse_inventory_returns_all_resources_keys():
+def test_parse_inventory_returns_all_resource_keys():
     """
     Given any inventory response
     When parse_inventory is called
-    Then the returned dict contains exactly the RESOURCES keys
+    Then the returned dict contains exactly the Resource enum members as keys
     """
     result = parse_inventory("[food 1]")
-    assert set(result.keys()) == set(RESOURCES)
+    assert set(result.keys()) == set(Resource)
+
+
+def test_parse_inventory_malformed_quantity_is_ignored():
+    """
+    Given a response with a non-integer quantity
+    When parse_inventory is called
+    Then the malformed entry is skipped and the resource stays at 0
+    """
+    result = parse_inventory("[food abc]")
+    assert result[Resource.FOOD] == 0
 
 
 def test_needs_food_true_when_food_at_threshold():
@@ -69,7 +80,7 @@ def test_needs_food_true_when_food_at_threshold():
     When needs_food is called
     Then it returns True
     """
-    inventory = {"food": FOOD_THRESHOLD}
+    inventory = {Resource.FOOD: FOOD_THRESHOLD}
     assert needs_food(inventory) is True
 
 
@@ -79,7 +90,7 @@ def test_needs_food_true_when_food_below_threshold():
     When needs_food is called
     Then it returns True
     """
-    inventory = {"food": FOOD_THRESHOLD - 1}
+    inventory = {Resource.FOOD: FOOD_THRESHOLD - 1}
     assert needs_food(inventory) is True
 
 
@@ -89,7 +100,7 @@ def test_needs_food_false_when_food_above_threshold():
     When needs_food is called
     Then it returns False
     """
-    inventory = {"food": FOOD_THRESHOLD + 1}
+    inventory = {Resource.FOOD: FOOD_THRESHOLD + 1}
     assert needs_food(inventory) is False
 
 
@@ -99,7 +110,7 @@ def test_needs_food_safe_true_when_food_at_safe_threshold():
     When needs_food_safe is called
     Then it returns True
     """
-    inventory = {"food": FOOD_SAFE_THRESHOLD}
+    inventory = {Resource.FOOD: FOOD_SAFE_THRESHOLD}
     assert needs_food_safe(inventory) is True
 
 
@@ -109,7 +120,7 @@ def test_needs_food_safe_false_when_food_above_safe_threshold():
     When needs_food_safe is called
     Then it returns False
     """
-    inventory = {"food": FOOD_SAFE_THRESHOLD + 1}
+    inventory = {Resource.FOOD: FOOD_SAFE_THRESHOLD + 1}
     assert needs_food_safe(inventory) is False
 
 
@@ -119,5 +130,5 @@ def test_needs_food_safe_true_when_food_below_safe_threshold():
     When needs_food_safe is called
     Then it returns True
     """
-    inventory = {"food": FOOD_THRESHOLD + 1}
+    inventory = {Resource.FOOD: FOOD_THRESHOLD + 1}
     assert needs_food_safe(inventory) is True

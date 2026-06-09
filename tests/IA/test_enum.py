@@ -1,5 +1,5 @@
-"""Unit tests for the shared enums and RESOURCES constant."""
-from ia.shared.enum import Direction, Move, RESOURCES
+"""Unit tests for the shared enums."""
+from ia.shared.enum import Direction, Move, Resource
 
 
 def test_direction_values():
@@ -25,29 +25,29 @@ def test_move_values():
     assert Move.LEFT.value == "Left"
 
 
-def test_resources_contains_food():
+def test_resource_contains_food():
     """
-    Given the RESOURCES constant
+    Given the Resource enum
     When it is inspected
-    Then it contains the food resource
+    Then it contains a FOOD member with value "food"
     """
-    assert "food" in RESOURCES
+    assert Resource.FOOD.value == "food"
 
 
-def test_resources_contains_all_seven_minerals():
+def test_resource_contains_all_minerals():
     """
-    Given the RESOURCES constant
-    When it is inspected
+    Given the Resource enum
+    When its values are inspected
     Then it contains the 6 mineral resources from the Zappy protocol
     """
-    minerals = {"linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"}
-    assert minerals.issubset(set(RESOURCES))
+    mineral_values = {"linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"}
+    assert mineral_values.issubset({r.value for r in Resource})
 
 
-def test_resources_has_seven_entries():
+def test_resource_has_seven_members():
     """
-    Given the RESOURCES constant
+    Given the Resource enum
     When its length is checked
-    Then it has exactly 7 entries (food + 6 minerals)
+    Then it has exactly 7 members (food + 6 minerals)
     """
-    assert len(RESOURCES) == 7
+    assert len(Resource) == 7
