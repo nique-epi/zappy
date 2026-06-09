@@ -8,12 +8,17 @@
 #include "App/Loot/LootService.hpp"
 #include "App/Loot/ResourceDensity.hpp"
 #include "App/Scheduler/ActionTiming.hpp"
+#include "App/Scheduler/Exceptions/SchedulerException.hpp"
 
 namespace zappy::loot {
 
 LootService::LootService(world::Map &map, int frequency,
                          std::uint_fast32_t seed)
-    : map_(map), frequency_(frequency), rng_(seed) {}
+    : map_(map), frequency_(frequency), rng_(seed) {
+  if (frequency <= 0) {
+    throw server::InvalidFrequencyException(frequency);
+  }
+}
 
 void LootService::replenish() {
   for (const world::ResourceType type : world::allResourceTypes()) {

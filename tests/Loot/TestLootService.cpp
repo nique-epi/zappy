@@ -11,6 +11,7 @@
 #include "App/Loot/LootService.hpp"
 #include "App/Loot/ResourceDensity.hpp"
 #include "App/Scheduler/ActionTiming.hpp"
+#include "App/Scheduler/Exceptions/SchedulerException.hpp"
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/World/Map/Map.hpp"
 #include "App/World/Resources/ResourceType.hpp"
@@ -20,7 +21,9 @@ using zappy::loot::LootService;
 using zappy::loot::refillTimeUnits;
 using zappy::loot::targetQuantity;
 using zappy::server::actionDuration;
+using zappy::server::InvalidFrequencyException;
 using zappy::server::Scheduler;
+using zappy::server::SchedulerException;
 using zappy::world::allResourceTypes;
 using zappy::world::Map;
 using zappy::world::ResourceType;
@@ -62,6 +65,14 @@ TEST(LootService, StocksEveryKindToTargetOnFreshMap) {
   for (const ResourceType type : allResourceTypes()) {
     EXPECT_EQ(totalOnMap(map, type), targetQuantity(type, 10, 10));
   }
+}
+
+TEST(LootService, RejectsNonPositiveFrequencyAtConstruction) {
+  Map map(10, 10);
+
+  EXPECT_THROW(LootService(map, 0, seed), InvalidFrequencyException);
+  EXPECT_THROW(LootService(map, -1, seed), InvalidFrequencyException);
+  EXPECT_THROW(LootService(map, 0, seed), SchedulerException);
 }
 
 TEST(LootService, LeavesAtLeastOneOfEachKind) {

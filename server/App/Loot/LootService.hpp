@@ -37,6 +37,9 @@ class LootService {
    *                      period (`refillTimeUnits / f` seconds).
    * @param[in] seed      Seed of the placement random engine; a fixed seed
    *                      yields a reproducible distribution.
+   * @throws server::InvalidFrequencyException if @p frequency is not strictly
+   *         positive, so the broken contract fails fast at construction rather
+   *         than when the refill period is later computed.
    */
   LootService(world::Map &map, int frequency, std::uint_fast32_t seed);
 
