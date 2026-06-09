@@ -9,6 +9,7 @@
 
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/ServerConfig.hpp"
+#include "App/World/Map/Map.hpp"
 #include "Net/ClientContext.hpp"
 #include "Rpc/Server/RPCServer.hpp"
 
@@ -25,7 +26,7 @@ namespace zappy::server {
  */
 class GameServer {
  public:
-  explicit GameServer(const ServerConfig &config);
+  explicit GameServer(const ServerConfig& config);
 
   /**
    * @brief Bind and listen on the configured port.
@@ -59,6 +60,7 @@ class GameServer {
   void registerFallbacks();
 
   ServerConfig config_;
+  world::Map map_;
   zappy::rpc::RPCServer<ClientContext> server_;
   Scheduler scheduler_;
   bool running_{false};
