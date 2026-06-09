@@ -89,3 +89,12 @@ TEST(ActionCosts, OpcodeMatchIsCaseSensitive) {
    */
   EXPECT_EQ(costOf("forward"), defaultActionCost);
 }
+
+TEST(ActionCosts, ConnectNbrAliasFallsBackToDefault) {
+  /*
+   * Given only Connect_nbr is defined as the zero-cost opcode by the subject
+   * When costOf is queried with the alias ConnectNbr (no underscore)
+   * Then it falls back to defaultActionCost so the throttling contract holds
+   */
+  EXPECT_EQ(costOf("ConnectNbr"), defaultActionCost);
+}
