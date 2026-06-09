@@ -1,17 +1,18 @@
 """Core bot logic for the Zappy AI client."""
 from __future__ import annotations
-from typing import TYPE_CHECKING
-from ia.shared.enum import Direction
-from ia.network.exceptions import PlayerDeadError
-from ia.parsing.inventory import needs_food, needs_food_safe, parse_inventory
-from ia.shared.enum import RESOURCES
-import logging
 
+import logging
+from typing import TYPE_CHECKING
+
+from ia.network.exceptions import PlayerDeadError
+from ia.parsing.inventory import needs_food, parse_inventory
+from ia.shared.enum import RESOURCES, Direction
 
 if TYPE_CHECKING:
     from ia.network.client import ZappyClient
 
 
+# pylint: disable=too-many-instance-attributes,too-few-public-methods
 class Bot:
     """Class representing the AI bot."""
 
@@ -35,7 +36,6 @@ class Bot:
         self.role: str = self._assign_role(client_num)
         self.inventory: dict[str, int] = {resource: 0 for resource in RESOURCES}
 
-
     def _init_map(self) -> list[list[dict]]:
         """Creates an empty width×height grid. (ZAP-19 Bonus, stub)"""
         return [
@@ -44,11 +44,8 @@ class Bot:
         ]
 
     def _assign_role(self, client_num: int) -> str:
-        """
-        Role assignment based on the connection slot. (ZAP-21 Bonus, stub)
-        Actual logic to be implemented in states/coordination.py.
-        """
-        # Placeholder — will be replaced by real specialization logic
+        """Role assignment based on the connection slot. (ZAP-21 Bonus, stub)"""
+        _ = client_num
         return "generic"
 
     def run(self) -> None:
@@ -59,13 +56,13 @@ class Bot:
                 if line is None:
                     break
                 self._handle_response(line)
-                logging.debug(f"Received: {line}")
+                logging.debug("Received: %s", line)
         except PlayerDeadError:
             pass
 
     def _handle_response(self, line: str) -> None:
+        """Dispatch a raw server line to the appropriate handler."""
         if line.startswith("[") and "food" in line:
             self.inventory = parse_inventory(line)
             if needs_food(self.inventory):
-                # TODO ZAP-2 : self.state = State.MANGER
                 pass
