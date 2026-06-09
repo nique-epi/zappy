@@ -8,6 +8,8 @@
 #include "App/GameServer.hpp"
 #include <random>
 #include <string>
+#include "App/World/Exceptions/WorldException.hpp"
+#include "App/World/Team/Egg.hpp"
 #include "Net/AiActionPipeline.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Protocol/GuiProtocol.hpp"
@@ -27,7 +29,10 @@ GameServer::GameServer(const ServerConfig& config)
     : config_(config),
       server_(config.port),
       world_(config.width, config.height),
+      rng_(std::random_device{}()),
+      teams_(config.teamNames),
       loot_(world_, config.frequency, std::random_device{}()) {
+  teams_.seedInitialEggs(world_, config_.clientsPerTeam, rng_);
   registerHandshake();
   registerGuiHandlers();
   registerAiHandlers();
@@ -59,12 +64,19 @@ void GameServer::registerHandshake() {
       session.completeHandshake();
       return;
     }
-    session.ctx().type = ClientType::Ai;
-    session.ctx().teamName = teamName;
-    session.send(std::to_string(config_.clientsPerTeam));
-    session.send(std::to_string(config_.width) + " " +
-                 std::to_string(config_.height));
-    session.completeHandshake();
+    try {
+      const world::Egg hatched = teams_.hatch(teamName, world_, rng_);
+      session.ctx().type = ClientType::Ai;
+      session.ctx().teamName = teamName;
+      session.ctx().spawnX = hatched.x;
+      session.ctx().spawnY = hatched.y;
+      session.send(std::to_string(teams_.freeSlots(teamName)));
+      session.send(std::to_string(config_.width) + " " +
+                   std::to_string(config_.height));
+      session.completeHandshake();
+    } catch (const world::WorldException&) {
+      session.send(protocol::ai::Ko().opcode());
+    }
   });
 }
 
