@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from ia.shared.enum import Direction
 from ia.network.exceptions import PlayerDeadError
+from ia.parsing.inventory import needs_food, needs_food_safe, parse_inventory
+from ia.shared.enum import RESOURCES
+import logging
+
 
 if TYPE_CHECKING:
     from ia.network.client import ZappyClient
@@ -29,6 +33,8 @@ class Bot:
 
         self.map: list[list[dict]] = self._init_map()
         self.role: str = self._assign_role(client_num)
+        self.inventory: dict[str, int] = {resource: 0 for resource in RESOURCES}
+
 
     def _init_map(self) -> list[list[dict]]:
         """Creates an empty width×height grid. (ZAP-19 Bonus, stub)"""
@@ -52,6 +58,14 @@ class Bot:
                 line = self._client.recv()
                 if line is None:
                     break
-                print(f"Received: {line}")
+                self._handle_response(line)
+                logging.debug(f"Received: {line}")
         except PlayerDeadError:
             pass
+
+    def _handle_response(self, line: str) -> None:
+        if line.startswith("[") and "food" in line:
+            self.inventory = parse_inventory(line)
+            if needs_food(self.inventory):
+                # TODO ZAP-2 : self.state = State.MANGER
+                pass

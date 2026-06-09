@@ -8,3 +8,5 @@ class Direction(Enum):
     EAST = 2
     SOUTH = 3
     WEST = 4
+
+RESOURCES = ["food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"]
