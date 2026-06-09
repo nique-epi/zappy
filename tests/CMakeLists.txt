@@ -24,6 +24,7 @@ add_executable(zappy_rpc_tests
   Rpc/mocks/LoopbackClient.cpp
   Rpc/TestTcpSocket.cpp
   Rpc/TestRPCServer.cpp
+  Rpc/TestServerPreDispatch.cpp
   Rpc/TestWireFormat.cpp
   Rpc/TestResponseDispatcher.cpp
   Rpc/TestRPCClient.cpp
