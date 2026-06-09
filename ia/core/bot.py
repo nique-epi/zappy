@@ -34,7 +34,9 @@ class Bot:
 
         self.map: list[list[dict]] = self._init_map()
         self.role: str = self._assign_role(client_num)
-        self.inventory: dict[str, int] = {resource: 0 for resource in RESOURCES}
+        self.inventory: dict[str, int] = {
+            resource: 0 for resource in RESOURCES
+        }
 
     def _init_map(self) -> list[list[dict]]:
         """Creates an empty width×height grid. (ZAP-19 Bonus, stub)"""
@@ -44,7 +46,8 @@ class Bot:
         ]
 
     def _assign_role(self, client_num: int) -> str:
-        """Role assignment based on the connection slot. (ZAP-21 Bonus, stub)"""
+        """Role assignment based on the connection slot. (ZAP-21 Bonus, stub)
+        """
         _ = client_num
         return "generic"
 
@@ -62,7 +65,7 @@ class Bot:
 
     def _handle_response(self, line: str) -> None:
         """Dispatch a raw server line to the appropriate handler."""
-        if line.startswith("[") and "food" in line:
+        if line.startswith("["):
             self.inventory = parse_inventory(line)
             if needs_food(self.inventory):
                 pass

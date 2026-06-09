@@ -9,4 +9,7 @@ class Direction(Enum):
     SOUTH = 3
     WEST = 4
 
-RESOURCES = ["food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"]
+
+RESOURCES = [
+    "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"
+]
