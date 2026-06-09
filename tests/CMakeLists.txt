@@ -24,6 +24,7 @@ add_executable(zappy_rpc_tests
   Rpc/mocks/LoopbackClient.cpp
   Rpc/TestTcpSocket.cpp
   Rpc/TestRPCServer.cpp
+  Rpc/TestServerPreDispatch.cpp
   Rpc/TestWireFormat.cpp
   Rpc/TestResponseDispatcher.cpp
   Rpc/TestRPCClient.cpp
@@ -57,8 +58,23 @@ add_executable(zappy_server_tests
   World/TestResourceType.cpp
   World/TestTile.cpp
   World/TestMap.cpp
+  Loot/TestResourceDensity.cpp
+  Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp
   Scheduler/TestActionTiming.cpp
+  Net/TestActionQueue.cpp
+  Net/TestAiActionPipeline.cpp
+  App/TestActionCosts.cpp
+)
+
+target_include_directories(zappy_server_tests
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Rpc/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}/Network/mocks
+)
+target_sources(zappy_server_tests PRIVATE
+  Rpc/mocks/LoopbackClient.cpp
+  Network/mocks/MockSocket.cpp
 )
 
 target_link_libraries(zappy_server_tests

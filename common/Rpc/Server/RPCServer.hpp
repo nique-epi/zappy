@@ -39,24 +39,28 @@ namespace zappy::rpc {
 template <typename Ctx>
 class RPCServer {
  public:
-  using Handler = std::function<void(Session<Ctx> &, IMessage &)>;
+  using Handler = std::function<void(Session<Ctx>&, IMessage&)>;
 
   explicit RPCServer(int port) : port_(port), loop_(socket_.fd(), io_) {
-    loop_.setHandler([this](network::Client &client, const std::string &line) {
+    loop_.setHandler([this](network::Client& client, const std::string& line) {
       auto it = sessions_.find(client.fd());
       if (it == sessions_.end()) {
         return;
       }
-      Session<Ctx> &session = it->second;
+      Session<Ctx>& session = it->second;
       if (handshakeHandler_ && !session.isAuthenticated()) {
         handshakeHandler_(session, line);
+        return;
+      }
+      if (authenticatedLineHandler_) {
+        authenticatedLineHandler_(session, line);
         return;
       }
       dispatcher_(session, line);
     });
     loop_.setConnectHandler([this](int fd) {
       auto [it, inserted] = sessions_.emplace(
-          fd, Session<Ctx>{fd, [this, fd](const std::string &line) {
+          fd, Session<Ctx>{fd, [this, fd](const std::string& line) {
                              loop_.sendTo(fd, line);
                            }});
       if (connectHandler_) {
@@ -78,7 +82,7 @@ class RPCServer {
    * @brief Register a typed handler bound to a TypedMessage<T>.
    */
   template <typename T, typename F>
-  RPCServer &on(const TypedMessage<T> &message, F &&handler) {
+  RPCServer& on(const TypedMessage<T>& message, F&& handler) {
     dispatcher_.on(message, std::forward<F>(handler));
     return *this;
   }
@@ -86,7 +90,7 @@ class RPCServer {
   /**
    * @brief Register a raw handler for an RPCMessage (routes by opcode).
    */
-  RPCServer &on(const RPCMessage &message, Handler handler) {
+  RPCServer& on(const RPCMessage& message, Handler handler) {
     dispatcher_.on(message.opcode(), std::move(handler));
     return *this;
   }
@@ -94,12 +98,12 @@ class RPCServer {
   /**
    * @brief Register a raw handler for an opcode string (no validation).
    */
-  RPCServer &on(const std::string &opcode, Handler handler) {
+  RPCServer& on(const std::string& opcode, Handler handler) {
     dispatcher_.on(opcode, std::move(handler));
     return *this;
   }
 
-  RPCServer &onUnknown(Handler handler) {
+  RPCServer& onUnknown(Handler handler) {
     dispatcher_.onUnknown(std::move(handler));
     return *this;
   }
@@ -108,7 +112,7 @@ class RPCServer {
    * @brief Register the schema-validation-failure handler (see
    *        Dispatcher::onInvalid).
    */
-  RPCServer &onInvalid(Handler handler) {
+  RPCServer& onInvalid(Handler handler) {
     dispatcher_.onInvalid(std::move(handler));
     return *this;
   }
@@ -121,18 +125,44 @@ class RPCServer {
    * This is where a protocol resolves its greeting (e.g. the Zappy team-name
    * exchange that distinguishes a GUI from an AI client).
    */
-  RPCServer &onHandshake(
-      std::function<void(Session<Ctx> &, const std::string &)> handler) {
+  RPCServer& onHandshake(
+      std::function<void(Session<Ctx>&, const std::string&)> handler) {
     handshakeHandler_ = std::move(handler);
     return *this;
   }
 
-  RPCServer &onConnect(std::function<void(Session<Ctx> &)> handler) {
+  /**
+   * @brief Replace the default post-handshake dispatch with a custom hook.
+   *
+   * When set, every authenticated line is routed to @p handler instead of the
+   * opcode dispatcher. The hook owns the decision to drop, defer or forward
+   * the line; to forward, it calls @ref dispatchLine. Use this to plug a
+   * per-session command queue (e.g. Zappy's per-AI action blocking) without
+   * touching the dispatch mechanics.
+   */
+  RPCServer& onAuthenticatedLine(
+      std::function<void(Session<Ctx>&, const std::string&)> handler) {
+    authenticatedLineHandler_ = std::move(handler);
+    return *this;
+  }
+
+  /**
+   * @brief Run the opcode dispatcher on @p line as if no hook were installed.
+   *
+   * Exposed so an @ref onAuthenticatedLine hook can forward a line through
+   * the usual typed-handler / unknown-handler / invalid-handler routing once
+   * its own policy (queue, throttle, defer) has decided to release it.
+   */
+  void dispatchLine(Session<Ctx>& session, const std::string& line) {
+    dispatcher_(session, line);
+  }
+
+  RPCServer& onConnect(std::function<void(Session<Ctx>&)> handler) {
     connectHandler_ = std::move(handler);
     return *this;
   }
 
-  RPCServer &onDisconnect(std::function<void(Session<Ctx> &)> handler) {
+  RPCServer& onDisconnect(std::function<void(Session<Ctx>&)> handler) {
     disconnectHandler_ = std::move(handler);
     return *this;
   }
@@ -141,12 +171,12 @@ class RPCServer {
    * @brief Send a message to a specific session.
    */
   template <typename M>
-  void respond(Session<Ctx> &session, const M &message,
-               const std::vector<std::string> &args = {}) {
+  void respond(Session<Ctx>& session, const M& message,
+               const std::vector<std::string>& args = {}) {
     session.send(message.buildLine(args));
   }
 
-  void respond(Session<Ctx> &session, const std::string &line) {
+  void respond(Session<Ctx>& session, const std::string& line) {
     session.send(line);
   }
 
@@ -154,8 +184,8 @@ class RPCServer {
    * @brief Push an unsolicited event to a specific session.
    */
   template <typename M>
-  void emit(Session<Ctx> &session, const M &message,
-            const std::vector<std::string> &args = {}) {
+  void emit(Session<Ctx>& session, const M& message,
+            const std::vector<std::string>& args = {}) {
     session.send(message.buildLine(args));
   }
 
@@ -163,18 +193,31 @@ class RPCServer {
    * @brief Broadcast a message to every connected client.
    */
   template <typename M>
-  void broadcast(const M &message, const std::vector<std::string> &args = {}) {
+  void broadcast(const M& message, const std::vector<std::string>& args = {}) {
     loop_.broadcast(message.buildLine(args) + "\n");
   }
 
-  void broadcast(const std::string &line) { loop_.broadcast(line + "\n"); }
+  void broadcast(const std::string& line) { loop_.broadcast(line + "\n"); }
+
+  /**
+   * @brief Lookup a session by its file descriptor.
+   * @returns Pointer to the session, or nullptr when no client owns @p fd
+   *          (e.g. the client disconnected since the fd was captured).
+   */
+  Session<Ctx>* session(int fd) {
+    auto it = sessions_.find(fd);
+    if (it == sessions_.end()) {
+      return nullptr;
+    }
+    return &it->second;
+  }
 
   /**
    * @brief Iterate over all connected sessions.
    */
   template <typename Fn>
-  void forEachSession(Fn &&fn) {
-    for (auto &[fd, session] : sessions_) {
+  void forEachSession(Fn&& fn) {
+    for (auto& [fd, session] : sessions_) {
       fn(session);
     }
   }
@@ -201,14 +244,14 @@ class RPCServer {
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(static_cast<uint16_t>(port_));
 
-    if (bind(socket_.fd(), reinterpret_cast<struct sockaddr *>(&address),
+    if (bind(socket_.fd(), reinterpret_cast<struct sockaddr*>(&address),
              sizeof(address)) < 0) {
       throw network::BindError("bind() failed");
     }
     if (port_ == 0) {
       struct sockaddr_in bound;
       socklen_t length = sizeof(bound);
-      if (getsockname(socket_.fd(), reinterpret_cast<struct sockaddr *>(&bound),
+      if (getsockname(socket_.fd(), reinterpret_cast<struct sockaddr*>(&bound),
                       &length) < 0) {
         throw network::BindError("getsockname() failed");
       }
@@ -225,9 +268,11 @@ class RPCServer {
   network::PollLoop loop_;
   Dispatcher<Ctx> dispatcher_;
   std::unordered_map<int, Session<Ctx>> sessions_;
-  std::function<void(Session<Ctx> &)> connectHandler_;
-  std::function<void(Session<Ctx> &)> disconnectHandler_;
-  std::function<void(Session<Ctx> &, const std::string &)> handshakeHandler_;
+  std::function<void(Session<Ctx>&)> connectHandler_;
+  std::function<void(Session<Ctx>&)> disconnectHandler_;
+  std::function<void(Session<Ctx>&, const std::string&)> handshakeHandler_;
+  std::function<void(Session<Ctx>&, const std::string&)>
+      authenticatedLineHandler_;
 };
 
 }  // namespace zappy::rpc

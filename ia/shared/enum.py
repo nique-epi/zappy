@@ -10,6 +10,13 @@ class Direction(Enum):
     WEST = 4
 
 
+class Move(Enum):
+    """Movement commands accepted by the Zappy server."""
+    FORWARD = "Forward"
+    RIGHT = "Right"
+    LEFT = "Left"
+
+
 RESOURCES = [
     "food", "linemate", "deraumere", "sibur", "mendiane", "phiras", "thystame"
 ]
