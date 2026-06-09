@@ -39,6 +39,15 @@ struct ClientContext {
   int spawnY{0};
 
   /**
+   * @brief Identifier of the drone bound to this session, set by the player
+   *        spawn that follows a successful AI handshake.
+   *
+   * Zero means no player is bound yet (handshake not completed, or GUI
+   * session).
+   */
+  int playerId{0};
+
+  /**
    * @brief Pending command lines for AI sessions, bounded at
    *        @ref maxPendingActions.
    *

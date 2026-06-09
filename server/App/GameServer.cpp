@@ -9,6 +9,8 @@
 #include <random>
 #include <string>
 #include "App/World/Exceptions/WorldException.hpp"
+#include "App/World/Player/Direction.hpp"
+#include "App/World/Player/Player.hpp"
 #include "App/World/Team/Egg.hpp"
 #include "Net/AiActionPipeline.hpp"
 #include "Protocol/AiProtocol.hpp"
@@ -38,6 +40,14 @@ GameServer::GameServer(const ServerConfig& config)
   registerAiHandlers();
   registerFallbacks();
   installAiActionPipeline(server_, scheduler_, config_.frequency);
+  server_.onDisconnect([this](Session& session) {
+    session.ctx().pendingActions.clear();
+    session.ctx().actionInFlight = false;
+    if (session.ctx().playerId != 0) {
+      players_.remove(session.ctx().playerId, world_);
+      session.ctx().playerId = 0;
+    }
+  });
 }
 
 void GameServer::start() { server_.start(); }
@@ -66,10 +76,15 @@ void GameServer::registerHandshake() {
     }
     try {
       const world::Egg hatched = teams_.hatch(teamName, world_, rng_);
+      const world::Direction direction =
+          world::PlayerRegistry::randomDirection(rng_);
+      const world::Player& player =
+          players_.spawn(teamName, hatched.x, hatched.y, direction, world_);
       session.ctx().type = ClientType::Ai;
       session.ctx().teamName = teamName;
       session.ctx().spawnX = hatched.x;
       session.ctx().spawnY = hatched.y;
+      session.ctx().playerId = player.id();
       session.send(std::to_string(teams_.freeSlots(teamName)));
       session.send(std::to_string(config_.width) + " " +
                    std::to_string(config_.height));
