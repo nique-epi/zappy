@@ -4,7 +4,7 @@ from ia.shared.enum import RESOURCES
 
 def parse_inventory(response: str) -> dict[str, int]:
     """Parse the inventory response from the server."""
-    inventory = {resource: 0 for resource in RESOURCES}
+    inventory = dict.fromkeys(RESOURCES, 0)
     if not response:
         return inventory
 

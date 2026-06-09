@@ -34,9 +34,7 @@ class Bot:
 
         self.map: list[list[dict]] = self._init_map()
         self.role: str = self._assign_role(client_num)
-        self.inventory: dict[str, int] = {
-            resource: 0 for resource in RESOURCES
-        }
+        self.inventory: dict[str, int] = dict.fromkeys(RESOURCES, 0)
 
     def _init_map(self) -> list[list[dict]]:
         """Creates an empty width×height grid. (ZAP-19 Bonus, stub)"""
@@ -68,4 +66,4 @@ class Bot:
         if line.startswith("["):
             self.inventory = parse_inventory(line)
             if needs_food(self.inventory):
-                pass
+                logging.debug("food below threshold, foraging needed")
