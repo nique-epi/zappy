@@ -850,3 +850,99 @@ def test_pop_line_single():
     buf.feed("Forward\n")
     assert buf.pop_line() == "Forward"
 ```
+
+### R16 — Un parseur parse, il ne valide pas le format d'entrée
+
+**Règle :** une fonction ou un module de **parsing** ne fait qu'**une seule
+chose** : transformer une entrée (chaîne, octets) en structure de données. Il
+**suppose** que l'entrée respecte le format garanti par son producteur (ici le
+serveur Zappy) et ne doit **ni vérifier** que l'entrée est « bien formée »,
+**ni lever d'exception** sur une entrée inattendue, **ni embarquer** de
+`try/except` ou de `if … : raise` de validation de format. Si une robustesse
+sur des entrées non fiables est réellement nécessaire, elle vit dans une
+**couche distincte en amont** du parseur, jamais dedans.
+
+**Pourquoi :** séparation des responsabilités. Mêler parsing et validation
+gonfle le parseur, multiplie des chemins d'erreur pénibles à tester, et duplique
+une garantie déjà fournie par le protocole. Un parseur pur (entrée → sortie,
+sans effet de bord ni branche d'erreur) est trivial à lire, à tester et à
+réutiliser. Cette règle **précise** R13 : R13 dit *où* lèvent les erreurs
+métier (exceptions custom dans `Exceptions/`) ; R16 dit qu'un parseur, lui, n'en
+lève **pas** — ce n'est pas du code métier qui décide, c'est une transformation.
+
+**À appliquer :** tout code de parsing (`ia/parsing/*`, parseurs de réponses
+serveur, découpe de trames, etc.). Quand on est tenté d'ajouter une vérification
+de format dans un parseur, c'est le signal que la vérification doit vivre
+ailleurs — ou ne pas exister.
+
+**Exemple interdit :**
+
+```python
+def parse_look(response, pos, direction, level):
+    if not response.startswith("[") or not response.endswith("]"):
+        raise ValueError("malformed Look response")   # INTERDIT : validation
+    try:
+        tiles = _split_tiles(response)
+    except Exception:                                  # INTERDIT : garde-fou
+        return []
+    ...
+```
+
+**Exemple correct :**
+
+```python
+def parse_look(response, pos, direction, level):
+    tiles = _split_tiles(response)
+    return [
+        {
+            "coords": _tile_index_to_abs_coords(i, pos, direction, level),
+            "objects": tiles[i],
+        }
+        for i in range(len(tiles))
+    ]
+```
+
+### R17 — Docstrings Python : une ligne max, pas de paraphrase des types
+
+**Règle :** dans le code Python **hors tests**, une docstring de
+fonction / méthode / classe / module est **optionnelle** et, quand elle
+existe, tient sur **une seule ligne** — un résumé de l'intention. Elle ne
+doit **pas** contenir de sections `Args:` / `Returns:` / `Raises:` qui ne
+font que répéter ce que la **signature typée** exprime déjà. Si une entrée
+ou une sortie mérite une explication, ce sont le **type** (annotation) et
+le **nom** (cf. R6) qui la portent ; au pire une demi-phrase dans le
+résumé.
+
+**Pourquoi :** les annotations de type documentent déjà les entrées et
+sorties. Un bloc `Args:`/`Returns:` qui transforme `response: str` en
+« response: the raw server line » est redondant, alourdit le fichier et
+pourrit dès que la signature change — exactement le défaut que R10 combat
+pour les commentaires de corps. Un résumé d'une ligne dit *pourquoi* la
+fonction existe ; le *comment* est déjà dans le code et les types.
+
+**À appliquer :** tout fichier `.py` du projet **sauf les tests** (qui
+suivent R15 : docstring `Given`/`When`/`Then` multi-ligne). Vaut pour
+toute nouvelle déclaration et toute déclaration touchée lors d'un
+refactoring. pylint ne réclame pas de docstring
+(`missing-*-docstring` désactivé) : l'**absence** est tolérée ; ce qui est
+interdit, c'est la docstring multi-ligne à rallonge avec `Args:`/`Returns:`.
+
+**Exemple interdit :**
+
+```python
+def _split_tiles(response: str) -> list[list[str]]:
+    """Split a raw Look response into per-tile object lists.
+
+    Args:
+        response: Raw server line, e.g. "[player,,food]".
+    Returns:
+        One list of object names per tile, in server order.
+    """
+```
+
+**Exemple correct :**
+
+```python
+def _split_tiles(response: str) -> list[list[str]]:
+    """Split a raw Look response into one object list per tile."""
+```
