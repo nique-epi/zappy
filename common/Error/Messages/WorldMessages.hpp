@@ -9,14 +9,14 @@
 
 namespace zappy::error::messages {
 
-inline constexpr const char *INVALID_MAP_DIMENSIONS_PREFIX =
+inline constexpr const char* INVALID_MAP_DIMENSIONS_PREFIX =
     "invalid map dimensions ";
-inline constexpr const char *INVALID_MAP_DIMENSIONS_SUFFIX =
+inline constexpr const char* INVALID_MAP_DIMENSIONS_SUFFIX =
     ": width and height must be strictly positive";
 
-inline constexpr const char *MAP_ALLOCATION_FAILED_PREFIX =
+inline constexpr const char* MAP_ALLOCATION_FAILED_PREFIX =
     "failed to allocate map ";
-inline constexpr const char *MAP_ALLOCATION_FAILED_SUFFIX =
+inline constexpr const char* MAP_ALLOCATION_FAILED_SUFFIX =
     ": world too large to allocate";
 
 }  // namespace zappy::error::messages

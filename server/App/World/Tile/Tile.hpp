@@ -56,7 +56,7 @@ class Tile {
   /**
    * @brief Identifiers of the players currently standing on the tile.
    */
-  [[nodiscard]] const std::vector<int> &players() const;
+  [[nodiscard]] const std::vector<int>& players() const;
 
   /**
    * @brief Record that player @p playerId now stands on the tile.
@@ -72,7 +72,7 @@ class Tile {
   /**
    * @brief Identifiers of the eggs currently laid on the tile.
    */
-  [[nodiscard]] const std::vector<int> &eggs() const;
+  [[nodiscard]] const std::vector<int>& eggs() const;
 
   /**
    * @brief Record that egg @p eggId now rests on the tile.

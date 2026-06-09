@@ -64,6 +64,29 @@ add_executable(zappy_server_tests
 target_link_libraries(zappy_server_tests
   PRIVATE
     zappy_server_app
+    zappy_cli
+    GTest::gtest_main
+)
+
+add_executable(zappy_gui_tests
+  Gui/TestParserException.cpp
+  Gui/TestArgsParser.cpp
+)
+
+target_link_libraries(zappy_gui_tests
+  PRIVATE
+    zappy_gui_cli
+    zappy_cli
+    GTest::gtest_main
+)
+
+add_executable(zappy_gui_handshake_tests
+  Gui/TestServerHandshake.cpp
+)
+
+target_link_libraries(zappy_gui_handshake_tests
+  PRIVATE
+    zappy_gui_handshake
     GTest::gtest_main
 )
 
@@ -78,6 +101,12 @@ gtest_discover_tests(zappy_schema_tests
   DISCOVERY_MODE PRE_TEST
 )
 gtest_discover_tests(zappy_server_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_gui_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_gui_handshake_tests
   DISCOVERY_MODE PRE_TEST
 )
 

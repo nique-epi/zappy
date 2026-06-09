@@ -19,7 +19,7 @@ void Tile::drop(ResourceType type, std::size_t amount) {
 }
 
 bool Tile::collect(ResourceType type, std::size_t amount) {
-  std::size_t &stock = resources_[static_cast<std::size_t>(type)];
+  std::size_t& stock = resources_[static_cast<std::size_t>(type)];
 
   if (stock < amount) {
     return false;
@@ -28,7 +28,7 @@ bool Tile::collect(ResourceType type, std::size_t amount) {
   return true;
 }
 
-const std::vector<int> &Tile::players() const { return players_; }
+const std::vector<int>& Tile::players() const { return players_; }
 
 void Tile::addPlayer(int playerId) { players_.push_back(playerId); }
 
@@ -42,7 +42,7 @@ bool Tile::removePlayer(int playerId) {
   return true;
 }
 
-const std::vector<int> &Tile::eggs() const { return eggs_; }
+const std::vector<int>& Tile::eggs() const { return eggs_; }
 
 void Tile::addEgg(int eggId) { eggs_.push_back(eggId); }
 

@@ -11,7 +11,7 @@
 
 namespace zappy::server {
 
-SchedulerException::SchedulerException(const std::string &message)
+SchedulerException::SchedulerException(const std::string& message)
     : std::runtime_error(message) {}
 
 InvalidFrequencyException::InvalidFrequencyException(int frequency)

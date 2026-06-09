@@ -20,7 +20,7 @@ namespace zappy::server {
  */
 class SchedulerException : public std::runtime_error {
  public:
-  explicit SchedulerException(const std::string &message);
+  explicit SchedulerException(const std::string& message);
 };
 
 /**

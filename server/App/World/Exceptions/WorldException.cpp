@@ -11,7 +11,7 @@
 
 namespace zappy::world {
 
-WorldException::WorldException(const std::string &message)
+WorldException::WorldException(const std::string& message)
     : std::runtime_error(message) {}
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)

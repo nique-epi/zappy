@@ -17,7 +17,7 @@ namespace zappy::network {
  */
 class NetworkError : public std::runtime_error {
  public:
-  explicit NetworkError(const std::string &message);
+  explicit NetworkError(const std::string& message);
 };
 
 /**
@@ -25,7 +25,7 @@ class NetworkError : public std::runtime_error {
  */
 class SocketError : public NetworkError {
  public:
-  explicit SocketError(const std::string &message);
+  explicit SocketError(const std::string& message);
 };
 
 /**
@@ -33,7 +33,7 @@ class SocketError : public NetworkError {
  */
 class BindError : public NetworkError {
  public:
-  explicit BindError(const std::string &message);
+  explicit BindError(const std::string& message);
 };
 
 /**
@@ -41,7 +41,7 @@ class BindError : public NetworkError {
  */
 class ListenError : public NetworkError {
  public:
-  explicit ListenError(const std::string &message);
+  explicit ListenError(const std::string& message);
 };
 
 /**
@@ -49,7 +49,7 @@ class ListenError : public NetworkError {
  */
 class ConnectError : public NetworkError {
  public:
-  explicit ConnectError(const std::string &message);
+  explicit ConnectError(const std::string& message);
 };
 
 /**
@@ -57,7 +57,7 @@ class ConnectError : public NetworkError {
  */
 class AcceptError : public NetworkError {
  public:
-  explicit AcceptError(const std::string &message);
+  explicit AcceptError(const std::string& message);
 };
 
 /**
@@ -65,7 +65,7 @@ class AcceptError : public NetworkError {
  */
 class PollError : public NetworkError {
  public:
-  explicit PollError(const std::string &message);
+  explicit PollError(const std::string& message);
 };
 
 }  // namespace zappy::network

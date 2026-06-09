@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace zappy::server {
+namespace zappy::cli {
 
 /**
  * @brief Root exception for every command-line parsing error.
@@ -21,7 +21,7 @@ namespace zappy::server {
  */
 class ParserException : public std::runtime_error {
  public:
-  explicit ParserException(const std::string &message);
+  explicit ParserException(const std::string& message);
 };
 
 /**
@@ -29,24 +29,25 @@ class ParserException : public std::runtime_error {
  */
 class UnknownOptionException : public ParserException {
  public:
-  explicit UnknownOptionException(const std::string &option);
+  explicit UnknownOptionException(const std::string& option);
 };
 
 /**
- * @brief Thrown when an option that requires a value is missing one.
+ * @brief Thrown when an option that requires a value is missing one, or when
+ *        a mandatory flag was not supplied at all.
  */
 class MissingValueException : public ParserException {
  public:
-  explicit MissingValueException(const std::string &option);
+  explicit MissingValueException(const std::string& option);
 };
 
 /**
- * @brief Thrown when an option value is not a valid integer or is out of range.
+ * @brief Thrown when an option value is not valid or out of range.
  */
 class InvalidValueException : public ParserException {
  public:
-  InvalidValueException(const std::string &option, const std::string &value,
-                        const std::string &reason);
+  InvalidValueException(const std::string& option, const std::string& value,
+                        const std::string& reason);
 };
 
-}  // namespace zappy::server
+}  // namespace zappy::cli

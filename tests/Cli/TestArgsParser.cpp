@@ -11,19 +11,19 @@
 #include "Cli/ArgsParser.hpp"
 #include "Cli/Exceptions/ParserException.hpp"
 
-using zappy::server::InvalidValueException;
-using zappy::server::MissingValueException;
+using zappy::cli::InvalidValueException;
+using zappy::cli::MissingValueException;
+using zappy::cli::ParserException;
+using zappy::cli::UnknownOptionException;
 using zappy::server::parseArguments;
-using zappy::server::ParserException;
 using zappy::server::ServerConfig;
-using zappy::server::UnknownOptionException;
 
 namespace {
 
 ServerConfig parse(std::vector<std::string> tokens) {
-  std::vector<char *> argv;
+  std::vector<char*> argv;
   argv.reserve(tokens.size());
-  for (std::string &token : tokens) {
+  for (std::string& token : tokens) {
     argv.push_back(token.data());
   }
   return parseArguments(static_cast<int>(argv.size()), argv.data());

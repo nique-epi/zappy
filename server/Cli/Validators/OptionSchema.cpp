@@ -20,9 +20,11 @@ namespace zappy::server {
 
 namespace {
 
-int toInteger(const std::string &value) {
+using zappy::cli::OptionArity;
+
+int toInteger(const std::string& value) {
   int result = 0;
-  const char *begin = value.data();
+  const char* begin = value.data();
   std::from_chars(begin, begin + value.size(), result);
   return result;
 }
@@ -34,14 +36,14 @@ std::shared_ptr<zappy::schema::IFieldType> boundedNumber(std::string name,
       std::move(name), minimum, maximum);
 }
 
-OptionApplier integerSetter(int ServerConfig::*field) {
-  return [field](ServerConfig &config, const std::vector<std::string> &values) {
+OptionApplier integerSetter(int ServerConfig::* field) {
+  return [field](ServerConfig& config, const std::vector<std::string>& values) {
     config.*field = toInteger(values.front());
   };
 }
 
-void applyTeamNames(ServerConfig &config,
-                    const std::vector<std::string> &values) {
+void applyTeamNames(ServerConfig& config,
+                    const std::vector<std::string>& values) {
   config.teamNames = values;
 }
 

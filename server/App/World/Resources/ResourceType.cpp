@@ -9,7 +9,7 @@
 
 namespace zappy::world {
 
-const std::array<ResourceType, resourceTypeCount> &allResourceTypes() {
+const std::array<ResourceType, resourceTypeCount>& allResourceTypes() {
   static const std::array<ResourceType, resourceTypeCount> types{
       ResourceType::Food,    ResourceType::Linemate, ResourceType::Deraumere,
       ResourceType::Sibur,   ResourceType::Mendiane, ResourceType::Phiras,

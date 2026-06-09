@@ -40,7 +40,7 @@ constexpr std::size_t resourceTypeCount = 7;
  * @returns A stable array that callers iterate to walk all kinds without
  *          hard-coding the individual names.
  */
-const std::array<ResourceType, resourceTypeCount> &allResourceTypes();
+const std::array<ResourceType, resourceTypeCount>& allResourceTypes();
 
 /**
  * @brief Canonical lower-case name of a resource kind.

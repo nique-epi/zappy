@@ -25,7 +25,7 @@ namespace zappy::server {
  */
 class GameServer {
  public:
-  explicit GameServer(const ServerConfig &config);
+  explicit GameServer(const ServerConfig& config);
 
   /**
    * @brief Bind and listen on the configured port.

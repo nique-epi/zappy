@@ -6,21 +6,21 @@
 */
 
 #include "Cli/ArgumentCursor.hpp"
+#include <cctype>
 #include "Cli/Exceptions/ParserException.hpp"
 
-namespace zappy::server {
+namespace zappy::cli {
 
 namespace {
 
-bool isDigit(char character) { return character >= '0' && character <= '9'; }
-
-bool isOption(const char *token) {
-  return token[0] == '-' && token[1] != '\0' && !isDigit(token[1]);
+bool isOption(const char* token) {
+  return token[0] == '-' && token[1] != '\0' &&
+         (std::isdigit(static_cast<unsigned char>(token[1])) == 0);
 }
 
 }  // namespace
 
-ArgumentCursor::ArgumentCursor(int argumentCount, char **arguments)
+ArgumentCursor::ArgumentCursor(int argumentCount, char** arguments)
     : argumentCount_(argumentCount), arguments_(arguments), index_(0) {}
 
 bool ArgumentCursor::hasNextToken() const {
@@ -36,11 +36,11 @@ bool ArgumentCursor::nextIsValue() const {
   return hasNextToken() && !isOption(arguments_[index_ + 1]);
 }
 
-std::string ArgumentCursor::requireValue(const std::string &option) {
+std::string ArgumentCursor::requireValue(const std::string& option) {
   if (!nextIsValue()) {
     throw MissingValueException(option);
   }
   return nextToken();
 }
 
-}  // namespace zappy::server
+}  // namespace zappy::cli

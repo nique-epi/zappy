@@ -48,7 +48,7 @@ class Map {
    *                   height.
    * @returns A reference to the tile at the wrapped coordinates.
    */
-  [[nodiscard]] Tile &tileAt(int column, int row);
+  [[nodiscard]] Tile& tileAt(int column, int row);
 
   /**
    * @brief Read-only access to the tile at (@p column, @p row), wrapping
@@ -59,7 +59,7 @@ class Map {
    *                   height.
    * @returns A const reference to the tile at the wrapped coordinates.
    */
-  [[nodiscard]] const Tile &tileAt(int column, int row) const;
+  [[nodiscard]] const Tile& tileAt(int column, int row) const;
 
  private:
   /**

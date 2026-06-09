@@ -9,7 +9,7 @@
 
 #include <string>
 
-namespace zappy::server {
+namespace zappy::cli {
 
 /**
  * @brief Forward, single-pass cursor over the argument vector (argv).
@@ -27,7 +27,7 @@ class ArgumentCursor {
    * @param argumentCount Number of entries in @p arguments (argc).
    * @param arguments     Argument vector (argv).
    */
-  ArgumentCursor(int argumentCount, char **arguments);
+  ArgumentCursor(int argumentCount, char** arguments);
 
   /**
    * @brief Whether at least one unread token remains.
@@ -53,12 +53,12 @@ class ArgumentCursor {
    * @returns The next token.
    * @throws MissingValueException If no value token follows @p option.
    */
-  std::string requireValue(const std::string &option);
+  std::string requireValue(const std::string& option);
 
  private:
   int argumentCount_;
-  char **arguments_;
+  char** arguments_;
   int index_;
 };
 
-}  // namespace zappy::server
+}  // namespace zappy::cli

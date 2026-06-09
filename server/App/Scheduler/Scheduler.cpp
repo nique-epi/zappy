@@ -42,7 +42,7 @@ void Scheduler::runDue(TimePoint now) {
     due.push_back(std::move(events_.begin()->second));
     events_.erase(events_.begin());
   }
-  for (const Callback &action : due) {
+  for (const Callback& action : due) {
     action();
   }
 }
