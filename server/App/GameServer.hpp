@@ -12,6 +12,7 @@
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/ServerConfig.hpp"
 #include "App/World/Map/Map.hpp"
+#include "App/World/Player/HungerService.hpp"
 #include "App/World/Player/PlayerRegistry.hpp"
 #include "App/World/Team/TeamRegistry.hpp"
 #include "Net/ClientContext.hpp"
@@ -71,6 +72,7 @@ class GameServer {
   world::PlayerRegistry players_;
   loot::LootService loot_;
   Scheduler scheduler_;
+  HungerService hunger_;
   bool running_{false};
 };
 

@@ -58,6 +58,12 @@ add_executable(zappy_server_tests
   World/TestResourceType.cpp
   World/TestTile.cpp
   World/TestMap.cpp
+  World/TestTeam.cpp
+  World/TestTeamRegistry.cpp
+  World/TestInventory.cpp
+  World/TestPlayer.cpp
+  World/TestPlayerRegistry.cpp
+  World/TestHungerConstants.cpp
   Loot/TestResourceDensity.cpp
   Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp

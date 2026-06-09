@@ -33,7 +33,8 @@ GameServer::GameServer(const ServerConfig& config)
       world_(config.width, config.height),
       rng_(std::random_device{}()),
       teams_(config.teamNames),
-      loot_(world_, config.frequency, std::random_device{}()) {
+      loot_(world_, config.frequency, std::random_device{}()),
+      hunger_(server_, scheduler_, players_, world_, config.frequency) {
   teams_.seedInitialEggs(world_, config_.clientsPerTeam, rng_);
   registerHandshake();
   registerGuiHandlers();
@@ -89,6 +90,7 @@ void GameServer::registerHandshake() {
       session.send(std::to_string(config_.width) + " " +
                    std::to_string(config_.height));
       session.completeHandshake();
+      hunger_.armFirstTick(session.fd(), Scheduler::Clock::now());
     } catch (const world::WorldException&) {
       session.send(protocol::ai::Ko().opcode());
     }
