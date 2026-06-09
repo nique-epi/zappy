@@ -6,26 +6,50 @@
 */
 
 #include <raylib.h>
-#include <cstdlib>
 #include <format>
+#include <iostream>
 #include <string>
-#include "WindowConfig.hpp"
-#include "WorldState.hpp"
-#include "raygui.h"
+#include <string_view>
+#include "Cli/ArgsParser.hpp"
+#include "Cli/Exceptions/ParserException.hpp"  // NOLINT(misc-include-cleaner)
+#include "Network/NetworkManager.hpp"
+#include "Network/ServerHandshake.hpp"
+#include "Render/WindowConfig.hpp"
+#include "Render/raygui.h"
+#include "World/WorldState.hpp"
 
 namespace cfg = zappy::gui::config;
 
-int main() {
+static constexpr std::string_view USAGE =
+    "USAGE: ./zappy_gui -p port -h machine";
+static constexpr int EXIT_CODE_ERROR = 84;
+
+int main(int argc, char** argv) {
+  for (int i = 1; i < argc; ++i) {
+    if (std::string_view(argv[i]) == "--help") {
+      std::cout << USAGE << '\n';
+      return 0;
+    }
+  }
+
   try {
+    const zappy::gui::GuiConfig config = zappy::gui::parseArguments(argc, argv);
+    zappy::gui::NetworkManager network(config.hostname, config.port);
+    zappy::gui::ServerHandshake handshake(network);
+
     InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
     SetTargetFPS(cfg::TARGET_FPS);
 
     const zappy::gui::WorldState world = zappy::gui::mockWorld();
 
     while (!WindowShouldClose()) {
+      network.runOnce(0);
+      handshake.checkTimeout();
+
       const std::string hudText =
-          std::format("Map: {}x{}  |  Players: {}  |  Teams: {}", world.width,
-                      world.height, world.players.size(), world.teams.size());
+          std::format("{}:{}  |  Map: {}x{}  |  Players: {}  |  Teams: {}",
+                      config.hostname, config.port, world.width, world.height,
+                      world.players.size(), world.teams.size());
 
       BeginDrawing();
       ClearBackground(RAYWHITE);
@@ -37,8 +61,16 @@ int main() {
     }
 
     CloseWindow();
+  } catch (const zappy::cli::ParserException& error) {
+    std::cerr << error.what() << '\n';
+    std::cerr << USAGE << '\n';
+    return EXIT_CODE_ERROR;
+  } catch (const std::exception& error) {
+    std::cerr << error.what() << '\n';
+    return EXIT_CODE_ERROR;
   } catch (...) {
-    return EXIT_FAILURE;
+    std::cerr << "An unknown error occurred.\n";
+    return EXIT_CODE_ERROR;
   }
-  return EXIT_SUCCESS;
+  return 0;
 }

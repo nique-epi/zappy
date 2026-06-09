@@ -20,7 +20,7 @@ TEST(ResourceType, CountsFoodPlusSixMinerals) {
 }
 
 TEST(ResourceType, OrderMatchesGuiProtocolFields) {
-  const auto &types = allResourceTypes();
+  const auto& types = allResourceTypes();
 
   EXPECT_EQ(types[0], ResourceType::Food);
   EXPECT_EQ(types[1], ResourceType::Linemate);

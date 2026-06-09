@@ -19,9 +19,9 @@ Map::Map(int width, int height) : width_(width), height_(height) {
   try {
     tiles_.resize(static_cast<std::size_t>(width) *
                   static_cast<std::size_t>(height));
-  } catch (const std::bad_alloc &) {
+  } catch (const std::bad_alloc&) {
     throw MapAllocationException(width, height);
-  } catch (const std::length_error &) {
+  } catch (const std::length_error&) {
     throw MapAllocationException(width, height);
   }
 }
@@ -40,9 +40,9 @@ std::size_t Map::indexOf(int column, int row) const {
          static_cast<std::size_t>(wrappedColumn);
 }
 
-Tile &Map::tileAt(int column, int row) { return tiles_[indexOf(column, row)]; }
+Tile& Map::tileAt(int column, int row) { return tiles_[indexOf(column, row)]; }
 
-const Tile &Map::tileAt(int column, int row) const {
+const Tile& Map::tileAt(int column, int row) const {
   return tiles_[indexOf(column, row)];
 }
 

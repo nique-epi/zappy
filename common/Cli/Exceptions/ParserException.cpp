@@ -8,22 +8,22 @@
 #include "Cli/Exceptions/ParserException.hpp"
 #include "Error/Messages/ParserMessages.hpp"
 
-namespace zappy::server {
+namespace zappy::cli {
 
-ParserException::ParserException(const std::string &message)
+ParserException::ParserException(const std::string& message)
     : std::runtime_error(message) {}
 
-UnknownOptionException::UnknownOptionException(const std::string &option)
+UnknownOptionException::UnknownOptionException(const std::string& option)
     : ParserException(error::messages::UNKNOWN_OPTION + option) {}
 
-MissingValueException::MissingValueException(const std::string &option)
+MissingValueException::MissingValueException(const std::string& option)
     : ParserException(error::messages::MISSING_VALUE + option) {}
 
-InvalidValueException::InvalidValueException(const std::string &option,
-                                             const std::string &value,
-                                             const std::string &reason)
+InvalidValueException::InvalidValueException(const std::string& option,
+                                             const std::string& value,
+                                             const std::string& reason)
     : ParserException(error::messages::INVALID_VALUE_PREFIX + value +
                       error::messages::INVALID_VALUE_INFIX + option +
                       error::messages::REASON_SEPARATOR + reason) {}
 
-}  // namespace zappy::server
+}  // namespace zappy::cli

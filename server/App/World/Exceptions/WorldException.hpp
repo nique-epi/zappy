@@ -21,7 +21,7 @@ namespace zappy::world {
  */
 class WorldException : public std::runtime_error {
  public:
-  explicit WorldException(const std::string &message);
+  explicit WorldException(const std::string& message);
 };
 
 /**

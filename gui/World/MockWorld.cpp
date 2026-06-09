@@ -6,7 +6,7 @@
 */
 
 #include <vector>
-#include "WorldState.hpp"
+#include "World/WorldState.hpp"
 
 namespace zappy::gui {
 

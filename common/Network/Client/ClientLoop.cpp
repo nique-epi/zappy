@@ -18,7 +18,7 @@ namespace {
 constexpr std::size_t readBufferSize = 4096;
 }
 
-ClientLoop::ClientLoop(int stdinFd, int serverFd, ISocket &io)
+ClientLoop::ClientLoop(int stdinFd, int serverFd, ISocket& io)
     : stdinFd_(stdinFd), serverFd_(serverFd), io_(io), running_(false) {}
 
 void ClientLoop::setCommandHandler(CommandHandler handler) {
@@ -29,7 +29,7 @@ void ClientLoop::setResponseHandler(ResponseHandler handler) {
   responseHandler_ = std::move(handler);
 }
 
-void ClientLoop::sendLine(const std::string &line) {
+void ClientLoop::sendLine(const std::string& line) {
   outputBuffer_ += line + "\n";
 }
 

@@ -28,11 +28,11 @@ namespace zappy::network {
  */
 class PollLoop {
  public:
-  using CommandHandler = std::function<void(Client &, const std::string &)>;
+  using CommandHandler = std::function<void(Client&, const std::string&)>;
   using ConnectHandler = std::function<void(int fd)>;
   using DisconnectHandler = std::function<void(int fd)>;
 
-  PollLoop(int serverFd, ISocket &io);
+  PollLoop(int serverFd, ISocket& io);
 
   void setHandler(CommandHandler handler);
   void setConnectHandler(ConnectHandler handler);
@@ -52,8 +52,8 @@ class PollLoop {
 
   void stop();
 
-  void sendTo(int clientFd, const std::string &data);
-  void broadcast(const std::string &data);
+  void sendTo(int clientFd, const std::string& data);
+  void broadcast(const std::string& data);
 
   [[nodiscard]] std::size_t clientCount() const;
 
@@ -65,7 +65,7 @@ class PollLoop {
   void rebuildFds();
 
   int serverFd_;
-  ISocket &io_;
+  ISocket& io_;
   std::unordered_map<int, Client> clients_;
   std::vector<struct pollfd> fds_;
   CommandHandler handler_;

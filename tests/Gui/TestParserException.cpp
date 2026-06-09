@@ -15,7 +15,7 @@ using zappy::cli::MissingValueException;
 using zappy::cli::ParserException;
 using zappy::cli::UnknownOptionException;
 
-TEST(ParserExceptions, MessagesAreComposed) {
+TEST(GuiParserExceptions, MessagesAreComposed) {
   EXPECT_EQ(std::string(ParserException("root").what()), "root");
   EXPECT_EQ(std::string(UnknownOptionException("-z").what()),
             "unknown option -z");
@@ -27,13 +27,13 @@ TEST(ParserExceptions, MessagesAreComposed) {
       "invalid value 'foo' for -p: expected an integer");
 }
 
-TEST(ParserExceptions, EverySubclassIsAParserException) {
+TEST(GuiParserExceptions, EverySubclassIsAParserException) {
   EXPECT_THROW(throw UnknownOptionException("-z"), ParserException);
   EXPECT_THROW(throw MissingValueException("-p"), ParserException);
   EXPECT_THROW(throw InvalidValueException("-p", "x", "y"), ParserException);
 }
 
-TEST(ParserExceptions, ParserExceptionIsAStdRuntimeError) {
+TEST(GuiParserExceptions, ParserExceptionIsAStdRuntimeError) {
   EXPECT_THROW(throw ParserException("boom"), std::runtime_error);
   EXPECT_THROW(throw UnknownOptionException("-z"), std::exception);
 }

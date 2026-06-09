@@ -84,7 +84,7 @@ TEST(Map, ConstLookupReadsTheSameContent) {
   Map map(4, 4);
   map.tileAt(2, 3).addPlayer(5);
 
-  const Map &readOnly = map;
+  const Map& readOnly = map;
 
   EXPECT_EQ(readOnly.tileAt(2, 3).players().size(), 1U);
   EXPECT_EQ(readOnly.tileAt(6, 7).players().size(), 1U);
