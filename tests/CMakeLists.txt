@@ -59,6 +59,15 @@ add_executable(zappy_server_tests
   World/TestMap.cpp
   Scheduler/TestScheduler.cpp
   Scheduler/TestActionTiming.cpp
+  Net/TestGuiQueryHandlers.cpp
+  Rpc/mocks/LoopbackClient.cpp
+  Network/mocks/MockSocket.cpp
+)
+
+target_include_directories(zappy_server_tests
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Rpc/mocks
+    ${CMAKE_CURRENT_SOURCE_DIR}/Network/mocks
 )
 
 target_link_libraries(zappy_server_tests
