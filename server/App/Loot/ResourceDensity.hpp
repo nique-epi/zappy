@@ -30,6 +30,9 @@ constexpr int refillTimeUnits = 20;
  * @param[in] width  Map width in tiles; must be > 0.
  * @param[in] height Map height in tiles; must be > 0.
  * @returns The number of units of @p type the map should hold (>= 1).
+ * @throws world::InvalidMapDimensionsException if @p width or @p height is not
+ *         strictly positive, so a negative value cannot wrap around once cast
+ *         to an unsigned size.
  */
 [[nodiscard]] std::size_t targetQuantity(world::ResourceType type, int width,
                                          int height);

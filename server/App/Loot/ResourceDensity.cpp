@@ -8,6 +8,7 @@
 #include "App/Loot/ResourceDensity.hpp"
 #include <algorithm>
 #include <array>
+#include "App/World/Exceptions/WorldException.hpp"
 
 namespace zappy::loot {
 
@@ -18,6 +19,10 @@ constexpr std::array<std::size_t, world::resourceTypeCount> densityNumerator = {
 }  // namespace
 
 std::size_t targetQuantity(world::ResourceType type, int width, int height) {
+  if (width <= 0 || height <= 0) {
+    throw world::InvalidMapDimensionsException(width, height);
+  }
+
   const std::size_t tiles =
       static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
   const std::size_t numerator =
