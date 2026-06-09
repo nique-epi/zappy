@@ -6,6 +6,7 @@
 */
 
 #include "App/GameServer.hpp"
+#include <random>
 #include <string>
 #include "Protocol/AiProtocol.hpp"
 #include "Protocol/GuiProtocol.hpp"
@@ -22,7 +23,10 @@ constexpr const char* welcomeGreeting = "WELCOME";
 using Session = zappy::rpc::Session<ClientContext>;
 
 GameServer::GameServer(const ServerConfig& config)
-    : config_(config), server_(config.port) {
+    : config_(config),
+      server_(config.port),
+      world_(config.width, config.height),
+      loot_(world_, config.frequency, std::random_device{}()) {
   registerHandshake();
   registerGuiHandlers();
   registerAiHandlers();
@@ -33,6 +37,7 @@ void GameServer::start() { server_.start(); }
 
 void GameServer::run() {
   running_ = true;
+  loot_.start(scheduler_, Scheduler::Clock::now());
   while (running_) {
     server_.runOnce(scheduler_.timeoutUntilNext(Scheduler::Clock::now()));
     scheduler_.runDue(Scheduler::Clock::now());
