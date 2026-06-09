@@ -1,7 +1,8 @@
 """
-Unit tests for the Direction enum.
+Unit tests for the shared enums.
 """
-from ia.shared.enum import Direction
+from ia.shared.enum import Direction, Move
+
 
 def test_direction_values():
     """
@@ -13,3 +14,14 @@ def test_direction_values():
     assert Direction.EAST.value == 2
     assert Direction.SOUTH.value == 3
     assert Direction.WEST.value == 4
+
+
+def test_move_values():
+    """
+    Given the Move enum
+    When its members are inspected
+    Then FORWARD/RIGHT/LEFT map to the server command strings
+    """
+    assert Move.FORWARD.value == "Forward"
+    assert Move.RIGHT.value == "Right"
+    assert Move.LEFT.value == "Left"
