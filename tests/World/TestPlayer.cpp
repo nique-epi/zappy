@@ -16,6 +16,11 @@ using zappy::world::Player;
 using zappy::world::ResourceType;
 
 TEST(Player, ConstructionSetsIdentityAndPreChargesFood) {
+  /*
+   * Given a brand new player at known coordinates
+   * When the constructor completes
+   * Then identity, position, direction, level 1 and food reserve are set
+   */
   const Player player(7, "red", 3, 4, Direction::East);
 
   EXPECT_EQ(player.id(), 7);
@@ -29,6 +34,11 @@ TEST(Player, ConstructionSetsIdentityAndPreChargesFood) {
 }
 
 TEST(Player, MutatorsUpdateStateInPlace) {
+  /*
+   * Given a player at the origin facing North
+   * When setPosition, setDirection and setLevel are called
+   * Then the corresponding fields take the new values
+   */
   Player player(1, "red", 0, 0, Direction::North);
 
   player.setPosition(5, 6);
@@ -42,6 +52,11 @@ TEST(Player, MutatorsUpdateStateInPlace) {
 }
 
 TEST(Direction, LetterMatchesProtocolMnemonics) {
+  /*
+   * Given the four cardinal directions
+   * When directionLetter is queried for each
+   * Then the GUI protocol mnemonics N/E/S/O come back
+   */
   EXPECT_EQ(directionLetter(Direction::North), "N");
   EXPECT_EQ(directionLetter(Direction::East), "E");
   EXPECT_EQ(directionLetter(Direction::South), "S");

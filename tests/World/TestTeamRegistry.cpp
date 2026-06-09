@@ -22,6 +22,11 @@ std::mt19937 deterministicRng() { return std::mt19937(42); }
 }  // namespace
 
 TEST(TeamRegistry, ContainsRegisteredTeams) {
+  /*
+   * Given a registry built with two team names
+   * When contains is queried
+   * Then it returns true for declared names and false otherwise
+   */
   const TeamRegistry registry({"red", "blue"});
 
   EXPECT_TRUE(registry.contains("red"));
@@ -30,12 +35,22 @@ TEST(TeamRegistry, ContainsRegisteredTeams) {
 }
 
 TEST(TeamRegistry, FreeSlotsOfUnknownTeamThrows) {
+  /*
+   * Given a registry that does not know the queried name
+   * When freeSlots is called for that name
+   * Then it throws UnknownTeamException
+   */
   const TeamRegistry registry({"red"});
 
   EXPECT_THROW((void)registry.freeSlots("ghost"), UnknownTeamException);
 }
 
 TEST(TeamRegistry, SeedInitialEggsPopulatesEveryTeamAndTile) {
+  /*
+   * Given a registry with two teams and a 10x10 map
+   * When seedInitialEggs is run with 4 slots per team
+   * Then each team gets 4 free slots and every egg is recorded on a tile
+   */
   TeamRegistry registry({"red", "blue"});
   Map map(10, 10);
   std::mt19937 rng = deterministicRng();
@@ -54,6 +69,11 @@ TEST(TeamRegistry, SeedInitialEggsPopulatesEveryTeamAndTile) {
 }
 
 TEST(TeamRegistry, HatchRemovesEggFromTeamAndTile) {
+  /*
+   * Given a team seeded with 3 eggs
+   * When hatch is called
+   * Then the team loses one slot and the egg vanishes from its tile
+   */
   TeamRegistry registry({"red"});
   Map map(10, 10);
   std::mt19937 rng = deterministicRng();
@@ -69,6 +89,11 @@ TEST(TeamRegistry, HatchRemovesEggFromTeamAndTile) {
 }
 
 TEST(TeamRegistry, HatchOnEmptyTeamThrows) {
+  /*
+   * Given a known team with no egg left
+   * When hatch is called
+   * Then it throws NoFreeSlotException
+   */
   TeamRegistry registry({"red"});
   Map map(5, 5);
   std::mt19937 rng = deterministicRng();
@@ -77,6 +102,11 @@ TEST(TeamRegistry, HatchOnEmptyTeamThrows) {
 }
 
 TEST(TeamRegistry, HatchOnUnknownTeamThrows) {
+  /*
+   * Given a registry that does not know the requested team
+   * When hatch is called for an unknown name
+   * Then it throws UnknownTeamException
+   */
   TeamRegistry registry({"red"});
   Map map(5, 5);
   std::mt19937 rng = deterministicRng();
@@ -85,6 +115,11 @@ TEST(TeamRegistry, HatchOnUnknownTeamThrows) {
 }
 
 TEST(TeamRegistry, LayAddsEggToTeamAndTile) {
+  /*
+   * Given a known team
+   * When lay is called for a chosen tile
+   * Then the team gains one slot and the egg appears on that tile
+   */
   TeamRegistry registry({"red"});
   Map map(5, 5);
 
@@ -99,6 +134,11 @@ TEST(TeamRegistry, LayAddsEggToTeamAndTile) {
 }
 
 TEST(TeamRegistry, LayOnUnknownTeamThrows) {
+  /*
+   * Given a registry that does not know the requested team
+   * When lay is called for that name
+   * Then it throws UnknownTeamException
+   */
   TeamRegistry registry({"red"});
   Map map(5, 5);
 
