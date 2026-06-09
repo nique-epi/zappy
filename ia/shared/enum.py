@@ -15,3 +15,14 @@ class Move(Enum):
     FORWARD = "Forward"
     RIGHT = "Right"
     LEFT = "Left"
+
+
+class Resource(Enum):
+    """Resources found on the Zappy map."""
+    FOOD = "food"
+    LINEMATE = "linemate"
+    DERAUMERE = "deraumere"
+    SIBUR = "sibur"
+    MENDIANE = "mendiane"
+    PHIRAS = "phiras"
+    THYSTAME = "thystame"
