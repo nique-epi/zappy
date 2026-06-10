@@ -7,12 +7,17 @@
 
 #include "Network/Parsing/ParsingUtils.hpp"
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <sstream>
 #include <string>
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {
+
+namespace {
+bool hasId(int playerId, const Player& player) { return player.id == playerId; }
+}  // namespace
 
 int parseId(std::istringstream& stream) {
   std::string token;
@@ -34,9 +39,8 @@ Orientation toOrientation(int value) {
 }
 
 Player* findPlayer(WorldState& world, int playerId) {
-  auto found = std::ranges::find_if(
-      world.players,
-      [playerId](const Player& player) { return player.id == playerId; });
+  auto found =
+      std::ranges::find_if(world.players, std::bind_front(hasId, playerId));
   return found != world.players.end() ? &*found : nullptr;
 }
 
