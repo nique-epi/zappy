@@ -14,19 +14,27 @@
 
 namespace zappy::gui {
 
+namespace {
+
+void handleMsz(WorldState& world, std::istringstream& stream) {
+  int width = 0;
+  int height = 0;
+  stream >> width >> height;
+  world.width = width;
+  world.height = height;
+  world.tiles.assign(height, std::vector<Tile>(width));
+  for (int row = 0; row < height; ++row) {
+    for (int col = 0; col < width; ++col) {
+      world.tiles[row][col] = {.x = col, .y = row, .resources = {}};
+    }
+  }
+}
+
+}  // namespace
+
 void registerMapHandlers(HandlerMap& handlers, WorldState& world) {
   handlers["msz"] = [&world](std::istringstream& stream) {
-    int width = 0;
-    int height = 0;
-    stream >> width >> height;
-    world.width = width;
-    world.height = height;
-    world.tiles.assign(height, std::vector<Tile>(width));
-    for (int row = 0; row < height; ++row) {
-      for (int col = 0; col < width; ++col) {
-        world.tiles[row][col] = {.x = col, .y = row, .resources = {}};
-      }
-    }
+    handleMsz(world, stream);
   };
 
   handlers["bct"] = [&world](std::istringstream& stream) {
