@@ -5,10 +5,10 @@
 ** PlayerHandlers — handlers for player-related server messages
 */
 
-#include "Network/Parsing/PlayerHandlers.hpp"
 #include <sstream>
 #include <string>
 #include "Network/Parsing/HandlerTypes.hpp"
+#include "Network/Parsing/Handlers.hpp"
 #include "Network/Parsing/ParsingUtils.hpp"
 #include "World/WorldState.hpp"
 

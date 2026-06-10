@@ -5,11 +5,11 @@
 ** ServerHandlers — handlers for server-level messages
 */
 
-#include "Network/Parsing/ServerHandlers.hpp"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include "Network/Parsing/HandlerTypes.hpp"
+#include "Network/Parsing/Handlers.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {

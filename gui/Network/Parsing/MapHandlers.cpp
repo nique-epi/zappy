@@ -5,10 +5,10 @@
 ** MapHandlers — handlers for map-related server messages (msz, bct)
 */
 
-#include "Network/Parsing/MapHandlers.hpp"
 #include <sstream>
 #include <vector>
 #include "Network/Parsing/HandlerTypes.hpp"
+#include "Network/Parsing/Handlers.hpp"
 #include "Network/Parsing/ParsingUtils.hpp"
 #include "World/WorldState.hpp"
 

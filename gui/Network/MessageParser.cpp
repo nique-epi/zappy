@@ -8,10 +8,7 @@
 #include "Network/MessageParser.hpp"
 #include <sstream>
 #include <string>
-#include "Network/Parsing/EggHandlers.hpp"
-#include "Network/Parsing/MapHandlers.hpp"
-#include "Network/Parsing/PlayerHandlers.hpp"
-#include "Network/Parsing/ServerHandlers.hpp"
+#include "Network/Parsing/Handlers.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {

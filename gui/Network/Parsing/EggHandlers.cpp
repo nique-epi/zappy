@@ -5,9 +5,9 @@
 ** EggHandlers — handlers for egg-related server messages (enw, ebo, edi)
 */
 
-#include "Network/Parsing/EggHandlers.hpp"
 #include <sstream>
 #include "Network/Parsing/HandlerTypes.hpp"
+#include "Network/Parsing/Handlers.hpp"
 #include "Network/Parsing/ParsingUtils.hpp"
 #include "World/WorldState.hpp"
 
