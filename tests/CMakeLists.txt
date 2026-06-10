@@ -58,6 +58,12 @@ add_executable(zappy_server_tests
   World/TestResourceType.cpp
   World/TestTile.cpp
   World/TestMap.cpp
+  World/TestTeam.cpp
+  World/TestTeamRegistry.cpp
+  World/TestInventory.cpp
+  World/TestPlayer.cpp
+  World/TestPlayerRegistry.cpp
+  World/TestHungerConstants.cpp
   Loot/TestResourceDensity.cpp
   Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp
@@ -105,6 +111,16 @@ target_link_libraries(zappy_gui_handshake_tests
     GTest::gtest_main
 )
 
+add_executable(zappy_gui_parser_tests
+  Gui/TestMessageParser.cpp
+)
+
+target_link_libraries(zappy_gui_parser_tests
+  PRIVATE
+    zappy_gui_parser
+    GTest::gtest_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(zappy_network_tests
   DISCOVERY_MODE PRE_TEST
@@ -122,6 +138,9 @@ gtest_discover_tests(zappy_gui_tests
   DISCOVERY_MODE PRE_TEST
 )
 gtest_discover_tests(zappy_gui_handshake_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_gui_parser_tests
   DISCOVERY_MODE PRE_TEST
 )
 

@@ -7,6 +7,7 @@
 
 #include "App/World/Exceptions/WorldException.hpp"
 #include <string>
+#include "Error/Messages/TeamMessages.hpp"
 #include "Error/Messages/WorldMessages.hpp"
 
 namespace zappy::world {
@@ -26,5 +27,13 @@ MapAllocationException::MapAllocationException(int width, int height)
     : WorldException(error::messages::MAP_ALLOCATION_FAILED_PREFIX +
                      std::to_string(width) + "x" + std::to_string(height) +
                      error::messages::MAP_ALLOCATION_FAILED_SUFFIX) {}
+
+UnknownTeamException::UnknownTeamException(const std::string& teamName)
+    : WorldException(error::messages::UNKNOWN_TEAM_PREFIX + teamName +
+                     error::messages::UNKNOWN_TEAM_SUFFIX) {}
+
+NoFreeSlotException::NoFreeSlotException(const std::string& teamName)
+    : WorldException(error::messages::NO_FREE_SLOT_PREFIX + teamName +
+                     error::messages::NO_FREE_SLOT_SUFFIX) {}
 
 }  // namespace zappy::world

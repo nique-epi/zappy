@@ -80,11 +80,6 @@ void installAiActionPipeline(AiServer& server, Scheduler& scheduler,
       scheduleNext(server, scheduler, frequency, session.fd());
     }
   });
-
-  server.onDisconnect([](AiSession& session) {
-    session.ctx().pendingActions.clear();
-    session.ctx().actionInFlight = false;
-  });
 }
 
 }  // namespace zappy::server

@@ -37,6 +37,7 @@ struct Player {
   Orientation orientation{Orientation::North};
   int level{};
   std::string teamName;
+  std::array<int, RESOURCE_COUNT> inventory{};
 };
 
 struct alignas(EGG_ALIGN) Egg {
@@ -53,6 +54,9 @@ struct WorldState {
   std::vector<Player> players;
   std::vector<Egg> eggs;
   std::vector<std::string> teams;
+  int timeUnit{};
+  bool gameOver{};
+  std::string winnerTeam;
 };
 
 WorldState mockWorld();
