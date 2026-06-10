@@ -35,6 +35,12 @@ class Bot:
         self.map: list[list[dict]] = self._init_map()
         self.role: str = self._assign_role(client_num)
         self.inventory: dict[Resource, int] = dict.fromkeys(Resource, 0)
+        self.state: str = "survival"
+
+    @property
+    def client(self) -> "ZappyClient":
+        """Expose the network client to state handlers."""
+        return self._client
 
     def _init_map(self) -> list[list[dict]]:
         """Creates an empty width×height grid. (ZAP-19 Bonus, stub)"""

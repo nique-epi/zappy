@@ -17,6 +17,12 @@ class Move(Enum):
     LEFT = "Left"
 
 
+class State(Enum):
+    """High-level behaviour states for the bot state machine."""
+    SURVIVAL = "survival"
+    EATING = "eating"
+
+
 class Resource(Enum):
     """Resources found on the Zappy map."""
     FOOD = "food"
