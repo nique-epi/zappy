@@ -6,6 +6,7 @@
 */
 
 #include "App/World/Player/Direction.hpp"
+#include <array>
 
 namespace zappy::world {
 
@@ -51,22 +52,36 @@ Direction opposite(Direction direction) {
   return direction;
 }
 
+namespace {
+
+constexpr int cardinalCount = 4;
+
+/// `eject: K` codes. The subject numbers tiles 1 in front of the drone then
+/// counter-clockwise; a cardinal push therefore reaches one of these sides.
+constexpr int ejectFromFront = 1;
+constexpr int ejectFromLeft = 3;
+constexpr int ejectFromBehind = 5;
+constexpr int ejectFromRight = 7;
+
+/// Position of @p direction in clockwise order N, E, S, W (North being 0).
+int cardinalIndex(Direction direction) {
+  return static_cast<int>(direction) - static_cast<int>(Direction::North);
+}
+
+/// Number of 90-degree clockwise turns rotating @p fromDirection onto
+/// @p toDirection.
+int clockwiseQuarterTurns(Direction fromDirection, Direction toDirection) {
+  const int delta = cardinalIndex(toDirection) - cardinalIndex(fromDirection);
+  return (delta % cardinalCount + cardinalCount) % cardinalCount;
+}
+
+}  // namespace
+
 int ejectionCode(Direction pushDirection, Direction victimFacing) {
-  constexpr int cardinalCount = 4;
-  const int comingFrom = static_cast<int>(opposite(pushDirection)) - 1;
-  const int facing = static_cast<int>(victimFacing) - 1;
-  const int clockwiseSteps =
-      ((comingFrom - facing) % cardinalCount + cardinalCount) % cardinalCount;
-  switch (clockwiseSteps) {
-    case 0:
-      return 1;
-    case 1:
-      return 7;
-    case 2:
-      return 5;
-    default:
-      return 3;
-  }
+  constexpr std::array<int, cardinalCount> codeBySourceTurns = {
+      ejectFromFront, ejectFromRight, ejectFromBehind, ejectFromLeft};
+  const Direction source = opposite(pushDirection);
+  return codeBySourceTurns.at(clockwiseQuarterTurns(victimFacing, source));
 }
 
 }  // namespace zappy::world
