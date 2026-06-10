@@ -142,3 +142,25 @@ def test_is_ready_to_elevate_true_for_each_level_with_exact_inventory(level):
     """
     inventory = {k: v for k, v in ELEVATION_REQUIREMENTS[level].items() if k != "players"}
     assert is_ready_to_elevate(level, inventory) is True
+
+
+@pytest.mark.parametrize("level", [0, 8])
+def test_stones_missing_raises_for_invalid_level(level):
+    """
+    Given a level outside the valid range 1-7
+    When stones_missing is called
+    Then it raises ValueError
+    """
+    with pytest.raises(ValueError):
+        stones_missing(level, {})
+
+
+@pytest.mark.parametrize("level", [0, 8])
+def test_is_ready_to_elevate_raises_for_invalid_level(level):
+    """
+    Given a level outside the valid range 1-7
+    When is_ready_to_elevate is called
+    Then it raises ValueError
+    """
+    with pytest.raises(ValueError):
+        is_ready_to_elevate(level, {})
