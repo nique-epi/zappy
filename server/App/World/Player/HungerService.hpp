@@ -50,8 +50,9 @@ class HungerService {
   void armFirstTick(int fileDescriptor, Scheduler::TimePoint now);
 
  private:
-  void scheduleTick(int fileDescriptor, Scheduler::TimePoint now);
-  void onTick(int fileDescriptor);
+  void scheduleTick(int fileDescriptor, int playerId,
+                    Scheduler::TimePoint from);
+  void onTick(int fileDescriptor, int playerId, Scheduler::TimePoint deadline);
   void killPlayer(zappy::rpc::Session<ClientContext>& session);
 
   zappy::rpc::RPCServer<ClientContext>& server_;

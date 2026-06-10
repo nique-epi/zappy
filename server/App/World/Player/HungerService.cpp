@@ -31,23 +31,22 @@ void HungerService::armFirstTick(int fileDescriptor, Scheduler::TimePoint now) {
   if (session == nullptr || session->ctx().playerId == 0) {
     return;
   }
-  scheduleTick(fileDescriptor, now);
+  scheduleTick(fileDescriptor, session->ctx().playerId, now);
 }
 
-void HungerService::scheduleTick(int fileDescriptor, Scheduler::TimePoint now) {
+void HungerService::scheduleTick(int fileDescriptor, int playerId,
+                                 Scheduler::TimePoint from) {
   const Scheduler::TimePoint deadline =
-      now + actionDuration(gameTicksPerFoodUnit, frequency_);
-  scheduler_.scheduleAt(deadline,
-                        [this, fileDescriptor]() { onTick(fileDescriptor); });
+      from + actionDuration(gameTicksPerFoodUnit, frequency_);
+  scheduler_.scheduleAt(deadline, [this, fileDescriptor, playerId, deadline]() {
+    onTick(fileDescriptor, playerId, deadline);
+  });
 }
 
-void HungerService::onTick(int fileDescriptor) {
+void HungerService::onTick(int fileDescriptor, int playerId,
+                           Scheduler::TimePoint deadline) {
   AiSession* session = server_.session(fileDescriptor);
-  if (session == nullptr) {
-    return;
-  }
-  const int playerId = session->ctx().playerId;
-  if (playerId == 0) {
+  if (session == nullptr || session->ctx().playerId != playerId) {
     return;
   }
   world::Player* player = players_.find(playerId);
@@ -59,7 +58,7 @@ void HungerService::onTick(int fileDescriptor) {
     killPlayer(*session);
     return;
   }
-  scheduleTick(fileDescriptor, Scheduler::Clock::now());
+  scheduleTick(fileDescriptor, playerId, deadline);
 }
 
 void HungerService::killPlayer(AiSession& session) {
