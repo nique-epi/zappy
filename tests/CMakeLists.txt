@@ -70,17 +70,16 @@ add_executable(zappy_server_tests
   Scheduler/TestActionTiming.cpp
   Net/TestActionQueue.cpp
   Net/TestAiActionPipeline.cpp
+  Net/TestGuiQueryHandlers.cpp
   App/TestActionCosts.cpp
+  Rpc/mocks/LoopbackClient.cpp
+  Network/mocks/MockSocket.cpp
 )
 
 target_include_directories(zappy_server_tests
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Rpc/mocks
     ${CMAKE_CURRENT_SOURCE_DIR}/Network/mocks
-)
-target_sources(zappy_server_tests PRIVATE
-  Rpc/mocks/LoopbackClient.cpp
-  Network/mocks/MockSocket.cpp
 )
 
 target_link_libraries(zappy_server_tests
@@ -149,7 +148,7 @@ if(COVERAGE)
   add_custom_target(coverage
     COMMAND ${CMAKE_COMMAND} -E env bash
       ${CMAKE_CURRENT_SOURCE_DIR}/coverage.sh
-    DEPENDS zappy_network_tests zappy_rpc_tests
+    DEPENDS zappy_network_tests zappy_rpc_tests zappy_schema_tests zappy_server_tests
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     USES_TERMINAL
     COMMENT "Running tests and generating llvm-cov coverage report..."

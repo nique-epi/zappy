@@ -13,6 +13,7 @@
 #include "App/World/Player/Player.hpp"
 #include "App/World/Team/Egg.hpp"
 #include "Net/AiActionPipeline.hpp"
+#include "Net/GuiQueryHandlers.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Protocol/GuiProtocol.hpp"
 #include "Rpc/Message/IMessage.hpp"
@@ -41,6 +42,7 @@ GameServer::GameServer(const ServerConfig& config)
   registerAiHandlers();
   registerFallbacks();
   installAiActionPipeline(server_, scheduler_, config_.frequency);
+  installGuiQueryHandlers(server_, config_, world_);
   server_.onDisconnect([this](Session& session) {
     session.ctx().pendingActions.clear();
     session.ctx().actionInFlight = false;
@@ -98,17 +100,9 @@ void GameServer::registerHandshake() {
 }
 
 void GameServer::registerGuiHandlers() {
-  server_.on(protocol::RequestMapSize(),
-             [](Session&, zappy::rpc::IMessage&) {});
-  server_.on(protocol::RequestMapContent(),
-             [](Session&, zappy::rpc::IMessage&) {});
-  server_.on(protocol::RequestTeamNames(),
-             [](Session&, zappy::rpc::IMessage&) {});
   server_.on(protocol::RequestTimeUnit(),
              [](Session&, zappy::rpc::IMessage&) {});
 
-  server_.on(protocol::RequestTileContent(),
-             [](Session&, const protocol::TileRequestArgs&) {});
   server_.on(protocol::RequestPlayerPosition(),
              [](Session&, const protocol::PlayerNumberArgs&) {});
   server_.on(protocol::RequestPlayerLevel(),

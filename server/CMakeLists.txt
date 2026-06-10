@@ -21,6 +21,7 @@ add_library(zappy_server_app STATIC
   App/GameServer.cpp
   Net/ActionQueue.cpp
   Net/AiActionPipeline.cpp
+  Net/GuiQueryHandlers.cpp
 )
 
 target_include_directories(zappy_server_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
