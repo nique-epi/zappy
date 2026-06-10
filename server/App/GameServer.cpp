@@ -8,7 +8,6 @@
 #include "App/GameServer.hpp"
 #include <random>
 #include <string>
-#include "App/World/Exceptions/WorldException.hpp"
 #include "App/World/Player/Direction.hpp"
 #include "App/World/Player/Player.hpp"
 #include "App/World/Team/Egg.hpp"
@@ -59,9 +58,13 @@ void GameServer::run() {
   running_ = true;
   loot_.start(scheduler_, Scheduler::Clock::now());
   while (running_) {
-    server_.runOnce(scheduler_.timeoutUntilNext(Scheduler::Clock::now()));
-    scheduler_.runDue(Scheduler::Clock::now());
+    runOnce(scheduler_.timeoutUntilNext(Scheduler::Clock::now()));
   }
+}
+
+void GameServer::runOnce(int timeoutMs) {
+  server_.runOnce(timeoutMs);
+  scheduler_.runDue(Scheduler::Clock::now());
 }
 
 void GameServer::stop() { running_ = false; }
@@ -77,26 +80,39 @@ void GameServer::registerHandshake() {
       session.completeHandshake();
       return;
     }
-    try {
-      const world::Egg hatched = teams_.hatch(teamName, world_, rng_);
-      const world::Direction direction =
-          world::PlayerRegistry::randomDirection(rng_);
-      const world::Player& player =
-          players_.spawn(teamName, hatched.x, hatched.y, direction, world_);
-      session.ctx().type = ClientType::Ai;
-      session.ctx().teamName = teamName;
-      session.ctx().spawnX = hatched.x;
-      session.ctx().spawnY = hatched.y;
-      session.ctx().playerId = player.id();
-      session.send(std::to_string(teams_.freeSlots(teamName)));
-      session.send(std::to_string(config_.width) + " " +
-                   std::to_string(config_.height));
-      session.completeHandshake();
-      hunger_.armFirstTick(session.fd(), Scheduler::Clock::now());
-    } catch (const world::WorldException&) {
+    if (!teams_.contains(teamName)) {
       session.send(protocol::ai::Ko().opcode());
+      return;
     }
+    admitAiClient(session, teamName);
   });
+}
+
+void GameServer::admitAiClient(Session& session, const std::string& teamName) {
+  session.ctx().type = ClientType::Ai;
+  session.ctx().teamName = teamName;
+  if (teams_.freeSlots(teamName) == 0) {
+    session.send("0");
+    session.send(worldSizeLine());
+    session.completeHandshake();
+    return;
+  }
+  const world::Egg hatched = teams_.hatch(teamName, world_, rng_);
+  const world::Direction direction =
+      world::PlayerRegistry::randomDirection(rng_);
+  const world::Player& player =
+      players_.spawn(teamName, hatched.x, hatched.y, direction, world_);
+  session.ctx().spawnX = hatched.x;
+  session.ctx().spawnY = hatched.y;
+  session.ctx().playerId = player.id();
+  session.send(std::to_string(teams_.freeSlots(teamName)));
+  session.send(worldSizeLine());
+  session.completeHandshake();
+  hunger_.armFirstTick(session.fd(), Scheduler::Clock::now());
+}
+
+std::string GameServer::worldSizeLine() const {
+  return std::to_string(config_.width) + " " + std::to_string(config_.height);
 }
 
 void GameServer::registerGuiHandlers() {
