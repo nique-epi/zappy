@@ -29,6 +29,7 @@ ELEVATION_REQUIREMENTS = {
     },
 }
 
+
 def stones_missing(level, inventory):
     """Given a level and an inventory of stones"""
     requirements = ELEVATION_REQUIREMENTS.get(level)
@@ -44,6 +45,7 @@ def stones_missing(level, inventory):
             missing_stones[stone] = required_amount - current_amount
 
     return missing_stones
+
 
 def is_ready_to_elevate(level, inventory):
     """Given a level and an inventory of stones"""
