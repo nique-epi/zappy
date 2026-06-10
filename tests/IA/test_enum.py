@@ -1,5 +1,5 @@
 """Unit tests for the shared enums."""
-from ia.shared.enum import Direction, Move, Resource
+from ia.shared.enum import Direction, Move, Resource, State
 
 
 def test_direction_values():
@@ -51,3 +51,30 @@ def test_resource_has_seven_members():
     Then it has exactly 7 members (food + 6 minerals)
     """
     assert len(Resource) == 7
+
+
+def test_state_survival_value():
+    """
+    Given the State enum
+    When the SURVIVAL member is inspected
+    Then its value is the string "survival"
+    """
+    assert State.SURVIVAL.value == "survival"
+
+
+def test_state_eating_value():
+    """
+    Given the State enum
+    When the EATING member is inspected
+    Then its value is the string "eating"
+    """
+    assert State.EATING.value == "eating"
+
+
+def test_state_has_two_members():
+    """
+    Given the State enum
+    When its length is checked
+    Then it has exactly 2 members
+    """
+    assert len(State) == 2
