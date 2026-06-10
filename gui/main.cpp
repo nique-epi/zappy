@@ -13,6 +13,7 @@
 #include "Cli/ArgsParser.hpp"
 #include "Cli/Exceptions/ParserException.hpp"  // NOLINT(misc-include-cleaner)
 #include "Network/NetworkManager.hpp"
+#include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/raygui.h"
@@ -40,9 +41,17 @@ int main(int argc, char** argv) {
     InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
     SetTargetFPS(cfg::TARGET_FPS);
 
-    const zappy::gui::WorldState world = zappy::gui::mockWorld();
+    zappy::gui::WorldState world;
+    zappy::gui::MessageParser parser(world);
+    bool parserInstalled = false;
 
     while (!WindowShouldClose()) {
+      if (!parserInstalled &&
+          handshake.status() == zappy::gui::HandshakeStatus::Done) {
+        network.setResponseHandler(
+            [&parser](const std::string& line) { parser.parseLine(line); });
+        parserInstalled = true;
+      }
       network.runOnce(0);
       handshake.checkTimeout();
 
