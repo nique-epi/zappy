@@ -68,3 +68,31 @@ TEST(Team, RemoveEggOutOfRangeThrows) {
 
   EXPECT_THROW(team.removeEggAt(0), std::out_of_range);
 }
+
+TEST(Team, RemoveEggByIdDropsTheMatchingSlot) {
+  /*
+   * Given a team holding two eggs
+   * When removeEggById targets the second one
+   * Then it reports success, shrinks, and keeps the other egg
+   */
+  Team team("red");
+  team.addEgg(Egg{1, "red", 3, 4});
+  team.addEgg(Egg{2, "red", 7, 1});
+
+  EXPECT_TRUE(team.removeEggById(2));
+  ASSERT_EQ(team.freeSlots(), 1U);
+  EXPECT_EQ(team.eggs().front().id, 1);
+}
+
+TEST(Team, RemoveEggByIdReturnsFalseForUnknownId) {
+  /*
+   * Given a team holding one egg
+   * When removeEggById targets an absent id
+   * Then it reports failure and leaves the pool untouched
+   */
+  Team team("red");
+  team.addEgg(Egg{1, "red", 3, 4});
+
+  EXPECT_FALSE(team.removeEggById(99));
+  EXPECT_EQ(team.freeSlots(), 1U);
+}

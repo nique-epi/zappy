@@ -23,7 +23,7 @@ TeamRegistry::TeamRegistry(const std::vector<std::string>& teamNames) {
 }
 
 bool TeamRegistry::contains(const std::string& teamName) const {
-  return teams_.find(teamName) != teams_.end();
+  return teams_.contains(teamName);
 }
 
 std::size_t TeamRegistry::freeSlots(const std::string& teamName) const {
@@ -41,7 +41,7 @@ void TeamRegistry::seedInitialEggs(Map& map, int slotsPerTeam,
     for (int slot = 0; slot < slotsPerTeam; ++slot) {
       const int x = columns(rng);
       const int y = rows(rng);
-      const Egg egg{nextEggId_++, name, x, y};
+      const Egg egg{.id = nextEggId_++, .teamName = name, .x = x, .y = y};
       team.addEgg(egg);
       map.tileAt(x, y).addEgg(egg.id);
     }
@@ -62,10 +62,19 @@ Egg TeamRegistry::hatch(const std::string& teamName, Map& map,
 
 Egg TeamRegistry::lay(const std::string& teamName, Map& map, int x, int y) {
   Team& team = teamOrThrow(teamName);
-  const Egg egg{nextEggId_++, teamName, x, y};
+  const Egg egg{.id = nextEggId_++, .teamName = teamName, .x = x, .y = y};
   team.addEgg(egg);
   map.tileAt(x, y).addEgg(egg.id);
   return egg;
+}
+
+bool TeamRegistry::removeEgg(int eggId) {
+  for (auto& [name, team] : teams_) {
+    if (team.removeEggById(eggId)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 Team& TeamRegistry::teamOrThrow(const std::string& teamName) {

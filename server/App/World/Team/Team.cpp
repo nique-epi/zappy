@@ -32,4 +32,14 @@ Egg Team::removeEggAt(std::size_t index) {
   return removed;
 }
 
+bool Team::removeEggById(int eggId) {
+  for (auto it = eggs_.begin(); it != eggs_.end(); ++it) {
+    if (it->id == eggId) {
+      eggs_.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace zappy::world
