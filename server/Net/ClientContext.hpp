@@ -30,6 +30,24 @@ struct ClientContext {
   std::string teamName;
 
   /**
+   * @brief Tile coordinates the AI session spawned on, set on a successful
+   *        handshake by the egg hatching that completed the handshake.
+   *
+   * Unused for GUI sessions and meaningless before the handshake completes.
+   */
+  int spawnX{0};
+  int spawnY{0};
+
+  /**
+   * @brief Identifier of the drone bound to this session, set by the player
+   *        spawn that follows a successful AI handshake.
+   *
+   * Zero means no player is bound yet (handshake not completed, or GUI
+   * session).
+   */
+  int playerId{0};
+
+  /**
    * @brief Pending command lines for AI sessions, bounded at
    *        @ref maxPendingActions.
    *

@@ -7,10 +7,14 @@
 
 #pragma once
 
+#include <random>
 #include "App/Loot/LootService.hpp"
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/ServerConfig.hpp"
 #include "App/World/Map/Map.hpp"
+#include "App/World/Player/HungerService.hpp"
+#include "App/World/Player/PlayerRegistry.hpp"
+#include "App/World/Team/TeamRegistry.hpp"
 #include "Net/ClientContext.hpp"
 #include "Rpc/Server/RPCServer.hpp"
 
@@ -63,8 +67,12 @@ class GameServer {
   ServerConfig config_;
   zappy::rpc::RPCServer<ClientContext> server_;
   world::Map world_;
+  std::mt19937 rng_;
+  world::TeamRegistry teams_;
+  world::PlayerRegistry players_;
   loot::LootService loot_;
   Scheduler scheduler_;
+  HungerService hunger_;
   bool running_{false};
 };
 

@@ -8,6 +8,10 @@
 #include "App/GameServer.hpp"
 #include <random>
 #include <string>
+#include "App/World/Exceptions/WorldException.hpp"
+#include "App/World/Player/Direction.hpp"
+#include "App/World/Player/Player.hpp"
+#include "App/World/Team/Egg.hpp"
 #include "Net/AiActionPipeline.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Protocol/GuiProtocol.hpp"
@@ -27,12 +31,24 @@ GameServer::GameServer(const ServerConfig& config)
     : config_(config),
       server_(config.port),
       world_(config.width, config.height),
-      loot_(world_, config.frequency, std::random_device{}()) {
+      rng_(std::random_device{}()),
+      teams_(config.teamNames),
+      loot_(world_, config.frequency, std::random_device{}()),
+      hunger_(server_, scheduler_, players_, world_, config.frequency) {
+  teams_.seedInitialEggs(world_, config_.clientsPerTeam, rng_);
   registerHandshake();
   registerGuiHandlers();
   registerAiHandlers();
   registerFallbacks();
   installAiActionPipeline(server_, scheduler_, config_.frequency);
+  server_.onDisconnect([this](Session& session) {
+    session.ctx().pendingActions.clear();
+    session.ctx().actionInFlight = false;
+    if (session.ctx().playerId != 0) {
+      players_.remove(session.ctx().playerId, world_);
+      session.ctx().playerId = 0;
+    }
+  });
 }
 
 void GameServer::start() { server_.start(); }
@@ -59,12 +75,25 @@ void GameServer::registerHandshake() {
       session.completeHandshake();
       return;
     }
-    session.ctx().type = ClientType::Ai;
-    session.ctx().teamName = teamName;
-    session.send(std::to_string(config_.clientsPerTeam));
-    session.send(std::to_string(config_.width) + " " +
-                 std::to_string(config_.height));
-    session.completeHandshake();
+    try {
+      const world::Egg hatched = teams_.hatch(teamName, world_, rng_);
+      const world::Direction direction =
+          world::PlayerRegistry::randomDirection(rng_);
+      const world::Player& player =
+          players_.spawn(teamName, hatched.x, hatched.y, direction, world_);
+      session.ctx().type = ClientType::Ai;
+      session.ctx().teamName = teamName;
+      session.ctx().spawnX = hatched.x;
+      session.ctx().spawnY = hatched.y;
+      session.ctx().playerId = player.id();
+      session.send(std::to_string(teams_.freeSlots(teamName)));
+      session.send(std::to_string(config_.width) + " " +
+                   std::to_string(config_.height));
+      session.completeHandshake();
+      hunger_.armFirstTick(session.fd(), Scheduler::Clock::now());
+    } catch (const world::WorldException&) {
+      session.send(protocol::ai::Ko().opcode());
+    }
   });
 }
 

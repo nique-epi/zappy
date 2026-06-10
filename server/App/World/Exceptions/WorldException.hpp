@@ -43,4 +43,22 @@ class MapAllocationException : public WorldException {
   MapAllocationException(int width, int height);
 };
 
+/**
+ * @brief Thrown when an operation references a team name that was not
+ *        declared on the command line.
+ */
+class UnknownTeamException : public WorldException {
+ public:
+  explicit UnknownTeamException(const std::string& teamName);
+};
+
+/**
+ * @brief Thrown when an AI connection or a hatching request targets a team
+ *        whose slots are all already in use.
+ */
+class NoFreeSlotException : public WorldException {
+ public:
+  explicit NoFreeSlotException(const std::string& teamName);
+};
+
 }  // namespace zappy::world
