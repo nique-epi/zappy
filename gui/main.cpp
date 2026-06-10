@@ -12,8 +12,8 @@
 #include <string_view>
 #include "Cli/ArgsParser.hpp"
 #include "Cli/Exceptions/ParserException.hpp"  // NOLINT(misc-include-cleaner)
-#include "Network/MessageParser.hpp"
 #include "Network/NetworkManager.hpp"
+#include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/raygui.h"

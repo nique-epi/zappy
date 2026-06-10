@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <string>
-#include "Network/MessageParser.hpp"
+#include "Network/Parsing/MessageParser.hpp"
 #include "World/WorldState.hpp"
 
 TEST(MessageParser, MszSetsWidthAndHeight) {

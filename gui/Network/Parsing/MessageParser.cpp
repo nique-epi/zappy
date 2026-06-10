@@ -5,7 +5,7 @@
 ** MessageParser — dispatch incoming server lines to WorldState updates
 */
 
-#include "Network/MessageParser.hpp"
+#include "Network/Parsing/MessageParser.hpp"
 #include <sstream>
 #include <string>
 #include "Network/Parsing/Handlers.hpp"

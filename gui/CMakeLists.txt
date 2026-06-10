@@ -50,7 +50,7 @@ target_link_libraries(zappy_gui_handshake PUBLIC zappy_gui_cli)
 target_compile_options(zappy_gui_handshake PRIVATE -Wall -Wextra -Werror)
 
 add_library(zappy_gui_parser STATIC
-    Network/MessageParser.cpp
+    Network/Parsing/MessageParser.cpp
     Network/Parsing/ParsingUtils.cpp
     Network/Parsing/MapHandlers.cpp
     Network/Parsing/PlayerHandlers.cpp
