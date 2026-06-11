@@ -125,7 +125,6 @@ def test_handle_returns_current_state_when_server_disconnects(state):
     Then the current bot state is returned without crashing
     """
     bot = FakeBot(food=0, responses=[None])
-    bot.client.responses = [None]
     result = None
     for _ in range(INVENTORY_CHECK_INTERVAL):
         result = state.handle(bot)

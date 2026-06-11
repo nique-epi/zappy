@@ -14,11 +14,11 @@ class SurvivalState:
         if self._cycles_since_check < INVENTORY_CHECK_INTERVAL:
             return bot.state
 
-        self._cycles_since_check = 0
         bot.client.send("Inventory\n")
         response = bot.client.recv()
         if response is None:
             return bot.state
+        self._cycles_since_check = 0
         bot.inventory = parse_inventory(response)
 
         if needs_food(bot.inventory):

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from ia.network.exceptions import PlayerDeadError
 from ia.parsing.inventory import needs_food, parse_inventory
-from ia.shared.enum import Direction, Resource
+from ia.shared.enum import Direction, Resource, State
 
 if TYPE_CHECKING:
     from ia.network.client import ZappyClient
@@ -35,7 +35,7 @@ class Bot:
         self.map: list[list[dict]] = self._init_map()
         self.role: str = self._assign_role(client_num)
         self.inventory: dict[Resource, int] = dict.fromkeys(Resource, 0)
-        self.state: str = "survival"
+        self.state: State = State.SURVIVAL
 
     @property
     def client(self) -> "ZappyClient":
