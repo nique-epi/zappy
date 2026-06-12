@@ -12,6 +12,7 @@ add_library(zappy_server_app STATIC
   App/World/Player/PlayerRegistry.cpp
   App/World/Player/HungerService.cpp
   App/World/Ejection.cpp
+  App/World/Broadcast.cpp
   App/World/Exceptions/WorldException.cpp
   App/Loot/ResourceDensity.cpp
   App/Loot/LootService.cpp

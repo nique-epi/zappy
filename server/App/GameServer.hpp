@@ -19,6 +19,10 @@
 #include "Net/ClientContext.hpp"
 #include "Rpc/Server/RPCServer.hpp"
 
+namespace zappy::protocol::ai {
+struct BroadcastTextArgs;
+}  // namespace zappy::protocol::ai
+
 namespace zappy::server {
 
 /**
@@ -106,6 +110,17 @@ class GameServer {
    * `ok` when at least one drone was pushed, `ko` otherwise.
    */
   void executeEject(zappy::rpc::Session<ClientContext>& session);
+
+  /**
+   * @brief Broadcast @p args text to every drone (Broadcast).
+   *
+   * Replies `ok` to the emitter and pushes `message K, text` to every AI
+   * client, where K is the tile the sound reaches that listener from, computed
+   * per receiver along the shortest toroidal path. The emitter stays anonymous.
+   * Replies `ko` when the session owns no drone.
+   */
+  void executeBroadcast(zappy::rpc::Session<ClientContext>& session,
+                        const protocol::ai::BroadcastTextArgs& args);
 
   ServerConfig config_;
   zappy::rpc::RPCServer<ClientContext> server_;

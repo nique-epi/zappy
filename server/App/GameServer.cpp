@@ -8,6 +8,7 @@
 #include "App/GameServer.hpp"
 #include <random>
 #include <string>
+#include "App/World/Broadcast.hpp"
 #include "App/World/Ejection.hpp"
 #include "App/World/Exceptions/WorldException.hpp"
 #include "App/World/Player/Direction.hpp"
@@ -154,8 +155,11 @@ void GameServer::registerAiHandlers() {
              [](Session&, const protocol::ai::ObjectArgs&) {});
   server_.on(protocol::ai::Set(),
              [](Session&, const protocol::ai::ObjectArgs&) {});
-  server_.on(protocol::ai::Broadcast(),
-             [](Session&, const protocol::ai::BroadcastTextArgs&) {});
+  server_.on(
+      protocol::ai::Broadcast(),
+      [this](Session& session, const protocol::ai::BroadcastTextArgs& args) {
+        executeBroadcast(session, args);
+      });
 }
 
 void GameServer::executeFork(Session& session) {
@@ -182,6 +186,32 @@ void GameServer::executeEject(Session& session) {
   }
   session.send(outcome.ejected.empty() ? protocol::ai::Ko().opcode()
                                        : protocol::ai::Ok().opcode());
+}
+
+void GameServer::executeBroadcast(Session& session,
+                                  const protocol::ai::BroadcastTextArgs& args) {
+  const world::Player* emitter = players_.find(session.ctx().playerId);
+  if (emitter == nullptr) {
+    session.send(protocol::ai::Ko().opcode());
+    return;
+  }
+  const int emitterX = emitter->x();
+  const int emitterY = emitter->y();
+  const std::string& text = args.text;
+  server_.forEachSession([this, emitterX, emitterY, &text](Session& other) {
+    if (other.ctx().type != ClientType::Ai) {
+      return;
+    }
+    const world::Player* receiver = players_.find(other.ctx().playerId);
+    if (receiver == nullptr) {
+      return;
+    }
+    const int code = world::broadcastSoundDirection(
+        emitterX, emitterY, receiver->x(), receiver->y(), receiver->direction(),
+        world_.width(), world_.height());
+    other.send("message " + std::to_string(code) + ", " + text);
+  });
+  session.send(protocol::ai::Ok().opcode());
 }
 
 void GameServer::registerFallbacks() {
