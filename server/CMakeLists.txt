@@ -26,6 +26,10 @@ add_library(zappy_server_app STATIC
   Net/ActionQueue.cpp
   Net/AiActionPipeline.cpp
   Net/GuiQueryHandlers.cpp
+  Net/Ai/Movement/MovementHandlers.cpp
+  Net/Ai/Resources/ResourceHandlers.cpp
+  Net/Ai/Observation/ObservationHandlers.cpp
+  Net/Ai/Reproduction/ReproductionHandlers.cpp
 )
 
 target_include_directories(zappy_server_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
