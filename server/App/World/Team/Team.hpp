@@ -52,6 +52,12 @@ class Team {
    */
   Egg removeEggAt(std::size_t index);
 
+  /**
+   * @brief Remove the egg identified by @p eggId, dropping that free slot.
+   * @returns true if the team owned an egg with @p eggId, false otherwise.
+   */
+  bool removeEggById(int eggId);
+
  private:
   std::string name_;
   std::vector<Egg> eggs_;

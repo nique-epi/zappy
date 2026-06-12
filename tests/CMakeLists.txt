@@ -64,6 +64,8 @@ add_executable(zappy_server_tests
   World/TestPlayer.cpp
   World/TestPlayerRegistry.cpp
   World/TestHungerConstants.cpp
+  World/TestDirection.cpp
+  World/TestEjection.cpp
   Loot/TestResourceDensity.cpp
   Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp
@@ -104,6 +106,12 @@ target_link_libraries(zappy_gui_tests
 
 add_executable(zappy_gui_handshake_tests
   Gui/TestServerHandshake.cpp
+  Gui/mocks/FakeNetwork.cpp
+)
+
+target_include_directories(zappy_gui_handshake_tests
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Gui/mocks
 )
 
 target_link_libraries(zappy_gui_handshake_tests
@@ -119,6 +127,22 @@ add_executable(zappy_gui_parser_tests
 target_link_libraries(zappy_gui_parser_tests
   PRIVATE
     zappy_gui_parser
+    GTest::gtest_main
+)
+
+add_executable(zappy_gui_commands_tests
+  Gui/TestCommandSender.cpp
+  Gui/mocks/FakeNetwork.cpp
+)
+
+target_include_directories(zappy_gui_commands_tests
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Gui/mocks
+)
+
+target_link_libraries(zappy_gui_commands_tests
+  PRIVATE
+    zappy_gui_commands
     GTest::gtest_main
 )
 
@@ -142,6 +166,9 @@ gtest_discover_tests(zappy_gui_handshake_tests
   DISCOVERY_MODE PRE_TEST
 )
 gtest_discover_tests(zappy_gui_parser_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_gui_commands_tests
   DISCOVERY_MODE PRE_TEST
 )
 

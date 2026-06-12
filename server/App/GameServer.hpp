@@ -92,6 +92,20 @@ class GameServer {
 
   /// World dimensions formatted as the `X Y` handshake line.
   [[nodiscard]] std::string worldSizeLine() const;
+  /**
+   * @brief Lay an egg on the calling drone's tile (Fork): a new free slot for
+   *        its team. Replies `ok`, or `ko` if the session owns no drone.
+   */
+  void executeFork(zappy::rpc::Session<ClientContext>& session);
+
+  /**
+   * @brief Push every other drone off the calling drone's tile (Eject),
+   *        destroying the eggs on it.
+   *
+   * Each pushed drone is told `eject: K` with its incoming direction. Replies
+   * `ok` when at least one drone was pushed, `ko` otherwise.
+   */
+  void executeEject(zappy::rpc::Session<ClientContext>& session);
 
   ServerConfig config_;
   zappy::rpc::RPCServer<ClientContext> server_;

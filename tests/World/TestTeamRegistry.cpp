@@ -144,3 +144,32 @@ TEST(TeamRegistry, LayOnUnknownTeamThrows) {
 
   EXPECT_THROW((void)registry.lay("ghost", map, 0, 0), UnknownTeamException);
 }
+
+TEST(TeamRegistry, RemoveEggFindsTheOwningTeamAndDropsItsSlot) {
+  /*
+   * Given two teams each owning one laid egg
+   * When removeEgg targets the blue team's egg by id
+   * Then it reports success and only the blue team loses a slot
+   */
+  TeamRegistry registry({"red", "blue"});
+  Map map(5, 5);
+  registry.lay("red", map, 1, 1);
+  const Egg blueEgg = registry.lay("blue", map, 2, 2);
+
+  EXPECT_TRUE(registry.removeEgg(blueEgg.id));
+  EXPECT_EQ(registry.freeSlots("blue"), 0U);
+  EXPECT_EQ(registry.freeSlots("red"), 1U);
+}
+
+TEST(TeamRegistry, RemoveEggReturnsFalseWhenNoTeamOwnsTheId) {
+  /*
+   * Given a registry whose teams own no egg with the queried id
+   * When removeEgg is called with that id
+   * Then it reports failure
+   */
+  TeamRegistry registry({"red"});
+  Map map(5, 5);
+  registry.lay("red", map, 1, 1);
+
+  EXPECT_FALSE(registry.removeEgg(999));
+}

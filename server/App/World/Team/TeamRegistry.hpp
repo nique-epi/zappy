@@ -92,6 +92,18 @@ class TeamRegistry {
    */
   Egg lay(const std::string& teamName, Map& map, int x, int y);
 
+  /**
+   * @brief Destroy the egg identified by @p eggId wherever it sits, dropping
+   *        the owning team's free slot.
+   *
+   * Used when an ejection wipes the eggs off a tile. The tile bookkeeping is
+   * the caller's responsibility; this only updates the owning team.
+   *
+   * @param[in] eggId Identifier of the egg to remove.
+   * @returns true if some team owned an egg with @p eggId, false otherwise.
+   */
+  bool removeEgg(int eggId);
+
  private:
   [[nodiscard]] Team& teamOrThrow(const std::string& teamName);
   [[nodiscard]] const Team& teamOrThrow(const std::string& teamName) const;
