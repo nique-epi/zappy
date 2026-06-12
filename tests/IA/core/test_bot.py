@@ -1,39 +1,9 @@
 """Unit tests for the Bot class."""
 # pylint: disable=redefined-outer-name
-import pytest
 from ia.core.bot import Bot
 from ia.network.exceptions import PlayerDeadError
 from ia.shared.enum import Resource
-
-
-class FakeClient:
-    """Minimal ZappyClient stand-in for unit tests."""
-
-    def __init__(self, responses=None):
-        self.responses = list(responses or [])
-        self.sent = []
-        self.recv_calls = 0
-
-    def recv(self):
-        self.recv_calls += 1
-        if not self.responses:
-            return None
-        item = self.responses.pop(0)
-        if isinstance(item, Exception):
-            raise item
-        return item
-
-    def send(self, command):
-        self.sent.append(command)
-
-    def close(self):
-        pass
-
-
-@pytest.fixture
-def fake_client():
-    """Provide a fresh FakeClient for each test."""
-    return FakeClient()
+from tests.IA.mocks.fake_client import FakeClient
 
 
 def test_bot_init(fake_client):

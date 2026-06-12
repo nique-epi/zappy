@@ -4,32 +4,8 @@ import pytest
 from ia.config import FOOD_THRESHOLD, INVENTORY_CHECK_INTERVAL
 from ia.shared.enum import Resource, State
 from ia.states.survival import SurvivalState
-
-
-class FakeClient:
-    """Minimal client stand-in for SurvivalState tests."""
-
-    def __init__(self, responses=None):
-        self.responses = list(responses or [])
-        self.sent = []
-
-    def send(self, command):
-        self.sent.append(command)
-
-    def recv(self):
-        if not self.responses:
-            return None
-        return self.responses.pop(0)
-
-
-class FakeBot:
-    """Minimal bot stand-in for SurvivalState tests."""
-
-    def __init__(self, food=0, responses=None):
-        self.client = FakeClient(responses or [])
-        self.inventory = dict.fromkeys(Resource, 0)
-        self.inventory[Resource.FOOD] = food
-        self.state = State.SURVIVAL
+from tests.IA.mocks.fake_bot import FakeBot
+from tests.IA.mocks.fake_client import FakeClient
 
 
 @pytest.fixture
@@ -44,7 +20,8 @@ def test_handle_before_interval_returns_current_state(state):
     When handle is called fewer times than INVENTORY_CHECK_INTERVAL
     Then the current state is returned without sending any command
     """
-    bot = FakeBot(food=10)
+    bot = FakeBot()
+    bot.inventory[Resource.FOOD] = 10
     for _ in range(INVENTORY_CHECK_INTERVAL - 1):
         result = state.handle(bot)
     assert result == State.SURVIVAL
@@ -60,7 +37,8 @@ def test_handle_at_interval_sends_inventory_command(state):
     inventory_response = (
         "[food 10, linemate 0, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]"
     )
-    bot = FakeBot(food=10, responses=[inventory_response])
+    bot = FakeBot(client=FakeClient([inventory_response]))
+    bot.inventory[Resource.FOOD] = 10
     for _ in range(INVENTORY_CHECK_INTERVAL):
         state.handle(bot)
     assert "Inventory\n" in bot.client.sent
@@ -77,7 +55,8 @@ def test_handle_returns_eating_when_food_low(state):
         f"[food {food_count}, linemate 0, deraumere 0, "
         "sibur 0, mendiane 0, phiras 0, thystame 0]"
     )
-    bot = FakeBot(food=food_count, responses=[inventory_response])
+    bot = FakeBot(client=FakeClient([inventory_response]))
+    bot.inventory[Resource.FOOD] = food_count
     result = None
     for _ in range(INVENTORY_CHECK_INTERVAL):
         result = state.handle(bot)
@@ -95,7 +74,8 @@ def test_handle_returns_current_state_when_food_sufficient(state):
         f"[food {food_count}, linemate 0, deraumere 0, "
         "sibur 0, mendiane 0, phiras 0, thystame 0]"
     )
-    bot = FakeBot(food=food_count, responses=[inventory_response])
+    bot = FakeBot(client=FakeClient([inventory_response]))
+    bot.inventory[Resource.FOOD] = food_count
     result = None
     for _ in range(INVENTORY_CHECK_INTERVAL):
         result = state.handle(bot)
@@ -111,7 +91,7 @@ def test_handle_updates_bot_inventory_after_check(state):
     inventory_response = (
         "[food 15, linemate 3, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]"
     )
-    bot = FakeBot(food=0, responses=[inventory_response])
+    bot = FakeBot(client=FakeClient([inventory_response]))
     for _ in range(INVENTORY_CHECK_INTERVAL):
         state.handle(bot)
     assert bot.inventory[Resource.FOOD] == 15
@@ -124,7 +104,7 @@ def test_handle_returns_current_state_when_server_disconnects(state):
     When handle triggers an inventory check
     Then the current bot state is returned without crashing
     """
-    bot = FakeBot(food=0, responses=[None])
+    bot = FakeBot(client=FakeClient([None]))
     result = None
     for _ in range(INVENTORY_CHECK_INTERVAL):
         result = state.handle(bot)
@@ -140,7 +120,8 @@ def test_cycle_counter_resets_after_check(state):
     inventory_response = (
         "[food 10, linemate 0, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]"
     )
-    bot = FakeBot(food=10, responses=[inventory_response, inventory_response])
+    bot = FakeBot(client=FakeClient([inventory_response, inventory_response]))
+    bot.inventory[Resource.FOOD] = 10
     for _ in range(INVENTORY_CHECK_INTERVAL):
         state.handle(bot)
     sent_count = len(bot.client.sent)
