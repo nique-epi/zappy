@@ -66,6 +66,9 @@ add_executable(zappy_server_tests
   World/TestHungerConstants.cpp
   World/TestDirection.cpp
   World/TestEjection.cpp
+  World/TestMovement.cpp
+  World/TestResourceTransfer.cpp
+  World/TestObservation.cpp
   Loot/TestResourceDensity.cpp
   Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp

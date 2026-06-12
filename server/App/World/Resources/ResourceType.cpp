@@ -29,4 +29,13 @@ std::string_view resourceName(ResourceType type) {
   return names[static_cast<std::size_t>(type)];
 }
 
+std::optional<ResourceType> resourceFromName(std::string_view name) {
+  for (const ResourceType type : allResourceTypes()) {
+    if (resourceName(type) == name) {
+      return type;
+    }
+  }
+  return std::nullopt;
+}
+
 }  // namespace zappy::world
