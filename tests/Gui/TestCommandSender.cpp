@@ -6,29 +6,10 @@
 */
 
 #include <gtest/gtest.h>
-#include <string>
-#include <vector>
+#include "FakeNetwork.hpp"
 #include "Network/CommandSender.hpp"
-#include "Network/INetworkClient.hpp"
 
-namespace {
-
-class FakeNetwork : public zappy::gui::INetworkClient {
- public:
-  void setResponseHandler(ResponseHandler handler) override {
-    handler_ = std::move(handler);
-  }
-
-  void sendLine(const std::string& line) override { sent_.push_back(line); }
-
-  [[nodiscard]] const std::vector<std::string>& sent() const { return sent_; }
-
- private:
-  ResponseHandler handler_;
-  std::vector<std::string> sent_;
-};
-
-}  // namespace
+using zappy::gui::test::FakeNetwork;
 
 TEST(CommandSender, RequestMapSizeSendsMsz) {
   FakeNetwork network;
