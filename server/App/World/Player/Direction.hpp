@@ -26,8 +26,43 @@ enum class Direction : std::uint8_t {
 };
 
 /**
+ * @brief Per-axis step a drone takes when moving one tile along @p direction.
+ *
+ * North decreases the row, South increases it; East increases the column, West
+ * decreases it. Coordinates are meant to be normalised by the toroidal map.
+ */
+struct DirectionOffset {
+  int dx;
+  int dy;
+};
+
+/**
  * @brief Single-letter mnemonic of @p direction (N/E/S/O).
  */
 [[nodiscard]] std::string_view directionLetter(Direction direction);
+
+/**
+ * @brief One-tile movement vector for @p direction.
+ */
+[[nodiscard]] DirectionOffset directionOffset(Direction direction);
+
+/**
+ * @brief The direction facing the opposite way to @p direction.
+ */
+[[nodiscard]] Direction opposite(Direction direction);
+
+/**
+ * @brief Eject `eject: K` code received by a drone pushed off a tile.
+ *
+ * K is the direction the pushed drone comes from, expressed relative to its
+ * own orientation with the subject's tile numbering (1 = front, then
+ * counter-clockwise). A cardinal push therefore yields one of front (1),
+ * left (3), back (5) or right (7).
+ *
+ * @param[in] pushDirection Direction the ejecting drone is facing (the push).
+ * @param[in] victimFacing  Orientation of the drone being pushed.
+ * @returns The K code to send to the pushed drone.
+ */
+[[nodiscard]] int ejectionCode(Direction pushDirection, Direction victimFacing);
 
 }  // namespace zappy::world

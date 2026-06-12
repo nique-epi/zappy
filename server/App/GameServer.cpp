@@ -8,6 +8,7 @@
 #include "App/GameServer.hpp"
 #include <random>
 #include <string>
+#include "App/World/Ejection.hpp"
 #include "App/World/Exceptions/WorldException.hpp"
 #include "App/World/Player/Direction.hpp"
 #include "App/World/Player/Player.hpp"
@@ -121,8 +122,14 @@ void GameServer::registerAiHandlers() {
   server_.on(protocol::ai::Inventory(), [](Session&, zappy::rpc::IMessage&) {});
   server_.on(protocol::ai::ConnectNbr(),
              [](Session&, zappy::rpc::IMessage&) {});
-  server_.on(protocol::ai::Fork(), [](Session&, zappy::rpc::IMessage&) {});
-  server_.on(protocol::ai::Eject(), [](Session&, zappy::rpc::IMessage&) {});
+  server_.on(protocol::ai::Fork(),
+             [this](Session& session, zappy::rpc::IMessage&) {
+               executeFork(session);
+             });
+  server_.on(protocol::ai::Eject(),
+             [this](Session& session, zappy::rpc::IMessage&) {
+               executeEject(session);
+             });
   server_.on(protocol::ai::Incantation(),
              [](Session&, zappy::rpc::IMessage&) {});
 
@@ -132,6 +139,32 @@ void GameServer::registerAiHandlers() {
              [](Session&, const protocol::ai::ObjectArgs&) {});
   server_.on(protocol::ai::Broadcast(),
              [](Session&, const protocol::ai::BroadcastTextArgs&) {});
+}
+
+void GameServer::executeFork(Session& session) {
+  world::Player* player = players_.find(session.ctx().playerId);
+  if (player == nullptr) {
+    session.send(protocol::ai::Ko().opcode());
+    return;
+  }
+  teams_.lay(player->teamName(), world_, player->x(), player->y());
+  session.send(protocol::ai::Ok().opcode());
+}
+
+void GameServer::executeEject(Session& session) {
+  const int ejectorId = session.ctx().playerId;
+  const world::EjectOutcome outcome =
+      world::ejectFromTile(ejectorId, players_, world_, teams_);
+  for (const world::EjectedDrone& drone : outcome.ejected) {
+    const std::string line = "eject: " + std::to_string(drone.code);
+    server_.forEachSession([&drone, &line](Session& other) {
+      if (other.ctx().playerId == drone.playerId) {
+        other.send(line);
+      }
+    });
+  }
+  session.send(outcome.ejected.empty() ? protocol::ai::Ko().opcode()
+                                       : protocol::ai::Ok().opcode());
 }
 
 void GameServer::registerFallbacks() {
