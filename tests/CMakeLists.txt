@@ -66,6 +66,10 @@ add_executable(zappy_server_tests
   World/TestHungerConstants.cpp
   World/TestDirection.cpp
   World/TestEjection.cpp
+  World/TestMovement.cpp
+  World/TestResourceTransfer.cpp
+  World/TestObservation.cpp
+  World/TestBroadcast.cpp
   Loot/TestResourceDensity.cpp
   Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp
@@ -75,6 +79,7 @@ add_executable(zappy_server_tests
   Net/TestGuiQueryHandlers.cpp
   App/TestActionCosts.cpp
   App/TestGameServerHandshake.cpp
+  App/TestGameServerAiCommands.cpp
   Rpc/mocks/LoopbackClient.cpp
   Network/mocks/MockSocket.cpp
 )

@@ -52,6 +52,34 @@ Direction opposite(Direction direction) {
   return direction;
 }
 
+Direction turnRight(Direction direction) {
+  switch (direction) {
+    case Direction::North:
+      return Direction::East;
+    case Direction::East:
+      return Direction::South;
+    case Direction::South:
+      return Direction::West;
+    case Direction::West:
+      return Direction::North;
+  }
+  return direction;
+}
+
+Direction turnLeft(Direction direction) {
+  switch (direction) {
+    case Direction::North:
+      return Direction::West;
+    case Direction::East:
+      return Direction::North;
+    case Direction::South:
+      return Direction::East;
+    case Direction::West:
+      return Direction::South;
+  }
+  return direction;
+}
+
 namespace {
 
 constexpr int cardinalCount = 4;

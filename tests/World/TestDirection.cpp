@@ -12,6 +12,8 @@ using zappy::world::Direction;
 using zappy::world::directionOffset;
 using zappy::world::ejectionCode;
 using zappy::world::opposite;
+using zappy::world::turnLeft;
+using zappy::world::turnRight;
 
 TEST(Direction, OffsetMovesAlongTheRightAxis) {
   /*
@@ -59,4 +61,40 @@ TEST(Direction, EjectionCodeHandlesEveryPushDirection) {
   EXPECT_EQ(ejectionCode(Direction::East, Direction::East), 5);
   EXPECT_EQ(ejectionCode(Direction::East, Direction::North), 3);
   EXPECT_EQ(ejectionCode(Direction::East, Direction::West), 1);
+}
+
+TEST(Direction, TurnRightRotatesClockwise) {
+  /*
+   * Given each cardinal direction
+   * When the drone turns right (Right command)
+   * Then the orientation steps N->E->S->W->N
+   */
+  EXPECT_EQ(turnRight(Direction::North), Direction::East);
+  EXPECT_EQ(turnRight(Direction::East), Direction::South);
+  EXPECT_EQ(turnRight(Direction::South), Direction::West);
+  EXPECT_EQ(turnRight(Direction::West), Direction::North);
+}
+
+TEST(Direction, TurnLeftRotatesCounterClockwise) {
+  /*
+   * Given each cardinal direction
+   * When the drone turns left (Left command)
+   * Then the orientation steps N->W->S->E->N
+   */
+  EXPECT_EQ(turnLeft(Direction::North), Direction::West);
+  EXPECT_EQ(turnLeft(Direction::West), Direction::South);
+  EXPECT_EQ(turnLeft(Direction::South), Direction::East);
+  EXPECT_EQ(turnLeft(Direction::East), Direction::North);
+}
+
+TEST(Direction, TurnLeftUndoesTurnRight) {
+  /*
+   * Given any cardinal direction
+   * When a right turn is followed by a left turn
+   * Then the original orientation is restored
+   */
+  for (const Direction direction :
+       {Direction::North, Direction::East, Direction::South, Direction::West}) {
+    EXPECT_EQ(turnLeft(turnRight(direction)), direction);
+  }
 }
