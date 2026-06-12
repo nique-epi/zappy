@@ -16,14 +16,6 @@
 
 namespace zappy::world {
 
-namespace {
-
-int wrap(int value, int modulus) {
-  return ((value % modulus) + modulus) % modulus;
-}
-
-}  // namespace
-
 EjectOutcome ejectFromTile(int ejectorId, PlayerRegistry& players, Map& map,
                            TeamRegistry& teams) {
   EjectOutcome outcome{.ejected = {}, .eggsDestroyed = 0};
@@ -46,8 +38,8 @@ EjectOutcome ejectFromTile(int ejectorId, PlayerRegistry& players, Map& map,
     if (victim == nullptr) {
       continue;
     }
-    const int destinationX = wrap(originX + offset.dx, map.width());
-    const int destinationY = wrap(originY + offset.dy, map.height());
+    const int destinationX = Map::wrap(originX + offset.dx, map.width());
+    const int destinationY = Map::wrap(originY + offset.dy, map.height());
     origin.removePlayer(occupantId);
     map.tileAt(destinationX, destinationY).addPlayer(occupantId);
     victim->setPosition(destinationX, destinationY);

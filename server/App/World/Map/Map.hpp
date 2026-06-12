@@ -41,6 +41,14 @@ class Map {
   [[nodiscard]] int height() const;
 
   /**
+   * @brief Normalise @p value into `[0, modulus)` with toroidal wrapping.
+   * @param[in] value   Any integer, negative or past the bounds.
+   * @param[in] modulus Strictly positive extent of the axis.
+   * @returns @p value mapped into `[0, modulus)`.
+   */
+  [[nodiscard]] static int wrap(int value, int modulus);
+
+  /**
    * @brief Access the tile at (@p column, @p row), wrapping toroidally.
    * @param[in] column Position on the X axis; any integer, normalised modulo
    *                   width.

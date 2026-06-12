@@ -153,10 +153,6 @@ void GameServer::executeFork(Session& session) {
 
 void GameServer::executeEject(Session& session) {
   const int ejectorId = session.ctx().playerId;
-  if (ejectorId == 0) {
-    session.send(protocol::ai::Ko().opcode());
-    return;
-  }
   const world::EjectOutcome outcome =
       world::ejectFromTile(ejectorId, players_, world_, teams_);
   for (const world::EjectedDrone& drone : outcome.ejected) {

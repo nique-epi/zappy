@@ -31,13 +31,15 @@ int Map::width() const { return width_; }
 int Map::height() const { return height_; }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-std::size_t Map::indexOf(int column, int row) const {
-  const int wrappedColumn = ((column % width_) + width_) % width_;
-  const int wrappedRow = ((row % height_) + height_) % height_;
+int Map::wrap(int value, int modulus) {
+  return ((value % modulus) + modulus) % modulus;
+}
 
-  return (static_cast<std::size_t>(wrappedRow) *
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+std::size_t Map::indexOf(int column, int row) const {
+  return (static_cast<std::size_t>(wrap(row, height_)) *
           static_cast<std::size_t>(width_)) +
-         static_cast<std::size_t>(wrappedColumn);
+         static_cast<std::size_t>(wrap(column, width_));
 }
 
 Tile& Map::tileAt(int column, int row) { return tiles_[indexOf(column, row)]; }
