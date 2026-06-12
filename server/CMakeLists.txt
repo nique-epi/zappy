@@ -15,6 +15,7 @@ add_library(zappy_server_app STATIC
   App/World/Movement.cpp
   App/World/ResourceTransfer.cpp
   App/World/Observation.cpp
+  App/World/Broadcast.cpp
   App/World/Exceptions/WorldException.cpp
   App/Loot/ResourceDensity.cpp
   App/Loot/LootService.cpp
@@ -30,6 +31,7 @@ add_library(zappy_server_app STATIC
   Net/Ai/Resources/ResourceHandlers.cpp
   Net/Ai/Observation/ObservationHandlers.cpp
   Net/Ai/Reproduction/ReproductionHandlers.cpp
+  Net/Ai/Communication/CommunicationHandlers.cpp
 )
 
 target_include_directories(zappy_server_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

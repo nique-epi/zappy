@@ -157,3 +157,18 @@ TEST(GameServerAiCommands, UnknownCommandRepliesKo) {
   EXPECT_EQ(runCommand(server, client, "Nonsense"), "ko\n");
   EXPECT_EQ(runCommand(server, client, "Forward"), "ok\n");
 }
+
+TEST(GameServerAiCommands, BroadcastPushesSoundToTheEmitterAndAcknowledges) {
+  /*
+   * Given a single authenticated AI drone
+   * When it broadcasts a message
+   * Then it hears its own message from tile 0 and the server acknowledges ok
+   */
+  GameServer server(makeConfig(2));
+  server.start();
+  LoopbackClient client(server.port());
+  joinAi(server, client);
+
+  EXPECT_EQ(runCommand(server, client, "Broadcast hello"),
+            "message 0, hello\nok\n");
+}

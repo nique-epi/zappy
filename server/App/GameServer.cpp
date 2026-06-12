@@ -12,6 +12,7 @@
 #include "App/World/Player/Player.hpp"
 #include "App/World/Team/Egg.hpp"
 #include "Net/Ai/AiHandlerContext.hpp"
+#include "Net/Ai/Communication/CommunicationHandlers.hpp"
 #include "Net/Ai/Movement/MovementHandlers.hpp"
 #include "Net/Ai/Observation/ObservationHandlers.hpp"
 #include "Net/Ai/Reproduction/ReproductionHandlers.hpp"
@@ -141,10 +142,9 @@ void GameServer::registerAiHandlers() {
   installResourceHandlers(server_, context);
   installObservationHandlers(server_, context);
   installReproductionHandlers(server_, context);
+  installCommunicationHandlers(server_, context);
   server_.on(protocol::ai::Incantation(),
              [](Session&, zappy::rpc::IMessage&) {});
-  server_.on(protocol::ai::Broadcast(),
-             [](Session&, const protocol::ai::BroadcastTextArgs&) {});
 }
 
 void GameServer::registerFallbacks() {
