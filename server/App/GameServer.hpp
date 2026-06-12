@@ -8,6 +8,7 @@
 #pragma once
 
 #include <random>
+#include <string>
 #include "App/Loot/LootService.hpp"
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/ServerConfig.hpp"
@@ -49,6 +50,17 @@ class GameServer {
   void run();
 
   /**
+   * @brief Run a single poll/dispatch iteration: block in poll() for at most
+   *        @p timeoutMs, then execute whatever scheduled events became due.
+   *
+   * This is the body of @ref run, exposed so callers (and tests) can drive the
+   * server one step at a time without owning the loop.
+   *
+   * @param[in] timeoutMs Maximum poll() block in milliseconds.
+   */
+  void runOnce(int timeoutMs);
+
+  /**
    * @brief Request the main loop to exit after the current iteration.
    */
   void stop();
@@ -64,6 +76,22 @@ class GameServer {
   void registerAiHandlers();
   void registerFallbacks();
 
+  /**
+   * @brief Run the AI side of the handshake for a known team.
+   *
+   * A free slot hatches one of the team's eggs, spawns the drone, replies with
+   * the remaining slot count then the world size, and arms the hunger loop. A
+   * full team replies with `0` slots then the world size and admits no drone:
+   * no egg is consumed, no player is spawned.
+   *
+   * @param[in,out] session  Session whose handshake is being resolved.
+   * @param[in]     teamName  Known team the client asked to join.
+   */
+  void admitAiClient(zappy::rpc::Session<ClientContext>& session,
+                     const std::string& teamName);
+
+  /// World dimensions formatted as the `X Y` handshake line.
+  [[nodiscard]] std::string worldSizeLine() const;
   /**
    * @brief Lay an egg on the calling drone's tile (Fork): a new free slot for
    *        its team. Replies `ok`, or `ko` if the session owns no drone.
