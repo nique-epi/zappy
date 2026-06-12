@@ -3,8 +3,9 @@ Unit tests for the main module.
 """
 import pytest
 from ia.main import parse_arguments, main
-from tests.IA.mocks.fake_client import FakeClient
-from tests.IA.mocks.fake_bot import FakeBot
+from ia.network.client import ZappyClient
+from ia.core.bot import Bot
+from tests.IA.mocks.fake_socket import FakeSocket
 
 
 def test_parse_arguments_success():
@@ -41,26 +42,28 @@ def test_parse_arguments_empty_name():
 
 def test_main_success():
     """
-    Given valid arguments and stubbed client and bot factories
+    Given valid arguments and real client and bot factories backed by a FakeSocket
     When main runs
-    Then the client connects with the team name, the bot runs and is closed
+    Then the client connects, the bot runs and the socket is closed
     """
+    fake_socket = FakeSocket([b"WELCOME\n", b"1\n", b"10 20\n", b""])
     created = {}
 
     def client_factory(host, port):
-        created["client"] = FakeClient()
-        return created["client"]
+        zc = ZappyClient(host, port, sock_factory=lambda: fake_socket)
+        created["client"] = zc
+        return zc
 
-    def bot_factory(*a):
-        created["bot"] = FakeBot(*a)
+    def bot_factory(width, height, client_num, client):
+        created["bot"] = Bot(width, height, client_num, client)
         return created["bot"]
 
     main(["-p", "4242", "-n", "team1", "-h", "localhost"],
          client_factory=client_factory, bot_factory=bot_factory)
 
-    assert created["client"].connect_arg == "team1"
-    assert created["bot"].ran is True
-    assert created["client"].closed is True
+    assert created["client"]._sock is None
+    assert created["bot"].width == 10
+    assert created["bot"].height == 20
 
 
 def test_main_connection_error():
@@ -69,8 +72,10 @@ def test_main_connection_error():
     When main runs
     Then it exits with status code 1
     """
+    fake_socket = FakeSocket([b"NOT_WELCOME\n"])
+
     def client_factory(host, port):
-        return FakeClient(connect_error=ConnectionError("Fail"))
+        return ZappyClient(host, port, sock_factory=lambda: fake_socket)
 
     with pytest.raises(SystemExit) as exc:
         main(argv=["-p", "4242", "-n", "team1"], client_factory=client_factory)

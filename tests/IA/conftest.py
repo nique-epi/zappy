@@ -1,24 +1,39 @@
 """Shared pytest fixtures for IA tests."""
 # pylint: disable=redefined-outer-name,import-error
 import pytest
-from tests.IA.mocks.fake_client import FakeClient
-from tests.IA.mocks.fake_bot import FakeBot
+from ia.network.client import ZappyClient
+from ia.core.bot import Bot
+from ia.states.survival import SurvivalState
 from tests.IA.mocks.fake_socket import FakeSocket
-
-
-@pytest.fixture
-def fake_client():
-    """Provide a fresh FakeClient for each test."""
-    return FakeClient()
-
-
-@pytest.fixture
-def fake_bot():
-    """Provide a fresh FakeBot in SURVIVAL state for each test."""
-    return FakeBot()
 
 
 @pytest.fixture
 def fake_socket():
     """Provide a fresh FakeSocket for each test."""
     return FakeSocket()
+
+
+@pytest.fixture
+def client(fake_socket):
+    """Provide a ZappyClient not yet connected, for testing the handshake."""
+    return ZappyClient("localhost", 4242, sock_factory=lambda: fake_socket)
+
+
+@pytest.fixture
+def connected_client(fake_socket):
+    """Provide a ZappyClient already connected via FakeSocket."""
+    zc = ZappyClient("localhost", 4242, sock_factory=lambda: fake_socket)
+    zc._sock = fake_socket
+    return zc
+
+
+@pytest.fixture
+def bot(connected_client):
+    """Provide a real Bot wired to the test client."""
+    return Bot(10, 10, 1, connected_client)
+
+
+@pytest.fixture
+def state():
+    """Provide a fresh SurvivalState for each test."""
+    return SurvivalState()

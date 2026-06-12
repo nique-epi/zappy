@@ -6,10 +6,6 @@ import pytest
 from ia.network.client import ZappyClient
 from ia.network.exceptions import PlayerDeadError
 
-@pytest.fixture
-def client(fake_socket):
-    return ZappyClient("localhost", 4242, sock_factory=lambda: fake_socket)
-
 
 def test_client_init(fake_socket):
     """
