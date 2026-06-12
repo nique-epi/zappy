@@ -49,6 +49,19 @@ target_link_libraries(zappy_gui_handshake PUBLIC zappy_gui_cli)
 
 target_compile_options(zappy_gui_handshake PRIVATE -Wall -Wextra -Werror)
 
+add_library(zappy_gui_commands STATIC
+    Network/CommandSender.cpp
+)
+
+target_include_directories(zappy_gui_commands PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(zappy_gui_commands PUBLIC zappy_gui_cli)
+target_link_libraries(zappy_gui_commands PRIVATE zappy_protocol)
+
+target_compile_options(zappy_gui_commands PRIVATE -Wall -Wextra -Werror)
+
 add_library(zappy_gui_parser STATIC
     Network/Parsing/MessageParser.cpp
     Network/Parsing/ParsingUtils.cpp
@@ -77,6 +90,6 @@ set_source_files_properties(Render/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 
-target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_gui_handshake zappy_gui_parser zappy_network raylib)
+target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_gui_handshake zappy_gui_commands zappy_gui_parser zappy_network raylib)
 
 target_compile_options(zappy_gui PRIVATE -Wall -Wextra -Werror)

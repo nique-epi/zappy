@@ -8,35 +8,11 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include "Exceptions/HandshakeException.hpp"
-#include "Network/INetworkClient.hpp"
+#include "FakeNetwork.hpp"
 #include "Network/ServerHandshake.hpp"
 
-namespace {
-
-class FakeNetwork : public zappy::gui::INetworkClient {
- public:
-  void setResponseHandler(ResponseHandler handler) override {
-    handler_ = std::move(handler);
-  }
-
-  void sendLine(const std::string& line) override { sent_.push_back(line); }
-
-  void inject(const std::string& line) {
-    if (handler_) {
-      handler_(line);
-    }
-  }
-
-  [[nodiscard]] const std::vector<std::string>& sent() const { return sent_; }
-
- private:
-  ResponseHandler handler_;
-  std::vector<std::string> sent_;
-};
-
-}  // namespace
+using zappy::gui::test::FakeNetwork;
 
 TEST(ServerHandshake, StatusIsPendingBeforeWelcome) {
   FakeNetwork network;
