@@ -31,11 +31,6 @@ void injectTileContent(FakeNetwork& network, int posX, int posY) {
 }  // namespace
 
 TEST(WorldInitializer, IsNotDoneInitially) {
-  /*
-   * Given a freshly constructed WorldInitializer
-   * When no server response has been received
-   * Then isDone returns false
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -45,11 +40,6 @@ TEST(WorldInitializer, IsNotDoneInitially) {
 }
 
 TEST(WorldInitializer, ConstructionSendsMapSizeRequest) {
-  /*
-   * Given a freshly constructed WorldInitializer
-   * When the constructor runs
-   * Then it immediately requests the map size
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -60,11 +50,6 @@ TEST(WorldInitializer, ConstructionSendsMapSizeRequest) {
 }
 
 TEST(WorldInitializer, MapSizeResponseRequestsMapContent) {
-  /*
-   * Given a WorldInitializer waiting for the map size
-   * When the server replies with msz
-   * Then it stores the dimensions and requests the map content
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -80,11 +65,6 @@ TEST(WorldInitializer, MapSizeResponseRequestsMapContent) {
 }
 
 TEST(WorldInitializer, AllTileResponsesRequestTeamNames) {
-  /*
-   * Given a WorldInitializer waiting for the map content
-   * When the server replies with width*height bct lines
-   * Then it requests the team names exactly once all tiles are received
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -103,11 +83,6 @@ TEST(WorldInitializer, AllTileResponsesRequestTeamNames) {
 }
 
 TEST(WorldInitializer, ZeroSizeMapSkipsMapContent) {
-  /*
-   * Given a WorldInitializer waiting for the map size
-   * When the server replies with a 0x0 map
-   * Then it skips the map content request and asks for team names directly
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -120,11 +95,6 @@ TEST(WorldInitializer, ZeroSizeMapSkipsMapContent) {
 }
 
 TEST(WorldInitializer, CompletesAfterPollRoundWithoutNewTeamName) {
-  /*
-   * Given a WorldInitializer that has received at least one team name
-   * When a poll round elapses without a new tna line
-   * Then the sequence is marked done
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -142,11 +112,6 @@ TEST(WorldInitializer, CompletesAfterPollRoundWithoutNewTeamName) {
 }
 
 TEST(WorldInitializer, FullSequencePopulatesWorldState) {
-  /*
-   * Given a WorldInitializer driven through the full msz/mct/tna sequence
-   * When all responses have been received
-   * Then the WorldState reflects the map, tiles and teams
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -171,11 +136,6 @@ TEST(WorldInitializer, FullSequencePopulatesWorldState) {
 }
 
 TEST(WorldInitializer, CheckTimeoutIsNoOpWhenDone) {
-  /*
-   * Given a WorldInitializer that has completed the sequence
-   * When checkTimeout is called even past the deadline
-   * Then no exception is thrown
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -191,11 +151,6 @@ TEST(WorldInitializer, CheckTimeoutIsNoOpWhenDone) {
 }
 
 TEST(WorldInitializer, CheckTimeoutThrowsWorldInitTimeoutException) {
-  /*
-   * Given a WorldInitializer with an already-elapsed deadline
-   * When the sequence is still pending
-   * Then checkTimeout throws WorldInitTimeoutException
-   */
   FakeNetwork network;
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
@@ -206,41 +161,21 @@ TEST(WorldInitializer, CheckTimeoutThrowsWorldInitTimeoutException) {
 }
 
 TEST(WorldInitializer, TimeoutExceptionIsAWorldInitException) {
-  /*
-   * Given a WorldInitTimeoutException
-   * When it is thrown
-   * Then it is also a WorldInitException
-   */
   EXPECT_THROW(throw zappy::gui::WorldInitTimeoutException(),
                zappy::gui::WorldInitException);
 }
 
 TEST(WorldInitializer, WorldInitExceptionIsAGuiException) {
-  /*
-   * Given a WorldInitTimeoutException
-   * When it is thrown
-   * Then it is also a GuiException
-   */
   EXPECT_THROW(throw zappy::gui::WorldInitTimeoutException(),
                zappy::gui::GuiException);
 }
 
 TEST(WorldInitializer, GuiExceptionIsAStdRuntimeError) {
-  /*
-   * Given a WorldInitTimeoutException
-   * When it is thrown
-   * Then it is also a std::runtime_error
-   */
   EXPECT_THROW(throw zappy::gui::WorldInitTimeoutException(),
                std::runtime_error);
 }
 
 TEST(WorldInitializer, TimeoutExceptionMessageIsPreserved) {
-  /*
-   * Given a WorldInitTimeoutException
-   * When what() is called
-   * Then it returns the world-init timeout message
-   */
   const std::string msg =
       "server did not complete the world initialization sequence within "
       "the timeout";

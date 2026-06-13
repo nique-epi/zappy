@@ -58,14 +58,6 @@ void completeWorldInit(GameServer& server, zappy::gui::NetworkManager& network,
 }  // namespace
 
 TEST(WorldInitializerIntegration, PopulatesWorldStateFromRealServer) {
-  /*
-   * Given a real GameServer listening on loopback with a 3x2 map and two
-   * teams
-   * When a GUI client completes the handshake and runs WorldInitializer
-   * against it
-   * Then WorldState reflects the server's real map size, tile grid and team
-   * names
-   */
   GameServer server(makeConfig());
   server.start();
 
