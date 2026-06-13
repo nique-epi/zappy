@@ -40,18 +40,15 @@ TEST(ServerHandshake, GraphicSentAfterWelcome) {
   EXPECT_EQ(network.sent().front(), "GRAPHIC");
 }
 
-TEST(ServerHandshake, InitialCommandsSentAfterWelcome) {
+TEST(ServerHandshake, OnlyGraphicIsSentAfterWelcome) {
   FakeNetwork network;
   zappy::gui::ServerHandshake handshake(network);
 
   network.inject("WELCOME");
 
   const auto& sent = network.sent();
-  ASSERT_EQ(sent.size(), 4U);
+  ASSERT_EQ(sent.size(), 1U);
   EXPECT_EQ(sent[0], "GRAPHIC");
-  EXPECT_EQ(sent[1], "msz");
-  EXPECT_EQ(sent[2], "mct");
-  EXPECT_EQ(sent[3], "tna");
 }
 
 TEST(ServerHandshake, UnrelatedMessageDoesNotCompleteHandshake) {
