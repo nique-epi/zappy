@@ -59,7 +59,11 @@ class WorldInitializer {
   explicit WorldInitializer(INetworkClient& network, MessageParser& parser,
                             WorldState& world,
                             int timeoutMs = DEFAULT_TIMEOUT_MS);
-  ~WorldInitializer() = default;
+
+  /**
+   * @brief Clear the response handler installed on @p network.
+   */
+  ~WorldInitializer();
 
   WorldInitializer(const WorldInitializer&) = delete;
   WorldInitializer& operator=(const WorldInitializer&) = delete;

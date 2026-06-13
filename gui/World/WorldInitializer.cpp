@@ -36,6 +36,8 @@ WorldInitializer::WorldInitializer(INetworkClient& network,
   network_.sendLine(protocol::RequestMapSize().opcode());
 }
 
+WorldInitializer::~WorldInitializer() { network_.setResponseHandler(nullptr); }
+
 bool WorldInitializer::isDone() const { return phase_ == WorldInitPhase::Done; }
 
 void WorldInitializer::checkTimeout() const {
