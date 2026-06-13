@@ -23,6 +23,7 @@ class State(Enum):
     EATING = "eating"
     COLLECTING = "collecting"
     EXPLORATION = "exploration"
+    COORDINATION = "coordination"
 
 
 class Resource(Enum):
