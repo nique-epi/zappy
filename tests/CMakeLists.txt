@@ -146,6 +146,36 @@ target_link_libraries(zappy_gui_commands_tests
     GTest::gtest_main
 )
 
+add_executable(zappy_gui_world_init_tests
+  Gui/TestWorldInitializer.cpp
+  Gui/mocks/FakeNetwork.cpp
+)
+
+target_include_directories(zappy_gui_world_init_tests
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Gui/mocks
+)
+
+target_link_libraries(zappy_gui_world_init_tests
+  PRIVATE
+    zappy_gui_world_init
+    GTest::gtest_main
+)
+
+add_executable(zappy_gui_world_init_integration_tests
+  Gui/TestWorldInitializerIntegration.cpp
+  ${CMAKE_SOURCE_DIR}/gui/Network/NetworkManager.cpp
+)
+
+target_link_libraries(zappy_gui_world_init_integration_tests
+  PRIVATE
+    zappy_server_app
+    zappy_gui_world_init
+    zappy_gui_handshake
+    zappy_network
+    GTest::gtest_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(zappy_network_tests
   DISCOVERY_MODE PRE_TEST
@@ -169,6 +199,12 @@ gtest_discover_tests(zappy_gui_parser_tests
   DISCOVERY_MODE PRE_TEST
 )
 gtest_discover_tests(zappy_gui_commands_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_gui_world_init_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_gui_world_init_integration_tests
   DISCOVERY_MODE PRE_TEST
 )
 

@@ -15,9 +15,6 @@ namespace zappy::gui {
 namespace {
 constexpr const char* welcomeMessage = "WELCOME";
 constexpr const char* graphicTeamName = "GRAPHIC";
-constexpr const char* cmdMapSize = "msz";
-constexpr const char* cmdMapContent = "mct";
-constexpr const char* cmdTeamNames = "tna";
 }  // namespace
 
 ServerHandshake::ServerHandshake(INetworkClient& network, int timeoutMs)
@@ -44,14 +41,7 @@ void ServerHandshake::onServerLine(const std::string& line) {
     return;
   }
   network_.sendLine(graphicTeamName);
-  sendInitialCommands();
   status_ = HandshakeStatus::Done;
-}
-
-void ServerHandshake::sendInitialCommands() {
-  network_.sendLine(cmdMapSize);
-  network_.sendLine(cmdMapContent);
-  network_.sendLine(cmdTeamNames);
 }
 
 }  // namespace zappy::gui

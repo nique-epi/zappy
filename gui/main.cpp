@@ -17,6 +17,7 @@
 #include "Network/ServerHandshake.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/raygui.h"
+#include "World/WorldInitializer.hpp"
 #include "World/WorldState.hpp"
 
 namespace cfg = zappy::gui::config;
@@ -24,6 +25,7 @@ namespace cfg = zappy::gui::config;
 static constexpr std::string_view USAGE =
     "USAGE: ./zappy_gui -p port -h machine";
 static constexpr int EXIT_CODE_ERROR = 84;
+static constexpr int STARTUP_POLL_TIMEOUT_MS = 50;
 
 int main(int argc, char** argv) {
   for (int i = 1; i < argc; ++i) {
@@ -38,22 +40,29 @@ int main(int argc, char** argv) {
     zappy::gui::NetworkManager network(config.hostname, config.port);
     zappy::gui::ServerHandshake handshake(network);
 
-    InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
-    SetTargetFPS(cfg::TARGET_FPS);
+    while (handshake.status() != zappy::gui::HandshakeStatus::Done) {
+      network.runOnce(STARTUP_POLL_TIMEOUT_MS);
+      handshake.checkTimeout();
+    }
 
     zappy::gui::WorldState world;
     zappy::gui::MessageParser parser(world);
-    bool parserInstalled = false;
+    {
+      zappy::gui::WorldInitializer initializer(network, parser, world);
+      while (!initializer.isDone()) {
+        network.runOnce(STARTUP_POLL_TIMEOUT_MS);
+        initializer.checkTimeout();
+        initializer.onPollRoundComplete();
+      }
+    }
+    network.setResponseHandler(
+        [&parser](const std::string& line) { parser.parseLine(line); });
+
+    InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
+    SetTargetFPS(cfg::TARGET_FPS);
 
     while (!WindowShouldClose()) {
-      if (!parserInstalled &&
-          handshake.status() == zappy::gui::HandshakeStatus::Done) {
-        network.setResponseHandler(
-            [&parser](const std::string& line) { parser.parseLine(line); });
-        parserInstalled = true;
-      }
       network.runOnce(0);
-      handshake.checkTimeout();
 
       const std::string hudText =
           std::format("{}:{}  |  Map: {}x{}  |  Players: {}  |  Teams: {}",
