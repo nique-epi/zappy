@@ -1,9 +1,9 @@
-"""Unit tests for CollecteState."""
+"""Unit tests for CollectState."""
 # pylint: disable=redefined-outer-name,protected-access
 from ia.core.bot import Bot
 from ia.network.client import ZappyClient
 from ia.shared.enum import Resource, State
-from ia.states.collect import CollecteState
+from ia.states.collect import CollectState
 from tests.IA.mocks.fake_socket import FakeSocket
 
 _LOOK_LINEMATE = "[linemate player]"
@@ -25,12 +25,12 @@ def _make_bot(responses=None) -> Bot:
 
 def test_handle_moves_to_target_tile():
     """
-    Given a CollecteState with tile_index 0 (current tile)
+    Given a CollectState with tile_index 0 (current tile)
     When handle is called
     Then no movement command is sent before Look
     """
     bot = _make_bot([_LOOK_EMPTY])
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
     assert sent.startswith("Look")
@@ -38,12 +38,12 @@ def test_handle_moves_to_target_tile():
 
 def test_handle_sends_forward_to_reach_adjacent_tile():
     """
-    Given a CollecteState with tile_index 1 (one tile ahead)
+    Given a CollectState with tile_index 1 (one tile ahead)
     When handle is called
     Then a Forward command is sent before Look
     """
     bot = _make_bot(["ok", "ok", "ok", _LOOK_EMPTY])
-    state = CollecteState(bot, 1)
+    state = CollectState(bot, 1)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
     assert "Forward" in sent
@@ -57,7 +57,7 @@ def test_handle_takes_useful_stone_on_tile():
     """
     bot = _make_bot([_LOOK_LINEMATE, "ok"])
     bot.inventory[Resource.LINEMATE] = 0
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
     assert "Take linemate" in sent
@@ -71,7 +71,7 @@ def test_handle_updates_inventory_on_ok():
     """
     bot = _make_bot([_LOOK_LINEMATE, "ok"])
     bot.inventory[Resource.LINEMATE] = 0
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     state.handle()
     assert bot.inventory[Resource.LINEMATE] == 1
 
@@ -84,7 +84,7 @@ def test_handle_does_not_update_inventory_on_ko():
     """
     bot = _make_bot([_LOOK_LINEMATE, "ko"])
     bot.inventory[Resource.LINEMATE] = 0
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     state.handle()
     assert bot.inventory[Resource.LINEMATE] == 0
 
@@ -97,7 +97,7 @@ def test_handle_returns_coordination_when_all_stones_collected():
     """
     bot = _make_bot([_LOOK_LINEMATE, "ok"])
     bot.inventory[Resource.LINEMATE] = 0
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     assert state.handle() == State.COORDINATION
 
 
@@ -109,7 +109,7 @@ def test_handle_returns_exploration_when_stones_still_missing():
     """
     bot = _make_bot([_LOOK_EMPTY])
     bot.inventory[Resource.LINEMATE] = 0
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     assert state.handle() == State.EXPLORATION
 
 
@@ -121,7 +121,7 @@ def test_handle_takes_multiple_stones_on_same_tile():
     """
     bot = _make_bot([_LOOK_MULTI, "ok", "ok"])
     bot.inventory[Resource.LINEMATE] = 0
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
     assert sent.count("Take linemate") == 1
@@ -135,7 +135,7 @@ def test_handle_skips_stone_not_in_missing():
     """
     bot = _make_bot([_LOOK_LINEMATE])
     bot.inventory[Resource.LINEMATE] = 1
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
     assert "Take" not in sent
@@ -148,5 +148,5 @@ def test_handle_returns_exploration_when_server_disconnects():
     Then State.EXPLORATION is returned without crashing
     """
     bot = _make_bot([None])
-    state = CollecteState(bot, 0)
+    state = CollectState(bot, 0)
     assert state.handle() == State.EXPLORATION

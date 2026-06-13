@@ -5,7 +5,7 @@ from ia.shared.enum import State
 from ia.core.bot import Bot
 
 
-class CollecteState:  # pylint: disable=too-few-public-methods
+class CollectState:  # pylint: disable=too-few-public-methods
     def __init__(self, bot: Bot, tile_index: int):
         self.bot = bot
         self._tile_index = tile_index
