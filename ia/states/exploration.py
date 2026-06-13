@@ -38,6 +38,7 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
             None,
         )
         if useful_index is not None:
+            self.bot.collect_target = useful_index
             return State.COLLECTING
 
         self._explore()

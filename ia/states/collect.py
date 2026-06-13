@@ -12,7 +12,8 @@ class CollectState:  # pylint: disable=too-few-public-methods
 
     def handle(self) -> State:
         """Move to the target tile, take all useful stones."""
-        self._move_to_target()
+        if not self._move_to_target():
+            return State.EXPLORATION
 
         self.bot.client.send("Look\n")
         response = self.bot.client.recv()
@@ -33,11 +34,14 @@ class CollectState:  # pylint: disable=too-few-public-methods
             return State.COORDINATION
         return State.EXPLORATION
 
-    def _move_to_target(self) -> None:
-        """Execute the move sequence to reach the target tile."""
+    def _move_to_target(self) -> bool:
+        """Execute the move sequence; return False if any move fails."""
         for move in tile_to_moves(self._tile_index):
             self.bot.client.send(move.value + "\n")
-            self.bot.client.recv()
+            response = self.bot.client.recv()
+            if response is None or response.strip() == "ko":
+                return False
+        return True
 
     def _take_stones_on_current_tile(self, objects: list[str]) -> None:
         """Take every useful stone present on the current tile."""

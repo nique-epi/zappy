@@ -150,3 +150,32 @@ def test_handle_returns_exploration_when_server_disconnects():
     bot = _make_bot([None])
     state = CollectState(bot, 0)
     assert state.handle() == State.EXPLORATION
+
+
+def test_handle_returns_exploration_when_move_fails():
+    """
+    Given a server that returns ko on a Forward move
+    When handle is called with a non-zero tile_index
+    Then State.EXPLORATION is returned without sending Look or Take
+    """
+    bot = _make_bot(["ok", "ko"])
+    state = CollectState(bot, 1)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert result == State.EXPLORATION
+    assert "Look" not in sent
+    assert "Take" not in sent
+
+
+def test_handle_returns_exploration_when_move_returns_none():
+    """
+    Given a server that returns None during movement
+    When handle is called with a non-zero tile_index
+    Then State.EXPLORATION is returned without sending Look or Take
+    """
+    bot = _make_bot([None])
+    state = CollectState(bot, 1)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert result == State.EXPLORATION
+    assert "Look" not in sent

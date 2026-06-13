@@ -77,6 +77,19 @@ def test_handle_returns_collecting_when_useful_stone_visible():
     assert state.handle() == State.COLLECTING
 
 
+def test_handle_sets_collect_target_when_useful_stone_visible():
+    """
+    Given a bot at level 1 with no linemate and linemate visible on tile 1
+    When handle is called and State.COLLECTING is returned
+    Then bot.collect_target is set to the index of the tile containing linemate
+    """
+    bot = _make_bot([_LINEMATE_VISIBLE])
+    bot.inventory[Resource.LINEMATE] = 0
+    state = ExplorationState(bot)
+    state.handle()
+    assert bot.collect_target == 1
+
+
 def test_handle_returns_exploration_when_no_useful_stone():
     """
     Given a bot at level 1 with all required stones already collected

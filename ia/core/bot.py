@@ -36,6 +36,7 @@ class Bot:
         self.role: str = self._assign_role(client_num)
         self.inventory: dict[Resource, int] = dict.fromkeys(Resource, 0)
         self.state: State = State.SURVIVAL
+        self.collect_target: int = 0
 
     @property
     def client(self) -> "ZappyClient":
