@@ -16,6 +16,8 @@ add_library(zappy_server_app STATIC
   App/World/ResourceTransfer.cpp
   App/World/Observation.cpp
   App/World/Broadcast.cpp
+  App/World/Incantation/ElevationRequirements.cpp
+  App/World/Incantation/Incantation.cpp
   App/World/Exceptions/WorldException.cpp
   App/Loot/ResourceDensity.cpp
   App/Loot/LootService.cpp

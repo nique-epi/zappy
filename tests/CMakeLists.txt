@@ -70,6 +70,8 @@ add_executable(zappy_server_tests
   World/TestResourceTransfer.cpp
   World/TestObservation.cpp
   World/TestBroadcast.cpp
+  World/TestElevationRequirements.cpp
+  World/TestIncantation.cpp
   Loot/TestResourceDensity.cpp
   Loot/TestLootService.cpp
   Scheduler/TestScheduler.cpp
