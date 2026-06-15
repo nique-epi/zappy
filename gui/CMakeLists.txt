@@ -79,6 +79,20 @@ target_link_libraries(zappy_gui_parser PUBLIC zappy_gui_cli)
 
 target_compile_options(zappy_gui_parser PRIVATE -Wall -Wextra -Werror)
 
+add_library(zappy_gui_world_init STATIC
+    World/WorldInitializer.cpp
+    Exceptions/WorldInitException.cpp
+)
+
+target_include_directories(zappy_gui_world_init PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(zappy_gui_world_init PUBLIC zappy_gui_cli zappy_gui_parser)
+target_link_libraries(zappy_gui_world_init PRIVATE zappy_protocol)
+
+target_compile_options(zappy_gui_world_init PRIVATE -Wall -Wextra -Werror)
+
 add_executable(zappy_gui
     main.cpp
     Network/NetworkManager.cpp
@@ -90,6 +104,6 @@ set_source_files_properties(Render/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 
-target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_gui_handshake zappy_gui_commands zappy_gui_parser zappy_network raylib)
+target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_gui_handshake zappy_gui_commands zappy_gui_parser zappy_gui_world_init zappy_network raylib)
 
 target_compile_options(zappy_gui PRIVATE -Wall -Wextra -Werror)

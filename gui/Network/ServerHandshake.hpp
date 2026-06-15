@@ -23,8 +23,7 @@ enum class HandshakeStatus : std::uint8_t { Pending, Done };
  * @brief Drives the WELCOME / GRAPHIC handshake with the Zappy server.
  *
  * Installs itself as the @ref INetworkClient response handler on construction.
- * Waits for the server to send @c WELCOME, then replies with @c GRAPHIC and
- * enqueues the three initial GUI commands (@c msz, @c mct, @c tna).
+ * Waits for the server to send @c WELCOME, then replies with @c GRAPHIC.
  *
  * The caller must invoke @ref checkTimeout on every render frame to detect a
  * server that stalls before sending @c WELCOME.
@@ -63,7 +62,6 @@ class ServerHandshake {
 
  private:
   void onServerLine(const std::string& line);
-  void sendInitialCommands();
 
   INetworkClient& network_;
   HandshakeStatus status_{HandshakeStatus::Pending};
