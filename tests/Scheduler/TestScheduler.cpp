@@ -80,6 +80,27 @@ TEST(Scheduler, RunDueFiresEarliestFirst) {
   EXPECT_TRUE(scheduler.empty());
 }
 
+TEST(Scheduler, RunDueStopsTheBatchWhenTheContinueHookGoesFalse) {
+  /*
+   * Given three actions due at once and a hook that turns false after the first
+   * When runDue runs with that hook
+   * Then only the first action runs and the rest of the batch is dropped
+   */
+  Scheduler scheduler;
+  int fired = 0;
+  bool keepRunning = true;
+  for (int index = 0; index < 3; index++) {
+    scheduler.scheduleAt(base(), [&] {
+      fired++;
+      keepRunning = false;
+    });
+  }
+
+  scheduler.runDue(base(), [&] { return keepRunning; });
+
+  EXPECT_EQ(fired, 1);
+}
+
 TEST(Scheduler, RunDueDoesNothingWhenNothingIsDue) {
   Scheduler scheduler;
   bool fired = false;

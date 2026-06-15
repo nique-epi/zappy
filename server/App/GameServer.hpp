@@ -127,6 +127,7 @@ class GameServer {
   Scheduler scheduler_;
   HungerService hunger_;
   bool running_{false};
+  bool gameOver_{false};
 };
 
 }  // namespace zappy::server

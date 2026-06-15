@@ -73,7 +73,7 @@ void GameServer::run() {
 
 void GameServer::runOnce(int timeoutMs) {
   server_.runOnce(timeoutMs);
-  scheduler_.runDue(Scheduler::Clock::now());
+  scheduler_.runDue(Scheduler::Clock::now(), [this] { return !gameOver_; });
 }
 
 void GameServer::stop() { running_ = false; }
@@ -168,6 +168,7 @@ void GameServer::endGame(const std::string& winningTeam) {
       session.send(line);
     }
   });
+  gameOver_ = true;
   stop();
 }
 

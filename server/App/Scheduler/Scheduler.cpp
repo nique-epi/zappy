@@ -35,7 +35,8 @@ int Scheduler::timeoutUntilNext(TimePoint now) const {
       milliseconds, std::numeric_limits<int>::max()));
 }
 
-void Scheduler::runDue(TimePoint now) {
+void Scheduler::runDue(TimePoint now,
+                       const std::function<bool()>& shouldContinue) {
   std::vector<Callback> due;
 
   while (!events_.empty() && events_.begin()->first <= now) {
@@ -43,6 +44,9 @@ void Scheduler::runDue(TimePoint now) {
     events_.erase(events_.begin());
   }
   for (const Callback& action : due) {
+    if (shouldContinue && !shouldContinue()) {
+      break;
+    }
     action();
   }
 }

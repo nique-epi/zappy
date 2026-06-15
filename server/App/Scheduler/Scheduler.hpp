@@ -65,9 +65,15 @@ class Scheduler {
    * the work per call and prevents a self-rescheduling callback from looping
    * here and starving the poll / network loop.
    *
-   * @param[in] now The current time reference.
+   * @param[in] now            The current time reference.
+   * @param[in] shouldContinue Optional cooperative-cancellation hook checked
+   *                           before each captured action. When it returns
+   *                           false the batch stops and the remaining due
+   *                           actions are dropped (used to freeze the game on
+   *                           end-of-game). An empty function runs the whole
+   *                           batch.
    */
-  void runDue(TimePoint now);
+  void runDue(TimePoint now, const std::function<bool()>& shouldContinue = {});
 
  private:
   std::multimap<TimePoint, Callback> events_;
