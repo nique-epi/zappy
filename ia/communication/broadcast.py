@@ -28,6 +28,19 @@ def format_message(msg_type: MessageType, level: int, data: str = "") -> str:
     return SEPARATOR.join([PREFIX, msg_type.value, str(level), data])
 
 
+def _parse_payload(payload: str) -> tuple[MessageType, int, str] | None:
+    """Extract msg_type, level and data from a ZAPPY-prefixed payload."""
+    parts = payload.split(SEPARATOR, 3)
+    if len(parts) < 4 or parts[0] != PREFIX:
+        return None
+    try:
+        msg_type = MessageType(parts[1])
+        level = int(parts[2])
+    except ValueError:
+        return None
+    return msg_type, level, parts[3]
+
+
 def parse_broadcast(line: str) -> BroadcastMessage | None:
     """Parse a raw server broadcast line into a BroadcastMessage, or None."""
     if not line.startswith("message "):
@@ -36,19 +49,14 @@ def parse_broadcast(line: str) -> BroadcastMessage | None:
     comma = after_keyword.find(",")
     if comma == -1:
         return None
-    direction = int(after_keyword[:comma].strip())
-    payload = after_keyword[comma + 1:].strip()
-    parts = payload.split(SEPARATOR, 3)
-    if len(parts) < 4 or parts[0] != PREFIX:
-        return None
     try:
-        msg_type = MessageType(parts[1])
+        direction = int(after_keyword[:comma].strip())
     except ValueError:
         return None
-    try:
-        level = int(parts[2])
-    except ValueError:
+    parsed = _parse_payload(after_keyword[comma + 1:].strip())
+    if parsed is None:
         return None
+    msg_type, level, data = parsed
     return BroadcastMessage(
-        direction=direction, msg_type=msg_type, level=level, data=parts[3]
+        direction=direction, msg_type=msg_type, level=level, data=data
     )
