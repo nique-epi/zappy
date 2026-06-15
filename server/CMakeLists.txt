@@ -27,6 +27,7 @@ add_library(zappy_server_app STATIC
   Net/ActionQueue.cpp
   Net/AiActionPipeline.cpp
   Net/GuiQueryHandlers.cpp
+  Net/Ai/AiHandlerSupport.cpp
   Net/Ai/Movement/MovementHandlers.cpp
   Net/Ai/Resources/ResourceHandlers.cpp
   Net/Ai/Observation/ObservationHandlers.cpp

@@ -9,23 +9,19 @@
 #include <string>
 #include "App/World/Ejection.hpp"
 #include "App/World/Player/Player.hpp"
-#include "App/World/Player/PlayerRegistry.hpp"
 #include "App/World/Team/TeamRegistry.hpp"
+#include "Net/Ai/AiHandlerSupport.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Message/IMessage.hpp"
 #include "Rpc/Session/Session.hpp"
 
 namespace zappy::server {
 
-using AiSession = zappy::rpc::Session<ClientContext>;
-using AiServer = zappy::rpc::RPCServer<ClientContext>;
-
 namespace {
 
 void handleFork(AiSession& session, const AiHandlerContext& context) {
-  world::Player* player = context.players.find(session.ctx().playerId);
+  world::Player* player = findPlayerOrReplyKo(session, context);
   if (player == nullptr) {
-    session.send(protocol::ai::Ko().opcode());
     return;
   }
   context.teams.lay(player->teamName(), context.map, player->x(), player->y());

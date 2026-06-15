@@ -8,8 +8,7 @@
 #pragma once
 
 #include "Net/Ai/AiHandlerContext.hpp"
-#include "Net/ClientContext.hpp"
-#include "Rpc/Server/RPCServer.hpp"
+#include "Net/Ai/AiTypes.hpp"
 
 namespace zappy::server {
 
@@ -23,7 +22,7 @@ namespace zappy::server {
  * @param[in,out] server  RPC server the handlers are registered on.
  * @param[in]     context World dependencies the handlers operate on.
  */
-void installObservationHandlers(zappy::rpc::RPCServer<ClientContext>& server,
+void installObservationHandlers(AiServer& server,
                                 const AiHandlerContext& context);
 
 }  // namespace zappy::server

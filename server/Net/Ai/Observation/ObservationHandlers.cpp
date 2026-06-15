@@ -10,23 +10,19 @@
 #include <string>
 #include "App/World/Observation.hpp"
 #include "App/World/Player/Player.hpp"
-#include "App/World/Player/PlayerRegistry.hpp"
 #include "App/World/Team/TeamRegistry.hpp"
+#include "Net/Ai/AiHandlerSupport.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Message/IMessage.hpp"
 #include "Rpc/Session/Session.hpp"
 
 namespace zappy::server {
 
-using AiSession = zappy::rpc::Session<ClientContext>;
-using AiServer = zappy::rpc::RPCServer<ClientContext>;
-
 namespace {
 
 void handleLook(AiSession& session, const AiHandlerContext& context) {
-  const world::Player* player = context.players.find(session.ctx().playerId);
+  const world::Player* player = findPlayerOrReplyKo(session, context);
   if (player == nullptr) {
-    session.send(protocol::ai::Ko().opcode());
     return;
   }
   session.send(world::formatLook(player->x(), player->y(), player->direction(),
@@ -34,9 +30,8 @@ void handleLook(AiSession& session, const AiHandlerContext& context) {
 }
 
 void handleInventory(AiSession& session, const AiHandlerContext& context) {
-  const world::Player* player = context.players.find(session.ctx().playerId);
+  const world::Player* player = findPlayerOrReplyKo(session, context);
   if (player == nullptr) {
-    session.send(protocol::ai::Ko().opcode());
     return;
   }
   session.send(world::formatInventory(player->inventory()));

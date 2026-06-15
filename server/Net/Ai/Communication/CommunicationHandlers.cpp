@@ -11,13 +11,11 @@
 #include "App/World/Map/Map.hpp"
 #include "App/World/Player/Player.hpp"
 #include "App/World/Player/PlayerRegistry.hpp"
+#include "Net/Ai/AiHandlerSupport.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Session/Session.hpp"
 
 namespace zappy::server {
-
-using AiSession = zappy::rpc::Session<ClientContext>;
-using AiServer = zappy::rpc::RPCServer<ClientContext>;
 
 namespace {
 
@@ -40,9 +38,8 @@ void pushSoundToListener(AiSession& listener, int emitterX, int emitterY,
 void handleBroadcast(AiServer& server, AiSession& session,
                      const protocol::ai::BroadcastTextArgs& args,
                      const AiHandlerContext& context) {
-  const world::Player* emitter = context.players.find(session.ctx().playerId);
+  const world::Player* emitter = findPlayerOrReplyKo(session, context);
   if (emitter == nullptr) {
-    session.send(protocol::ai::Ko().opcode());
     return;
   }
   const int emitterX = emitter->x();

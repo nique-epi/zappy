@@ -9,26 +9,26 @@
 #include <optional>
 #include "App/World/Map/Map.hpp"
 #include "App/World/Player/Player.hpp"
-#include "App/World/Player/PlayerRegistry.hpp"
 #include "App/World/ResourceTransfer.hpp"
 #include "App/World/Resources/ResourceType.hpp"
 #include "App/World/Tile/Tile.hpp"
+#include "Net/Ai/AiHandlerSupport.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Session/Session.hpp"
 
 namespace zappy::server {
 
-using AiSession = zappy::rpc::Session<ClientContext>;
-using AiServer = zappy::rpc::RPCServer<ClientContext>;
-
 namespace {
 
 void handleTake(AiSession& session, const protocol::ai::ObjectArgs& args,
                 const AiHandlerContext& context) {
-  world::Player* player = context.players.find(session.ctx().playerId);
+  world::Player* player = findPlayerOrReplyKo(session, context);
+  if (player == nullptr) {
+    return;
+  }
   const std::optional<world::ResourceType> type =
       world::resourceFromName(args.object);
-  if (player == nullptr || !type.has_value()) {
+  if (!type.has_value()) {
     session.send(protocol::ai::Ko().opcode());
     return;
   }
@@ -40,10 +40,13 @@ void handleTake(AiSession& session, const protocol::ai::ObjectArgs& args,
 
 void handleSet(AiSession& session, const protocol::ai::ObjectArgs& args,
                const AiHandlerContext& context) {
-  world::Player* player = context.players.find(session.ctx().playerId);
+  world::Player* player = findPlayerOrReplyKo(session, context);
+  if (player == nullptr) {
+    return;
+  }
   const std::optional<world::ResourceType> type =
       world::resourceFromName(args.object);
-  if (player == nullptr || !type.has_value()) {
+  if (!type.has_value()) {
     session.send(protocol::ai::Ko().opcode());
     return;
   }

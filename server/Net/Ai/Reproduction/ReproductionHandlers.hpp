@@ -8,8 +8,7 @@
 #pragma once
 
 #include "Net/Ai/AiHandlerContext.hpp"
-#include "Net/ClientContext.hpp"
-#include "Rpc/Server/RPCServer.hpp"
+#include "Net/Ai/AiTypes.hpp"
 
 namespace zappy::server {
 
@@ -25,7 +24,7 @@ namespace zappy::server {
  *                        to reach the pushed drones' sessions.
  * @param[in]     context World dependencies the handlers operate on.
  */
-void installReproductionHandlers(zappy::rpc::RPCServer<ClientContext>& server,
+void installReproductionHandlers(AiServer& server,
                                  const AiHandlerContext& context);
 
 }  // namespace zappy::server
