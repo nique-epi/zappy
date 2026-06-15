@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2026
 ** zappy
 ** File description:
-** Unit tests for the resolveIncantation world operation
+** Unit tests for the getIncantationOutcome world operation
 */
 
 #include <gtest/gtest.h>
@@ -13,10 +13,10 @@
 #include "App/World/Resources/ResourceType.hpp"
 
 using zappy::world::Direction;
+using zappy::world::getIncantationOutcome;
 using zappy::world::IncantationOutcome;
 using zappy::world::Map;
 using zappy::world::PlayerRegistry;
-using zappy::world::resolveIncantation;
 using zappy::world::ResourceType;
 
 TEST(Incantation, FirstLevelRitualRaisesTheSoloInitiatorAndDrainsTheLinemate) {
@@ -30,7 +30,7 @@ TEST(Incantation, FirstLevelRitualRaisesTheSoloInitiatorAndDrainsTheLinemate) {
   const int drone = players.spawn("red", 2, 2, Direction::North, map).id();
   map.tileAt(2, 2).drop(ResourceType::Linemate, 1);
 
-  const IncantationOutcome outcome = resolveIncantation(drone, players, map);
+  const IncantationOutcome outcome = getIncantationOutcome(drone, players, map);
 
   EXPECT_TRUE(outcome.succeeded);
   EXPECT_EQ(outcome.newLevel, 2);
@@ -55,7 +55,7 @@ TEST(Incantation, RaisesEverySameLevelDroneSharingTheTile) {
   map.tileAt(1, 1).drop(ResourceType::Deraumere, 1);
   map.tileAt(1, 1).drop(ResourceType::Sibur, 1);
 
-  const IncantationOutcome outcome = resolveIncantation(first, players, map);
+  const IncantationOutcome outcome = getIncantationOutcome(first, players, map);
 
   EXPECT_TRUE(outcome.succeeded);
   EXPECT_EQ(outcome.newLevel, 3);
@@ -83,7 +83,7 @@ TEST(Incantation, IgnoresDronesOfADifferentLevelOnTheTile) {
   map.tileAt(3, 3).drop(ResourceType::Sibur, 1);
 
   const IncantationOutcome outcome =
-      resolveIncantation(initiator, players, map);
+      getIncantationOutcome(initiator, players, map);
 
   EXPECT_FALSE(outcome.succeeded);
   EXPECT_TRUE(outcome.participants.empty());
@@ -102,7 +102,7 @@ TEST(Incantation, FailsWhenMineralsAreMissing) {
   Map map(5, 5);
   const int drone = players.spawn("red", 0, 0, Direction::East, map).id();
 
-  const IncantationOutcome outcome = resolveIncantation(drone, players, map);
+  const IncantationOutcome outcome = getIncantationOutcome(drone, players, map);
 
   EXPECT_FALSE(outcome.succeeded);
   EXPECT_EQ(players.find(drone)->level(), 1);
@@ -120,7 +120,7 @@ TEST(Incantation, FailsWhenInitiatorIsAlreadyAtTheMaximumLevel) {
   players.find(drone)->setLevel(8);
   map.tileAt(4, 4).drop(ResourceType::Linemate, 5);
 
-  const IncantationOutcome outcome = resolveIncantation(drone, players, map);
+  const IncantationOutcome outcome = getIncantationOutcome(drone, players, map);
 
   EXPECT_FALSE(outcome.succeeded);
   EXPECT_EQ(players.find(drone)->level(), 8);
@@ -135,7 +135,7 @@ TEST(Incantation, MissingInitiatorIsANoOp) {
   PlayerRegistry players;
   Map map(5, 5);
 
-  const IncantationOutcome outcome = resolveIncantation(404, players, map);
+  const IncantationOutcome outcome = getIncantationOutcome(404, players, map);
 
   EXPECT_FALSE(outcome.succeeded);
   EXPECT_TRUE(outcome.participants.empty());

@@ -51,8 +51,8 @@ void consumeStones(Tile& tile, const ElevationRequirement& need) {
 
 }  // namespace
 
-IncantationOutcome resolveIncantation(int initiatorId, PlayerRegistry& players,
-                                      Map& map) {
+IncantationOutcome getIncantationOutcome(int initiatorId,
+                                         PlayerRegistry& players, Map& map) {
   const Player* initiator = players.find(initiatorId);
   if (initiator == nullptr || initiator->level() < minElevationLevel ||
       initiator->level() > maxElevationLevel) {

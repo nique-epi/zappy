@@ -6,12 +6,14 @@
 */
 
 #include "App/GameServer.hpp"
+#include <optional>
 #include <random>
 #include <string>
 #include "App/World/Incantation/Incantation.hpp"
 #include "App/World/Player/Direction.hpp"
 #include "App/World/Player/Player.hpp"
 #include "App/World/Team/Egg.hpp"
+#include "App/World/Victory.hpp"
 #include "Net/Ai/AiHandlerContext.hpp"
 #include "Net/Ai/Communication/CommunicationHandlers.hpp"
 #include "Net/Ai/Movement/MovementHandlers.hpp"
@@ -138,7 +140,7 @@ void GameServer::registerAiHandlers() {
 
 void GameServer::executeIncantation(Session& session) {
   const world::IncantationOutcome outcome =
-      world::resolveIncantation(session.ctx().playerId, players_, world_);
+      world::getIncantationOutcome(session.ctx().playerId, players_, world_);
   if (!outcome.succeeded) {
     session.send(protocol::ai::Ko().opcode());
     return;
@@ -152,6 +154,21 @@ void GameServer::executeIncantation(Session& session) {
       }
     });
   }
+  const std::optional<std::string> winningTeam =
+      world::findWinningTeam(players_);
+  if (winningTeam.has_value()) {
+    endGame(*winningTeam);
+  }
+}
+
+void GameServer::endGame(const std::string& winningTeam) {
+  const std::string line = "seg " + winningTeam;
+  server_.forEachSession([&line](Session& session) {
+    if (session.ctx().type == ClientType::Gui) {
+      session.send(line);
+    }
+  });
+  stop();
 }
 
 void GameServer::registerFallbacks() {

@@ -105,6 +105,17 @@ class GameServer {
    */
   void executeIncantation(zappy::rpc::Session<ClientContext>& session);
 
+  /**
+   * @brief End the game in favour of @p winningTeam.
+   *
+   * Notifies every GUI client with the `seg <team>` end-of-game message and
+   * stops the main loop. Called after an elevation once a team reaches the
+   * victory threshold.
+   *
+   * @param[in] winningTeam Name of the team that met the victory condition.
+   */
+  void endGame(const std::string& winningTeam);
+
   ServerConfig config_;
   TimeUnit timeUnit_;
   zappy::rpc::RPCServer<ClientContext> server_;
