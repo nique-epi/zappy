@@ -10,6 +10,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string_view>
 
 namespace zappy::world {
@@ -48,5 +49,13 @@ const std::array<ResourceType, resourceTypeCount>& allResourceTypes();
  * @returns The token used by the AI and GUI protocols (e.g. "linemate").
  */
 std::string_view resourceName(ResourceType type);
+
+/**
+ * @brief Resolve the resource kind carried by a protocol token.
+ * @param[in] name Lower-case token as sent by the AI (e.g. "linemate").
+ * @returns The matching kind, or std::nullopt when @p name names no resource.
+ */
+[[nodiscard]] std::optional<ResourceType> resourceFromName(
+    std::string_view name);
 
 }  // namespace zappy::world

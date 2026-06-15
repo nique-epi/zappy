@@ -12,6 +12,10 @@ add_library(zappy_server_app STATIC
   App/World/Player/PlayerRegistry.cpp
   App/World/Player/HungerService.cpp
   App/World/Ejection.cpp
+  App/World/Movement.cpp
+  App/World/ResourceTransfer.cpp
+  App/World/Observation.cpp
+  App/World/Broadcast.cpp
   App/World/Exceptions/WorldException.cpp
   App/Loot/ResourceDensity.cpp
   App/Loot/LootService.cpp
@@ -23,6 +27,12 @@ add_library(zappy_server_app STATIC
   Net/ActionQueue.cpp
   Net/AiActionPipeline.cpp
   Net/GuiQueryHandlers.cpp
+  Net/Ai/AiHandlerSupport.cpp
+  Net/Ai/Movement/MovementHandlers.cpp
+  Net/Ai/Resources/ResourceHandlers.cpp
+  Net/Ai/Observation/ObservationHandlers.cpp
+  Net/Ai/Reproduction/ReproductionHandlers.cpp
+  Net/Ai/Communication/CommunicationHandlers.cpp
 )
 
 target_include_directories(zappy_server_app PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

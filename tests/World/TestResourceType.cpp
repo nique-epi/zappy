@@ -10,6 +10,7 @@
 #include "App/World/Resources/ResourceType.hpp"
 
 using zappy::world::allResourceTypes;
+using zappy::world::resourceFromName;
 using zappy::world::resourceName;
 using zappy::world::ResourceType;
 using zappy::world::resourceTypeCount;
@@ -44,4 +45,26 @@ TEST(ResourceType, NamesUseProtocolTokens) {
   EXPECT_EQ(resourceName(ResourceType::Mendiane), "mendiane");
   EXPECT_EQ(resourceName(ResourceType::Phiras), "phiras");
   EXPECT_EQ(resourceName(ResourceType::Thystame), "thystame");
+}
+
+TEST(ResourceType, ResourceFromNameResolvesEveryToken) {
+  /*
+   * Given each protocol token a name round-trips from
+   * When resourceFromName is queried
+   * Then it returns the kind that resourceName maps back to the token
+   */
+  for (const ResourceType type : allResourceTypes()) {
+    EXPECT_EQ(resourceFromName(resourceName(type)), type);
+  }
+}
+
+TEST(ResourceType, ResourceFromNameRejectsUnknownToken) {
+  /*
+   * Given a token that names no resource
+   * When resourceFromName is queried
+   * Then it returns no kind
+   */
+  EXPECT_FALSE(resourceFromName("wood").has_value());
+  EXPECT_FALSE(resourceFromName("").has_value());
+  EXPECT_FALSE(resourceFromName("Food").has_value());
 }

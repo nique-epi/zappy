@@ -52,6 +52,18 @@ struct DirectionOffset {
 [[nodiscard]] Direction opposite(Direction direction);
 
 /**
+ * @brief The direction reached by turning @p direction 90 degrees clockwise
+ *        (the AI `Right` command): N->E->S->W->N.
+ */
+[[nodiscard]] Direction turnRight(Direction direction);
+
+/**
+ * @brief The direction reached by turning @p direction 90 degrees
+ *        counter-clockwise (the AI `Left` command): N->W->S->E->N.
+ */
+[[nodiscard]] Direction turnLeft(Direction direction);
+
+/**
  * @brief Eject `eject: K` code received by a drone pushed off a tile.
  *
  * K is the direction the pushed drone comes from, expressed relative to its
