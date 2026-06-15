@@ -5,6 +5,7 @@
 ** ServerHandlers — handlers for server-level messages
 */
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -18,7 +19,9 @@ void registerServerHandlers(HandlerMap& handlers, WorldState& world) {
   handlers["tna"] = [&world](std::istringstream& stream) {
     std::string name;
     stream >> name;
-    world.teams.push_back(name);
+    if (std::ranges::find(world.teams, name) == world.teams.end()) {
+      world.teams.push_back(name);
+    }
   };
 
   const auto setTimeUnit = [&world](std::istringstream& stream) {

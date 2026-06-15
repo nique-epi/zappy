@@ -253,6 +253,19 @@ TEST(MessageParser, TnaAccumulatesMultipleTeams) {
   EXPECT_EQ(world.teams[2], "gamma");
 }
 
+TEST(MessageParser, TnaIgnoresDuplicateTeamNames) {
+  zappy::gui::WorldState world;
+  zappy::gui::MessageParser parser(world);
+
+  parser.parseLine("tna alpha");
+  parser.parseLine("tna beta");
+  parser.parseLine("tna alpha");
+
+  ASSERT_EQ(world.teams.size(), 2U);
+  EXPECT_EQ(world.teams[0], "alpha");
+  EXPECT_EQ(world.teams[1], "beta");
+}
+
 TEST(MessageParser, SgtSetsTimeUnit) {
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
