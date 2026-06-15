@@ -93,6 +93,18 @@ class GameServer {
   /// World dimensions formatted as the `X Y` handshake line.
   [[nodiscard]] std::string worldSizeLine() const;
 
+  /**
+   * @brief Resolve the elevation ritual started by the calling drone
+   *        (Incantation).
+   *
+   * The action's 300/f cost already froze the initiator for the ritual's
+   * duration, so this runs at the end of that window: it verifies the
+   * prerequisites on the tile and, on success, removes the minerals and raises
+   * every gathered drone, sending each `Current level: k`. On failure the
+   * initiator is told `ko`.
+   */
+  void executeIncantation(zappy::rpc::Session<ClientContext>& session);
+
   ServerConfig config_;
   zappy::rpc::RPCServer<ClientContext> server_;
   world::Map world_;

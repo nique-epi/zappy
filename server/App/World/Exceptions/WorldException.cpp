@@ -36,4 +36,9 @@ NoFreeSlotException::NoFreeSlotException(const std::string& teamName)
     : WorldException(error::messages::NO_FREE_SLOT_PREFIX + teamName +
                      error::messages::NO_FREE_SLOT_SUFFIX) {}
 
+InvalidElevationLevelException::InvalidElevationLevelException(int fromLevel)
+    : WorldException(error::messages::INVALID_ELEVATION_LEVEL_PREFIX +
+                     std::to_string(fromLevel) +
+                     error::messages::INVALID_ELEVATION_LEVEL_SUFFIX) {}
+
 }  // namespace zappy::world

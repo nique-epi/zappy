@@ -61,4 +61,13 @@ class NoFreeSlotException : public WorldException {
   explicit NoFreeSlotException(const std::string& teamName);
 };
 
+/**
+ * @brief Thrown when an elevation requirement is requested for a level that
+ *        cannot start an elevation (outside `[1, 7]`).
+ */
+class InvalidElevationLevelException : public WorldException {
+ public:
+  explicit InvalidElevationLevelException(int fromLevel);
+};
+
 }  // namespace zappy::world
