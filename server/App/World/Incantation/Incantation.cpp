@@ -73,7 +73,11 @@ IncantationOutcome getIncantationOutcome(int initiatorId,
   consumeStones(tile, need);
   const int newLevel = level + 1;
   for (int playerId : participants) {
-    players.find(playerId)->setLevel(newLevel);
+    Player* participant = players.find(playerId);
+    if (participant == nullptr) {
+      continue;
+    }
+    participant->setLevel(newLevel);
   }
   return {
       .succeeded = true, .newLevel = newLevel, .participants = participants};
