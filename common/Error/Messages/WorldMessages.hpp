@@ -19,4 +19,9 @@ inline constexpr const char* MAP_ALLOCATION_FAILED_PREFIX =
 inline constexpr const char* MAP_ALLOCATION_FAILED_SUFFIX =
     ": world too large to allocate";
 
+inline constexpr const char* INVALID_ELEVATION_LEVEL_PREFIX =
+    "invalid elevation level ";
+inline constexpr const char* INVALID_ELEVATION_LEVEL_SUFFIX =
+    ": must be in [1, 7]";
+
 }  // namespace zappy::error::messages
