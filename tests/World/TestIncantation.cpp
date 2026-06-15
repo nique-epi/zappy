@@ -63,6 +63,8 @@ TEST(Incantation, RaisesEverySameLevelDroneSharingTheTile) {
   EXPECT_EQ(players.find(first)->level(), 3);
   EXPECT_EQ(players.find(second)->level(), 3);
   EXPECT_EQ(map.tileAt(1, 1).quantityOf(ResourceType::Linemate), 0U);
+  EXPECT_EQ(map.tileAt(1, 1).quantityOf(ResourceType::Deraumere), 0U);
+  EXPECT_EQ(map.tileAt(1, 1).quantityOf(ResourceType::Sibur), 0U);
 }
 
 TEST(Incantation, IgnoresDronesOfADifferentLevelOnTheTile) {

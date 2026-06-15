@@ -13,7 +13,9 @@ namespace zappy::world {
 
 namespace {
 
-constexpr std::size_t elevationStepCount = 7;
+static_assert(maxElevationLevel >= minElevationLevel);
+constexpr std::size_t elevationStepCount =
+    static_cast<std::size_t>(maxElevationLevel - minElevationLevel + 1);
 
 // Indexed by ResourceType: {Food, Linemate, Deraumere, Sibur, Mendiane,
 // Phiras, Thystame}. Food is always zero — it never takes part in a ritual.

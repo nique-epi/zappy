@@ -51,7 +51,8 @@ TEST(ElevationRequirements, FoodIsNeverPartOfARitual) {
    * When each requirement is inspected
    * Then no step ever consumes food
    */
-  for (int fromLevel = 1; fromLevel <= 7; ++fromLevel) {
+  for (int fromLevel = zappy::world::minElevationLevel;
+       fromLevel <= zappy::world::maxElevationLevel; ++fromLevel) {
     const ElevationRequirement& need = elevationRequirement(fromLevel);
     EXPECT_EQ(need.stones[static_cast<std::size_t>(ResourceType::Food)], 0U);
   }
