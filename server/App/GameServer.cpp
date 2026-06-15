@@ -8,6 +8,7 @@
 #include "App/GameServer.hpp"
 #include <random>
 #include <string>
+#include "App/World/Incantation/Incantation.hpp"
 #include "App/World/Player/Direction.hpp"
 #include "App/World/Player/Player.hpp"
 #include "App/World/Team/Egg.hpp"
@@ -144,7 +145,27 @@ void GameServer::registerAiHandlers() {
   installReproductionHandlers(server_, context);
   installCommunicationHandlers(server_, context);
   server_.on(protocol::ai::Incantation(),
-             [](Session&, zappy::rpc::IMessage&) {});
+             [this](Session& session, zappy::rpc::IMessage&) {
+               executeIncantation(session);
+             });
+}
+
+void GameServer::executeIncantation(Session& session) {
+  const world::IncantationOutcome outcome =
+      world::resolveIncantation(session.ctx().playerId, players_, world_);
+  if (!outcome.succeeded) {
+    session.send(protocol::ai::Ko().opcode());
+    return;
+  }
+  const std::string levelLine =
+      "Current level: " + std::to_string(outcome.newLevel);
+  for (int participantId : outcome.participants) {
+    server_.forEachSession([participantId, &levelLine](Session& other) {
+      if (other.ctx().playerId == participantId) {
+        other.send(levelLine);
+      }
+    });
+  }
 }
 
 void GameServer::registerFallbacks() {
