@@ -24,7 +24,7 @@ using GuiServer = zappy::rpc::RPCServer<ClientContext>;
 
 namespace {
 
-bool parseCoordinate(const std::string& text, int& out) {
+bool parseInt(const std::string& text, int& out) {
   const std::string_view view{text};
   const auto* begin = view.data();
   const auto* end = begin + view.size();
@@ -133,8 +133,8 @@ void installGuiQueryHandlers(GuiServer& server, const ServerConfig& config,
             [&map](GuiSession& session, const protocol::TileRequestArgs& args) {
               int column = 0;
               int row = 0;
-              if (!parseCoordinate(args.positionX, column) ||
-                  !parseCoordinate(args.positionY, row)) {
+              if (!parseInt(args.positionX, column) ||
+                  !parseInt(args.positionY, row)) {
                 session.send(protocol::BadParameter().opcode());
                 return;
               }
@@ -188,7 +188,7 @@ void installGuiQueryHandlers(GuiServer& server, const ServerConfig& config,
       protocol::SetTimeUnit(),
       [&timeUnit](GuiSession& session, const protocol::TimeUnitArgs& args) {
         int frequency = 0;
-        if (!parseCoordinate(args.timeUnit, frequency) || frequency <= 0) {
+        if (!parseInt(args.timeUnit, frequency) || frequency <= 0) {
           session.send(protocol::BadParameter().opcode());
           return;
         }

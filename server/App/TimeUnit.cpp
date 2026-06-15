@@ -10,19 +10,21 @@
 
 namespace zappy::server {
 
-TimeUnit::TimeUnit(int frequency) : frequency_(frequency) {
+namespace {
+
+int validateFrequency(int frequency) {
   if (frequency <= 0) {
     throw InvalidFrequencyException(frequency);
   }
+  return frequency;
 }
+
+}  // namespace
+
+TimeUnit::TimeUnit(int frequency) : frequency_(validateFrequency(frequency)) {}
 
 int TimeUnit::value() const { return frequency_; }
 
-void TimeUnit::set(int frequency) {
-  if (frequency <= 0) {
-    throw InvalidFrequencyException(frequency);
-  }
-  frequency_ = frequency;
-}
+void TimeUnit::set(int frequency) { frequency_ = validateFrequency(frequency); }
 
 }  // namespace zappy::server
