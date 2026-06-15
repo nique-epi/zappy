@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "App/Scheduler/Scheduler.hpp"
+#include "App/TimeUnit.hpp"
 #include "LoopbackClient.hpp"
 #include "Net/ActionQueue.hpp"
 #include "Net/AiActionPipeline.hpp"
@@ -27,6 +28,7 @@ using zappy::server::ClientType;
 using zappy::server::installAiActionPipeline;
 using zappy::server::maxPendingActions;
 using zappy::server::Scheduler;
+using zappy::server::TimeUnit;
 
 namespace {
 
@@ -38,6 +40,7 @@ constexpr auto pastDeadline = std::chrono::seconds{10};
 struct ServerHarness {
   RPCServer<ClientContext> server;
   Scheduler scheduler;
+  TimeUnit timeUnit{testFrequency};
   std::vector<std::pair<int, std::string>> dispatches;
 
   ServerHarness() : server(0), scheduler() {
@@ -58,7 +61,7 @@ struct ServerHarness {
                                         std::string("Connect_nbr"));
                 session.send("1");
               });
-    installAiActionPipeline(server, scheduler, testFrequency);
+    installAiActionPipeline(server, scheduler, timeUnit);
     server.start();
   }
 

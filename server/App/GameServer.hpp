@@ -12,6 +12,7 @@
 #include "App/Loot/LootService.hpp"
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/ServerConfig.hpp"
+#include "App/TimeUnit.hpp"
 #include "App/World/Map/Map.hpp"
 #include "App/World/Player/HungerService.hpp"
 #include "App/World/Player/PlayerRegistry.hpp"
@@ -72,7 +73,6 @@ class GameServer {
 
  private:
   void registerHandshake();
-  void registerGuiHandlers();
   void registerAiHandlers();
   void registerFallbacks();
 
@@ -108,6 +108,7 @@ class GameServer {
   void executeEject(zappy::rpc::Session<ClientContext>& session);
 
   ServerConfig config_;
+  TimeUnit timeUnit_;
   zappy::rpc::RPCServer<ClientContext> server_;
   world::Map world_;
   std::mt19937 rng_;

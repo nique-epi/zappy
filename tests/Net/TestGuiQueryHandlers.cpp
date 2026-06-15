@@ -9,7 +9,10 @@
 #include <string>
 #include <vector>
 #include "App/ServerConfig.hpp"
+#include "App/TimeUnit.hpp"
 #include "App/World/Map/Map.hpp"
+#include "App/World/Player/Direction.hpp"
+#include "App/World/Player/PlayerRegistry.hpp"
 #include "App/World/Resources/ResourceType.hpp"
 #include "LoopbackClient.hpp"
 #include "Net/ClientContext.hpp"
@@ -29,7 +32,10 @@ using zappy::server::ClientContext;
 using zappy::server::ClientType;
 using zappy::server::installGuiQueryHandlers;
 using zappy::server::ServerConfig;
+using zappy::server::TimeUnit;
+using zappy::world::Direction;
 using zappy::world::Map;
+using zappy::world::PlayerRegistry;
 using zappy::world::ResourceType;
 
 namespace {
@@ -37,9 +43,13 @@ namespace {
 constexpr int driveIterations = 4;
 constexpr int driveTimeoutMs = 20;
 
+constexpr int harnessFrequency = 100;
+
 struct GuiHarness {
   ServerConfig config;
   Map map;
+  PlayerRegistry players;
+  TimeUnit timeUnit;
   RPCServer<ClientContext> server;
 
   GuiHarness(int width, int height, std::vector<std::string> teams)
@@ -47,9 +57,10 @@ struct GuiHarness {
                .width = width,
                .height = height,
                .clientsPerTeam = 1,
-               .frequency = 100,
+               .frequency = harnessFrequency,
                .teamNames = std::move(teams)},
         map(width, height),
+        timeUnit(harnessFrequency),
         server(0) {
     server.onHandshake([](Session<ClientContext>& session, const std::string&) {
       session.ctx().type = ClientType::Gui;
@@ -61,7 +72,7 @@ struct GuiHarness {
     server.onInvalid([](Session<ClientContext>& session, IMessage&) {
       session.send(BadParameter().opcode());
     });
-    installGuiQueryHandlers(server, config, map);
+    installGuiQueryHandlers(server, config, map, players, timeUnit);
     server.start();
   }
 
@@ -264,4 +275,148 @@ TEST(GuiQueryHandlers, UnknownGuiOpcodeRepliesSuc) {
   client.sendLine("zzz");
   harness.drive();
   EXPECT_EQ(collectLine(client), "suc\n");
+}
+
+TEST(GuiQueryHandlers, PpoReturnsPositionAndOrientation) {
+  /*
+   * Given a drone spawned at (2, 3) facing East (orientation 2)
+   * When a GUI client requests ppo #1
+   * Then it receives "ppo #1 2 3 2"
+   */
+  GuiHarness harness(8, 8, {"red"});
+  harness.players.spawn("red", 2, 3, Direction::East, harness.map);
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("ppo #1");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "ppo #1 2 3 2\n");
+}
+
+TEST(GuiQueryHandlers, PlvReturnsPlayerLevel) {
+  /*
+   * Given a drone elevated to level 4
+   * When a GUI client requests plv #1
+   * Then it receives "plv #1 4"
+   */
+  GuiHarness harness(8, 8, {"red"});
+  harness.players.spawn("red", 0, 0, Direction::North, harness.map);
+  harness.players.find(1)->setLevel(4);
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("plv #1");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "plv #1 4\n");
+}
+
+TEST(GuiQueryHandlers, PinReturnsPositionThenInventory) {
+  /*
+   * Given a drone at (1, 1) carrying its starting food and one linemate
+   * When a GUI client requests pin #1
+   * Then it receives "pin #1 1 1 10 1 0 0 0 0 0"
+   */
+  GuiHarness harness(8, 8, {"red"});
+  harness.players.spawn("red", 1, 1, Direction::North, harness.map);
+  harness.players.find(1)->inventory().add(ResourceType::Linemate);
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("pin #1");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "pin #1 1 1 10 1 0 0 0 0 0\n");
+}
+
+TEST(GuiQueryHandlers, PlayerQueryForUnknownDroneRepliesSbp) {
+  /*
+   * Given a world with no drone numbered 9
+   * When a GUI client requests ppo #9
+   * Then the server replies sbp
+   */
+  GuiHarness harness(8, 8, {"red"});
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("ppo #9");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "sbp\n");
+}
+
+TEST(GuiQueryHandlers, PlayerQueryWithoutHashRepliesSbp) {
+  /*
+   * Given the GUI player-number convention (#n)
+   * When a GUI client requests ppo 1 without the leading hash
+   * Then the server replies sbp
+   */
+  GuiHarness harness(8, 8, {"red"});
+  harness.players.spawn("red", 0, 0, Direction::North, harness.map);
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("ppo 1");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "sbp\n");
+}
+
+TEST(GuiQueryHandlers, SgtReturnsTheCurrentTimeUnit) {
+  /*
+   * Given a server started at frequency 100
+   * When a GUI client sends sgt
+   * Then it receives "sgt 100"
+   */
+  GuiHarness harness(4, 4, {});
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("sgt");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "sgt 100\n");
+}
+
+TEST(GuiQueryHandlers, SstUpdatesTheTimeUnitAndEchoesIt) {
+  /*
+   * Given a running server
+   * When a GUI client sends sst 250
+   * Then it receives "sst 250" and the shared time unit becomes 250
+   */
+  GuiHarness harness(4, 4, {});
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("sst 250");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "sst 250\n");
+  EXPECT_EQ(harness.timeUnit.value(), 250);
+}
+
+TEST(GuiQueryHandlers, SstRejectsNonPositiveTimeUnitWithSbp) {
+  /*
+   * Given the rule that the time unit must stay strictly positive
+   * When a GUI client sends sst 0
+   * Then the server replies sbp and the time unit is unchanged
+   */
+  GuiHarness harness(4, 4, {});
+  LoopbackClient client(harness.server.port());
+  harness.drive();
+  completeHandshake(client);
+  harness.drive();
+
+  client.sendLine("sst 0");
+  harness.drive();
+  EXPECT_EQ(collectLine(client), "sbp\n");
+  EXPECT_EQ(harness.timeUnit.value(), harnessFrequency);
 }

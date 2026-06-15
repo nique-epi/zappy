@@ -8,6 +8,7 @@
 #pragma once
 
 #include "App/Scheduler/Scheduler.hpp"
+#include "App/TimeUnit.hpp"
 #include "Net/ClientContext.hpp"
 #include "Rpc/Server/RPCServer.hpp"
 
@@ -38,10 +39,11 @@ namespace zappy::server {
  *                      must outlive every scheduled callback.
  * @param[in] scheduler The scheduler used to defer dispatch by action cost.
  *                      Its lifetime must also outlive every callback.
- * @param[in] frequency Reciprocal time unit `f` passed to
- *                      @ref actionDuration (must be > 0).
+ * @param[in] timeUnit Live reciprocal time unit `f` read at scheduling time,
+ *                     so a GUI `sst` mid-game applies to subsequent actions.
+ *                     Must outlive every scheduled callback.
  */
 void installAiActionPipeline(zappy::rpc::RPCServer<ClientContext>& server,
-                             Scheduler& scheduler, int frequency);
+                             Scheduler& scheduler, const TimeUnit& timeUnit);
 
 }  // namespace zappy::server

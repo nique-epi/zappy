@@ -31,6 +31,7 @@ using Session = zappy::rpc::Session<ClientContext>;
 
 GameServer::GameServer(const ServerConfig& config)
     : config_(config),
+      timeUnit_(config.frequency),
       server_(config.port),
       world_(config.width, config.height),
       rng_(std::random_device{}()),
@@ -39,11 +40,10 @@ GameServer::GameServer(const ServerConfig& config)
       hunger_(server_, scheduler_, players_, world_, config.frequency) {
   teams_.seedInitialEggs(world_, config_.clientsPerTeam, rng_);
   registerHandshake();
-  registerGuiHandlers();
   registerAiHandlers();
   registerFallbacks();
-  installAiActionPipeline(server_, scheduler_, config_.frequency);
-  installGuiQueryHandlers(server_, config_, world_);
+  installAiActionPipeline(server_, scheduler_, timeUnit_);
+  installGuiQueryHandlers(server_, config_, world_, players_, timeUnit_);
   server_.onDisconnect([this](Session& session) {
     session.ctx().pendingActions.clear();
     session.ctx().actionInFlight = false;
@@ -115,20 +115,6 @@ void GameServer::admitAiClient(Session& session, const std::string& teamName) {
 
 std::string GameServer::worldSizeLine() const {
   return std::to_string(config_.width) + " " + std::to_string(config_.height);
-}
-
-void GameServer::registerGuiHandlers() {
-  server_.on(protocol::RequestTimeUnit(),
-             [](Session&, zappy::rpc::IMessage&) {});
-
-  server_.on(protocol::RequestPlayerPosition(),
-             [](Session&, const protocol::PlayerNumberArgs&) {});
-  server_.on(protocol::RequestPlayerLevel(),
-             [](Session&, const protocol::PlayerNumberArgs&) {});
-  server_.on(protocol::RequestPlayerInventory(),
-             [](Session&, const protocol::PlayerNumberArgs&) {});
-  server_.on(protocol::SetTimeUnit(),
-             [](Session&, const protocol::TimeUnitArgs&) {});
 }
 
 void GameServer::registerAiHandlers() {

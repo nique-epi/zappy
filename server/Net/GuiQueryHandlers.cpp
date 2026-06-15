@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#include "App/World/Player/Player.hpp"
 #include "App/World/Resources/ResourceType.hpp"
 #include "App/World/Tile/Tile.hpp"
 #include "Protocol/GuiProtocol.hpp"
@@ -64,10 +65,60 @@ void sendMapContent(GuiSession& session, const world::Map& map) {
   }
 }
 
+bool parsePlayerNumber(const std::string& token, int& out) {
+  if (token.size() < 2 || token.front() != '#') {
+    return false;
+  }
+  const char* begin = token.data() + 1;
+  const char* end = token.data() + token.size();
+  const auto result = std::from_chars(begin, end, out);
+  return result.ec == std::errc{} && result.ptr == end;
+}
+
+std::string formatPlayerInventory(int playerId, const world::Player& player) {
+  std::string line = "pin #" + std::to_string(playerId) + " " +
+                     std::to_string(player.x()) + " " +
+                     std::to_string(player.y());
+  for (const world::ResourceType type : world::allResourceTypes()) {
+    line += " " + std::to_string(player.inventory().quantityOf(type));
+  }
+  return line;
+}
+
+void sendPlayerPosition(GuiSession& session, int playerId,
+                        const world::Player& player) {
+  session.send("ppo #" + std::to_string(playerId) + " " +
+               std::to_string(player.x()) + " " + std::to_string(player.y()) +
+               " " + std::to_string(static_cast<int>(player.direction())));
+}
+
+void sendPlayerLevel(GuiSession& session, int playerId,
+                     const world::Player& player) {
+  session.send("plv #" + std::to_string(playerId) + " " +
+               std::to_string(player.level()));
+}
+
+const world::Player* resolvePlayer(GuiSession& session,
+                                   const protocol::PlayerNumberArgs& args,
+                                   const world::PlayerRegistry& players,
+                                   int& playerId) {
+  if (!parsePlayerNumber(args.playerNumber, playerId)) {
+    session.send(protocol::BadParameter().opcode());
+    return nullptr;
+  }
+  const world::Player* player = players.find(playerId);
+  if (player == nullptr) {
+    session.send(protocol::BadParameter().opcode());
+  }
+  return player;
+}
+
 }  // namespace
 
 void installGuiQueryHandlers(GuiServer& server, const ServerConfig& config,
-                             const world::Map& map) {
+                             const world::Map& map,
+                             const world::PlayerRegistry& players,
+                             TimeUnit& timeUnit) {
   server.on(protocol::RequestMapSize(),
             [&config](GuiSession& session, zappy::rpc::IMessage&) {
               sendMapSize(session, config);
@@ -94,6 +145,56 @@ void installGuiQueryHandlers(GuiServer& server, const ServerConfig& config,
             [&map](GuiSession& session, zappy::rpc::IMessage&) {
               sendMapContent(session, map);
             });
+
+  server.on(
+      protocol::RequestPlayerPosition(),
+      [&players](GuiSession& session, const protocol::PlayerNumberArgs& args) {
+        int playerId = 0;
+        const world::Player* player =
+            resolvePlayer(session, args, players, playerId);
+        if (player != nullptr) {
+          sendPlayerPosition(session, playerId, *player);
+        }
+      });
+
+  server.on(
+      protocol::RequestPlayerLevel(),
+      [&players](GuiSession& session, const protocol::PlayerNumberArgs& args) {
+        int playerId = 0;
+        const world::Player* player =
+            resolvePlayer(session, args, players, playerId);
+        if (player != nullptr) {
+          sendPlayerLevel(session, playerId, *player);
+        }
+      });
+
+  server.on(
+      protocol::RequestPlayerInventory(),
+      [&players](GuiSession& session, const protocol::PlayerNumberArgs& args) {
+        int playerId = 0;
+        const world::Player* player =
+            resolvePlayer(session, args, players, playerId);
+        if (player != nullptr) {
+          session.send(formatPlayerInventory(playerId, *player));
+        }
+      });
+
+  server.on(protocol::RequestTimeUnit(),
+            [&timeUnit](GuiSession& session, zappy::rpc::IMessage&) {
+              session.send("sgt " + std::to_string(timeUnit.value()));
+            });
+
+  server.on(
+      protocol::SetTimeUnit(),
+      [&timeUnit](GuiSession& session, const protocol::TimeUnitArgs& args) {
+        int frequency = 0;
+        if (!parseCoordinate(args.timeUnit, frequency) || frequency <= 0) {
+          session.send(protocol::BadParameter().opcode());
+          return;
+        }
+        timeUnit.set(frequency);
+        session.send("sst " + std::to_string(frequency));
+      });
 }
 
 }  // namespace zappy::server

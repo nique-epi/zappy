@@ -74,6 +74,7 @@ add_executable(zappy_server_tests
   Net/TestAiActionPipeline.cpp
   Net/TestGuiQueryHandlers.cpp
   App/TestActionCosts.cpp
+  App/TestTimeUnit.cpp
   App/TestGameServerHandshake.cpp
   Rpc/mocks/LoopbackClient.cpp
   Network/mocks/MockSocket.cpp
