@@ -218,12 +218,12 @@ std::shared_ptr<const Schema<TileRequestArgs>> tileRequestSchema() {
 
 std::shared_ptr<const Schema<PlayerNumberArgs>> playerNumberSchema() {
   static const auto schema = std::make_shared<const Schema<PlayerNumberArgs>>(
-      Schema<PlayerNumberArgs>{}.field<NumberFieldType>(
+      Schema<PlayerNumberArgs>{}.field<StringFieldType>(
           "playerNumber", &PlayerNumberArgs::playerNumber));
   return schema;
 }
 
-const RPCMessage &rawMessage(const char *opcode) {
+const RPCMessage& rawMessage(const char* opcode) {
   static std::unordered_map<std::string, RPCMessage> cache;
   auto [iterator, inserted] = cache.try_emplace(opcode, RPCMessage{opcode});
   return iterator->second;
@@ -231,137 +231,137 @@ const RPCMessage &rawMessage(const char *opcode) {
 
 }  // namespace
 
-const TypedMessage<MapSizeArgs> &MapSize() {
+const TypedMessage<MapSizeArgs>& MapSize() {
   static const auto message = RPCMessage{"msz"}.schema(mapSizeSchema());
   return message;
 }
 
-const TypedMessage<TileContentArgs> &TileContent() {
+const TypedMessage<TileContentArgs>& TileContent() {
   static const auto message = RPCMessage{"bct"}.schema(tileContentSchema());
   return message;
 }
 
-const TypedMessage<TeamNameArgs> &TeamName() {
+const TypedMessage<TeamNameArgs>& TeamName() {
   static const auto message = RPCMessage{"tna"}.schema(teamNameSchema());
   return message;
 }
 
-const TypedMessage<NewPlayerArgs> &NewPlayer() {
+const TypedMessage<NewPlayerArgs>& NewPlayer() {
   static const auto message = RPCMessage{"pnw"}.schema(newPlayerSchema());
   return message;
 }
 
-const TypedMessage<PlayerPositionArgs> &PlayerPosition() {
+const TypedMessage<PlayerPositionArgs>& PlayerPosition() {
   static const auto message = RPCMessage{"ppo"}.schema(playerPositionSchema());
   return message;
 }
 
-const TypedMessage<PlayerLevelArgs> &PlayerLevel() {
+const TypedMessage<PlayerLevelArgs>& PlayerLevel() {
   static const auto message = RPCMessage{"plv"}.schema(playerLevelSchema());
   return message;
 }
 
-const TypedMessage<PlayerInventoryArgs> &PlayerInventory() {
+const TypedMessage<PlayerInventoryArgs>& PlayerInventory() {
   static const auto message = RPCMessage{"pin"}.schema(playerInventorySchema());
   return message;
 }
 
-const TypedMessage<ExpulsionArgs> &Expulsion() {
+const TypedMessage<ExpulsionArgs>& Expulsion() {
   static const auto message = RPCMessage{"pex"}.schema(expulsionSchema());
   return message;
 }
 
-const TypedMessage<BroadcastArgs> &Broadcast() {
+const TypedMessage<BroadcastArgs>& Broadcast() {
   static const auto message = RPCMessage{"pbc"}.schema(broadcastSchema());
   return message;
 }
 
-const TypedMessage<IncantationEndArgs> &IncantationEnd() {
+const TypedMessage<IncantationEndArgs>& IncantationEnd() {
   static const auto message = RPCMessage{"pie"}.schema(incantationEndSchema());
   return message;
 }
 
-const TypedMessage<EggLayingArgs> &EggLaying() {
+const TypedMessage<EggLayingArgs>& EggLaying() {
   static const auto message = RPCMessage{"pfk"}.schema(eggLayingSchema());
   return message;
 }
 
-const TypedMessage<ResourceDropArgs> &ResourceDrop() {
+const TypedMessage<ResourceDropArgs>& ResourceDrop() {
   static const auto message = RPCMessage{"pdr"}.schema(resourceDropSchema());
   return message;
 }
 
-const TypedMessage<ResourceCollectArgs> &ResourceCollect() {
+const TypedMessage<ResourceCollectArgs>& ResourceCollect() {
   static const auto message = RPCMessage{"pgt"}.schema(resourceCollectSchema());
   return message;
 }
 
-const TypedMessage<PlayerDeathArgs> &PlayerDeath() {
+const TypedMessage<PlayerDeathArgs>& PlayerDeath() {
   static const auto message = RPCMessage{"pdi"}.schema(playerDeathSchema());
   return message;
 }
 
-const TypedMessage<EggLaidArgs> &EggLaid() {
+const TypedMessage<EggLaidArgs>& EggLaid() {
   static const auto message = RPCMessage{"enw"}.schema(eggLaidSchema());
   return message;
 }
 
-const TypedMessage<EggConnectionArgs> &EggConnection() {
+const TypedMessage<EggConnectionArgs>& EggConnection() {
   static const auto message = RPCMessage{"ebo"}.schema(eggConnectionSchema());
   return message;
 }
 
-const TypedMessage<EggDeathArgs> &EggDeath() {
+const TypedMessage<EggDeathArgs>& EggDeath() {
   static const auto message = RPCMessage{"edi"}.schema(eggDeathSchema());
   return message;
 }
 
-const TypedMessage<TimeUnitArgs> &TimeUnit() {
+const TypedMessage<TimeUnitArgs>& TimeUnit() {
   static const auto message = RPCMessage{"sgt"}.schema(timeUnitSchema());
   return message;
 }
 
-const TypedMessage<EndGameArgs> &EndGame() {
+const TypedMessage<EndGameArgs>& EndGame() {
   static const auto message = RPCMessage{"seg"}.schema(endGameSchema());
   return message;
 }
 
-const TypedMessage<ServerMessageArgs> &ServerMessage() {
+const TypedMessage<ServerMessageArgs>& ServerMessage() {
   static const auto message = RPCMessage{"smg"}.schema(serverMessageSchema());
   return message;
 }
 
-const TypedMessage<TileRequestArgs> &RequestTileContent() {
+const TypedMessage<TileRequestArgs>& RequestTileContent() {
   static const auto message = RPCMessage{"bct"}.schema(tileRequestSchema());
   return message;
 }
 
-const TypedMessage<PlayerNumberArgs> &RequestPlayerPosition() {
+const TypedMessage<PlayerNumberArgs>& RequestPlayerPosition() {
   static const auto message = RPCMessage{"ppo"}.schema(playerNumberSchema());
   return message;
 }
 
-const TypedMessage<PlayerNumberArgs> &RequestPlayerLevel() {
+const TypedMessage<PlayerNumberArgs>& RequestPlayerLevel() {
   static const auto message = RPCMessage{"plv"}.schema(playerNumberSchema());
   return message;
 }
 
-const TypedMessage<PlayerNumberArgs> &RequestPlayerInventory() {
+const TypedMessage<PlayerNumberArgs>& RequestPlayerInventory() {
   static const auto message = RPCMessage{"pin"}.schema(playerNumberSchema());
   return message;
 }
 
-const TypedMessage<TimeUnitArgs> &SetTimeUnit() {
+const TypedMessage<TimeUnitArgs>& SetTimeUnit() {
   static const auto message = RPCMessage{"sst"}.schema(timeUnitSchema());
   return message;
 }
 
-const RPCMessage &RequestMapSize() { return rawMessage("msz"); }
-const RPCMessage &RequestMapContent() { return rawMessage("mct"); }
-const RPCMessage &RequestTeamNames() { return rawMessage("tna"); }
-const RPCMessage &RequestTimeUnit() { return rawMessage("sgt"); }
-const RPCMessage &StartIncantation() { return rawMessage("pic"); }
-const RPCMessage &UnknownCommand() { return rawMessage("suc"); }
-const RPCMessage &BadParameter() { return rawMessage("sbp"); }
+const RPCMessage& RequestMapSize() { return rawMessage("msz"); }
+const RPCMessage& RequestMapContent() { return rawMessage("mct"); }
+const RPCMessage& RequestTeamNames() { return rawMessage("tna"); }
+const RPCMessage& RequestTimeUnit() { return rawMessage("sgt"); }
+const RPCMessage& StartIncantation() { return rawMessage("pic"); }
+const RPCMessage& UnknownCommand() { return rawMessage("suc"); }
+const RPCMessage& BadParameter() { return rawMessage("sbp"); }
 
 }  // namespace zappy::protocol

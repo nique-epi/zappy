@@ -25,6 +25,7 @@ add_library(zappy_server_app STATIC
   App/Scheduler/ActionTiming.cpp
   App/Scheduler/Exceptions/SchedulerException.cpp
   App/ActionCosts.cpp
+  App/TimeUnit.cpp
   App/GameServer.cpp
   Net/ActionQueue.cpp
   Net/AiActionPipeline.cpp

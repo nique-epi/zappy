@@ -27,22 +27,23 @@ std::string firstToken(const std::string& line) {
   return line.substr(0, end);
 }
 
-void scheduleNext(AiServer& server, Scheduler& scheduler, int frequency,
-                  int fileDescriptor);
+void scheduleNext(AiServer& server, Scheduler& scheduler,
+                  const TimeUnit& timeUnit, int fileDescriptor);
 
-void dispatchAndAdvance(AiServer& server, Scheduler& scheduler, int frequency,
-                        int fileDescriptor, const std::string& line) {
+void dispatchAndAdvance(AiServer& server, Scheduler& scheduler,
+                        const TimeUnit& timeUnit, int fileDescriptor,
+                        const std::string& line) {
   AiSession* session = server.session(fileDescriptor);
   if (session == nullptr) {
     return;
   }
   server.dispatchLine(*session, line);
   session->ctx().actionInFlight = false;
-  scheduleNext(server, scheduler, frequency, fileDescriptor);
+  scheduleNext(server, scheduler, timeUnit, fileDescriptor);
 }
 
-void scheduleNext(AiServer& server, Scheduler& scheduler, int frequency,
-                  int fileDescriptor) {
+void scheduleNext(AiServer& server, Scheduler& scheduler,
+                  const TimeUnit& timeUnit, int fileDescriptor) {
   AiSession* session = server.session(fileDescriptor);
   if (session == nullptr) {
     return;
@@ -54,18 +55,18 @@ void scheduleNext(AiServer& server, Scheduler& scheduler, int frequency,
   session->ctx().actionInFlight = true;
   const int cost = costOf(firstToken(*next));
   const Scheduler::TimePoint deadline =
-      Scheduler::Clock::now() + actionDuration(cost, frequency);
-  scheduler.scheduleAt(deadline, [&server, &scheduler, frequency,
+      Scheduler::Clock::now() + actionDuration(cost, timeUnit.value());
+  scheduler.scheduleAt(deadline, [&server, &scheduler, &timeUnit,
                                   fileDescriptor, line = *next]() {
-    dispatchAndAdvance(server, scheduler, frequency, fileDescriptor, line);
+    dispatchAndAdvance(server, scheduler, timeUnit, fileDescriptor, line);
   });
 }
 
 }  // namespace
 
 void installAiActionPipeline(AiServer& server, Scheduler& scheduler,
-                             int frequency) {
-  server.onAuthenticatedLine([&server, &scheduler, frequency](
+                             const TimeUnit& timeUnit) {
+  server.onAuthenticatedLine([&server, &scheduler, &timeUnit](
                                  AiSession& session, const std::string& line) {
     if (session.ctx().type != ClientType::Ai) {
       server.dispatchLine(session, line);
@@ -77,7 +78,7 @@ void installAiActionPipeline(AiServer& server, Scheduler& scheduler,
     }
     session.ctx().pendingActions.push(line);
     if (!session.ctx().actionInFlight) {
-      scheduleNext(server, scheduler, frequency, session.fd());
+      scheduleNext(server, scheduler, timeUnit, session.fd());
     }
   });
 }
