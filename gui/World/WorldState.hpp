@@ -38,6 +38,7 @@ struct Player {
   int level{};
   std::string teamName;
   std::array<int, RESOURCE_COUNT> inventory{};
+  bool alive{true};
 };
 
 struct alignas(EGG_ALIGN) Egg {
