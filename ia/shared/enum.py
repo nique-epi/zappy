@@ -21,6 +21,9 @@ class State(Enum):
     """High-level behaviour states for the bot state machine."""
     SURVIVAL = "survival"
     EATING = "eating"
+    COLLECTING = "collecting"
+    EXPLORATION = "exploration"
+    COORDINATION = "coordination"
 
 
 class Resource(Enum):

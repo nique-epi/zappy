@@ -71,10 +71,11 @@ def test_state_eating_value():
     assert State.EATING.value == "eating"
 
 
-def test_state_has_two_members():
+def test_state_has_expected_members():
     """
     Given the State enum
-    When its length is checked
-    Then it has exactly 2 members
+    When its members are inspected
+    Then it contains all expected behaviour states
     """
-    assert len(State) == 2
+    expected = {"survival", "eating", "collecting", "exploration", "coordination"}
+    assert {s.value for s in State} == expected
