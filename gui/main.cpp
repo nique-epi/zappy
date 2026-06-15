@@ -6,6 +6,7 @@
 */
 
 #include <raylib.h>
+#include <algorithm>
 #include <format>
 #include <iostream>
 #include <string>
@@ -16,6 +17,7 @@
 #include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
 #include "Render/WindowConfig.hpp"
+#include "Render/WorldCamera.hpp"
 #include "Render/raygui.h"
 #include "World/WorldInitializer.hpp"
 #include "World/WorldState.hpp"
@@ -61,8 +63,14 @@ int main(int argc, char** argv) {
     InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
     SetTargetFPS(cfg::TARGET_FPS);
 
+    const Vector3 mapCenter{
+        static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
+        static_cast<float>(world.height) * cfg::TILE_SIZE / 2.0F};
+    zappy::gui::WorldCamera camera(mapCenter);
+
     while (!WindowShouldClose()) {
       network.runOnce(0);
+      camera.update(GetFrameTime());
 
       const std::string hudText =
           std::format("{}:{}  |  Map: {}x{}  |  Players: {}  |  Teams: {}",
@@ -71,6 +79,12 @@ int main(int argc, char** argv) {
 
       BeginDrawing();
       ClearBackground(RAYWHITE);
+
+      BeginMode3D(camera.camera());
+      DrawGrid(static_cast<int>(std::max(world.width, world.height)),
+               cfg::TILE_SIZE);
+      EndMode3D();
+
       DrawText(cfg::WINDOW_TITLE, cfg::MARGIN_X, cfg::TITLE_Y,
                cfg::TITLE_FONT_SIZE, DARKBLUE);
       DrawText(hudText.c_str(), cfg::MARGIN_X, cfg::HUD_Y, cfg::HUD_FONT_SIZE,

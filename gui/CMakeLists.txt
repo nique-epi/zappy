@@ -98,10 +98,15 @@ add_executable(zappy_gui
     Network/NetworkManager.cpp
     World/MockWorld.cpp
     Render/Raygui.cpp
+    Render/WorldCamera.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
+)
+
+set_source_files_properties(Render/WorldCamera.cpp PROPERTIES
+    COMPILE_OPTIONS "-Wno-missing-field-initializers"
 )
 
 target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_gui_handshake zappy_gui_commands zappy_gui_parser zappy_gui_world_init zappy_network raylib)
