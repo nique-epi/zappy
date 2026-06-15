@@ -134,17 +134,18 @@ TEST(MessageParser, PinUpdatesPlayerPositionAndInventory) {
   EXPECT_EQ(player.inventory[6], 70);
 }
 
-TEST(MessageParser, PdiRemovesPlayer) {
+TEST(MessageParser, PdiMarksPlayerDead) {
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
 
   parser.parseLine("pnw #1 0 0 1 1 team1");
   parser.parseLine("pdi #1");
 
-  EXPECT_TRUE(world.players.empty());
+  ASSERT_EQ(world.players.size(), 1U);
+  EXPECT_FALSE(world.players[0].alive);
 }
 
-TEST(MessageParser, PdiOnlyRemovesTargetPlayer) {
+TEST(MessageParser, PdiOnlyMarksTargetPlayerDead) {
   zappy::gui::WorldState world;
   zappy::gui::MessageParser parser(world);
 
@@ -152,8 +153,9 @@ TEST(MessageParser, PdiOnlyRemovesTargetPlayer) {
   parser.parseLine("pnw #2 0 0 1 1 team1");
   parser.parseLine("pdi #1");
 
-  ASSERT_EQ(world.players.size(), 1U);
-  EXPECT_EQ(world.players[0].id, 2);
+  ASSERT_EQ(world.players.size(), 2U);
+  EXPECT_FALSE(world.players[0].alive);
+  EXPECT_TRUE(world.players[1].alive);
 }
 
 TEST(MessageParser, PdrTransfersResourceFromPlayerToTile) {
@@ -354,7 +356,8 @@ TEST(MessageParser, PlayerLifecycleSequence) {
   EXPECT_EQ(world.players[0].level, 7);
 
   parser.parseLine("pdi #1");
-  EXPECT_TRUE(world.players.empty());
+  ASSERT_EQ(world.players.size(), 1U);
+  EXPECT_FALSE(world.players[0].alive);
 }
 
 TEST(MessageParser, EggLifecycleHatch) {

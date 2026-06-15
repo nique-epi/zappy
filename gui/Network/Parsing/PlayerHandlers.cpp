@@ -72,11 +72,10 @@ void registerPlayerHandlers(HandlerMap& handlers, WorldState& world) {
   };
 
   handlers["pdi"] = [&world](std::istringstream& stream) {
-    const int targetId =  // NOLINT(cppcoreguidelines-init-variables)
-        parseId(stream);
-    std::erase_if(world.players, [targetId](const Player& player) {
-      return player.id == targetId;
-    });
+    auto* targetPlayer = findPlayer(world, parseId(stream));
+    if (targetPlayer != nullptr) {
+      targetPlayer->alive = false;
+    }
   };
 
   handlers["pdr"] = [&world](std::istringstream& stream) {
