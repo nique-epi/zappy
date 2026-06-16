@@ -105,7 +105,8 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
     def _incantate(self) -> State:
         """Send Incantation and wait for the level-up confirmation."""
         self._bot.client.send("Incantation\n")
-        while True:
+        steps = 0
+        while steps < COORDINATION_MAX_WAIT_STEPS:
             line = self._bot.client.recv()
             if line is None:
                 return State.EXPLORATION
@@ -117,6 +118,8 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
                 return State.SURVIVAL
             if line.strip() == "ko":
                 return State.EXPLORATION
+            steps += 1
+        return State.EXPLORATION
 
     def _await_incantation(self) -> State:
         """Wait as a follower for the chef's incantation to complete."""
@@ -131,5 +134,7 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
                 except ValueError:
                     pass
                 return State.SURVIVAL
+            if line.strip() == "ko":
+                return State.EXPLORATION
             steps += 1
         return State.EXPLORATION

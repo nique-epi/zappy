@@ -243,6 +243,24 @@ def test_follower_broadcasts_join_when_on_same_tile():
     assert "ZAPPY:JOIN:2:" in sent
 
 
+def test_follower_returns_exploration_on_ko():
+    """
+    Given a follower on the chef's tile (direction 0) and incantation fails
+    When handle is called and the server responds ko after JOIN
+    Then State.EXPLORATION is returned without retrying JOIN
+    """
+    lead_same_tile = _broadcast(MessageType.LEAD, 2, 0)
+    bot = _make_bot(
+        ["ok", "ok", lead_same_tile, "ok", "ko"],
+        level=2,
+    )
+    state = CoordinationState(bot)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert result == State.EXPLORATION
+    assert sent.count("ZAPPY:JOIN:2:") == 1
+
+
 def test_follower_updates_direction_on_new_lead():
     """
     Given a follower that first receives LEAD from direction 1 then 0
