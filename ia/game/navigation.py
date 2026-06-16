@@ -3,6 +3,17 @@ import math
 
 from ia.shared.enum import Move
 
+_BROADCAST_DIRECTION_MOVES: dict[int, list[Move]] = {
+    1: [Move.FORWARD],
+    2: [Move.RIGHT, Move.FORWARD],
+    3: [Move.RIGHT],
+    4: [Move.RIGHT, Move.RIGHT, Move.FORWARD],
+    5: [Move.RIGHT, Move.RIGHT],
+    6: [Move.LEFT, Move.LEFT, Move.FORWARD],
+    7: [Move.LEFT],
+    8: [Move.LEFT, Move.FORWARD],
+}
+
 
 def _tile_index_to_offset(index: int) -> tuple[int, int]:
     """Return the (forward, lateral) offset of a Look tile index."""
@@ -32,3 +43,8 @@ def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
         moves.append(Move.RIGHT)
         moves += [Move.FORWARD] * lateral
     return moves
+
+
+def broadcast_direction_to_moves(direction: int) -> list[Move]:
+    """Return the move sequence to step toward broadcast direction K (1–8)."""
+    return _BROADCAST_DIRECTION_MOVES.get(direction, [Move.FORWARD])
