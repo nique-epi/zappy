@@ -99,6 +99,7 @@ add_executable(zappy_gui
     World/MockWorld.cpp
     Render/Raygui.cpp
     Render/WorldCamera.cpp
+    Render/TileGridRenderer.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES
