@@ -12,9 +12,11 @@
 #include <string_view>
 #include "Cli/ArgsParser.hpp"
 #include "Cli/Exceptions/ParserException.hpp"  // NOLINT(misc-include-cleaner)
+#include "Network/CommandSender.hpp"
 #include "Network/NetworkManager.hpp"
 #include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
+#include "Render/SpeedControl.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/WorldCamera.hpp"
@@ -60,6 +62,10 @@ int main(int argc, char** argv) {
     network.setResponseHandler(
         [&parser](const std::string& line) { parser.parseLine(line); });
 
+    zappy::gui::CommandSender sender(network);
+    zappy::gui::SpeedControl speedControl(sender);
+    sender.requestTimeUnit();
+
     InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
     SetTargetFPS(cfg::TARGET_FPS);
 
@@ -88,6 +94,7 @@ int main(int argc, char** argv) {
                cfg::TITLE_FONT_SIZE, DARKBLUE);
       DrawText(hudText.c_str(), cfg::MARGIN_X, cfg::HUD_Y, cfg::HUD_FONT_SIZE,
                DARKGRAY);
+      speedControl.draw(world.timeUnit);
       EndDrawing();
     }
 
