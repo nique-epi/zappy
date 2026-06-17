@@ -141,6 +141,7 @@ target_link_libraries(zappy_gui_parser_tests
 
 add_executable(zappy_gui_commands_tests
   Gui/TestCommandSender.cpp
+  Gui/TestSpeedControl.cpp
   Gui/mocks/FakeNetwork.cpp
 )
 
