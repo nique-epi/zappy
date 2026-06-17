@@ -18,8 +18,9 @@ struct WorldState;
  *
  * Casts a ray from the mouse position into the 3D scene, intersects it with
  * the tile plane (y = 0, matching @ref TileGridRenderer), and—when a tile is
- * hovered—draws a Raygui panel near the cursor listing the seven resource
- * quantities (food, linemate, deraumere, sibur, mendiane, phiras, thystame).
+ * hovered—draws a styled tooltip near the cursor listing the seven resource
+ * quantities (food, linemate, deraumere, sibur, mendiane, phiras, thystame),
+ * each with a color swatch and the empty ones dimmed.
  *
  * Display-only: it draws nothing when no tile is hovered and never captures
  * input, so camera and player interactions are left untouched. Stateless and
