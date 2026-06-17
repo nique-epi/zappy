@@ -6,7 +6,6 @@
 */
 
 #include <raylib.h>
-#include <algorithm>
 #include <format>
 #include <iostream>
 #include <string>
@@ -18,6 +17,7 @@
 #include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
 #include "Render/SpeedControl.hpp"
+#include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/WorldCamera.hpp"
 #include "Render/raygui.h"
@@ -87,8 +87,7 @@ int main(int argc, char** argv) {
       ClearBackground(RAYWHITE);
 
       BeginMode3D(camera.camera());
-      DrawGrid(static_cast<int>(std::max(world.width, world.height)),
-               cfg::TILE_SIZE);
+      zappy::gui::TileGridRenderer::draw(world);
       EndMode3D();
 
       DrawText(cfg::WINDOW_TITLE, cfg::MARGIN_X, cfg::TITLE_Y,
