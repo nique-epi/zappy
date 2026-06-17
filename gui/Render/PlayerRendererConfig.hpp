@@ -10,6 +10,15 @@
 #include <raylib.h>
 #include <array>
 
+namespace zappy::gui {
+
+struct DirectionVec {
+  float x;
+  float z;
+};
+
+}  // namespace zappy::gui
+
 namespace zappy::gui::config {
 
 constexpr float PLAYER_RADIUS = 0.18F;

@@ -21,11 +21,6 @@ namespace cfg = config;
 
 namespace {
 
-struct DirectionVec {
-  float x;
-  float z;
-};
-
 DirectionVec orientationDirection(Orientation orientation) {
   switch (orientation) {
     case Orientation::North:
