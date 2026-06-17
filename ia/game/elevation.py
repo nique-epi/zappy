@@ -1,3 +1,5 @@
+MAX_LEVEL = 8
+
 ELEVATION_REQUIREMENTS = {
     1: {
         "players": 1, "linemate": 1, "deraumere": 0,

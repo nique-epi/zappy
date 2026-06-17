@@ -67,26 +67,26 @@ def test_level1_updates_bot_level_on_success():
     assert bot.level == 2
 
 
-def test_level1_returns_exploration_on_ko():
+def test_level1_returns_survival_on_ko():
     """
     Given a bot at level 1 and a server that responds ko to Incantation
     When handle is called
-    Then State.EXPLORATION is returned
+    Then State.SURVIVAL is returned so the bot resumes collecting
     """
     bot = _make_bot(["ko"])
     state = CoordinationState(bot)
-    assert state.handle() == State.EXPLORATION
+    assert state.handle() == State.SURVIVAL
 
 
-def test_level1_returns_exploration_on_disconnect():
+def test_level1_returns_survival_on_disconnect():
     """
     Given a bot at level 1 and a server that closes the connection
     When handle is called
-    Then State.EXPLORATION is returned
+    Then State.SURVIVAL is returned
     """
     bot = _make_bot([])
     state = CoordinationState(bot)
-    assert state.handle() == State.EXPLORATION
+    assert state.handle() == State.SURVIVAL
 
 
 def test_chef_broadcasts_ready_then_lead():
@@ -243,11 +243,11 @@ def test_follower_broadcasts_join_when_on_same_tile():
     assert "ZAPPY:JOIN:2:" in sent
 
 
-def test_follower_returns_exploration_on_ko():
+def test_follower_returns_survival_on_ko():
     """
     Given a follower on the chef's tile (direction 0) and incantation fails
     When handle is called and the server responds ko after JOIN
-    Then State.EXPLORATION is returned without retrying JOIN
+    Then State.SURVIVAL is returned without retrying JOIN
     """
     lead_same_tile = _broadcast(MessageType.LEAD, 2, 0)
     bot = _make_bot(
@@ -257,7 +257,7 @@ def test_follower_returns_exploration_on_ko():
     state = CoordinationState(bot)
     result = state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
-    assert result == State.EXPLORATION
+    assert result == State.SURVIVAL
     assert sent.count("ZAPPY:JOIN:2:") == 1
 
 

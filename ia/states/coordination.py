@@ -12,6 +12,7 @@ from ia.core.bot import Bot
 from ia.game.elevation import ELEVATION_REQUIREMENTS
 from ia.game.navigation import broadcast_direction_to_moves
 from ia.shared.enum import State
+from ia.states.incantation import IncantationState
 
 
 class CoordinationState:  # pylint: disable=too-few-public-methods
@@ -103,38 +104,9 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
         self._bot.client.recv()
 
     def _incantate(self) -> State:
-        """Send Incantation and wait for the level-up confirmation."""
-        self._bot.client.send("Incantation\n")
-        steps = 0
-        while steps < COORDINATION_MAX_WAIT_STEPS:
-            line = self._bot.client.recv()
-            if line is None:
-                return State.EXPLORATION
-            if line.startswith("Current level:"):
-                try:
-                    self._bot.level = int(line.split(":")[1].strip())
-                except ValueError:
-                    pass
-                return State.SURVIVAL
-            if line.strip() == "ko":
-                return State.EXPLORATION
-            steps += 1
-        return State.EXPLORATION
+        """Delegate incantation (chef role) to IncantationState."""
+        return IncantationState(self._bot, is_chef=True).handle()
 
     def _await_incantation(self) -> State:
-        """Wait as a follower for the chef's incantation to complete."""
-        steps = 0
-        while steps < COORDINATION_MAX_WAIT_STEPS:
-            line = self._bot.client.recv()
-            if line is None:
-                return State.EXPLORATION
-            if line.startswith("Current level:"):
-                try:
-                    self._bot.level = int(line.split(":")[1].strip())
-                except ValueError:
-                    pass
-                return State.SURVIVAL
-            if line.strip() == "ko":
-                return State.EXPLORATION
-            steps += 1
-        return State.EXPLORATION
+        """Delegate incantation wait (follower role) to IncantationState."""
+        return IncantationState(self._bot, is_chef=False).handle()
