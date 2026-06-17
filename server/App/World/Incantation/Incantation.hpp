@@ -46,8 +46,8 @@ struct IncantationOutcome {
  * @returns Whether the ritual succeeded, the reached level, and the raised
  *          drones.
  */
-[[nodiscard]] IncantationOutcome resolveIncantation(int initiatorId,
-                                                    PlayerRegistry& players,
-                                                    Map& map);
+[[nodiscard]] IncantationOutcome getIncantationOutcome(int initiatorId,
+                                                       PlayerRegistry& players,
+                                                       Map& map);
 
 }  // namespace zappy::world

@@ -51,8 +51,8 @@ void consumeStones(Tile& tile, const ElevationRequirement& need) {
 
 }  // namespace
 
-IncantationOutcome resolveIncantation(int initiatorId, PlayerRegistry& players,
-                                      Map& map) {
+IncantationOutcome getIncantationOutcome(int initiatorId,
+                                         PlayerRegistry& players, Map& map) {
   const Player* initiator = players.find(initiatorId);
   if (initiator == nullptr || initiator->level() < minElevationLevel ||
       initiator->level() > maxElevationLevel) {
@@ -73,7 +73,11 @@ IncantationOutcome resolveIncantation(int initiatorId, PlayerRegistry& players,
   consumeStones(tile, need);
   const int newLevel = level + 1;
   for (int playerId : participants) {
-    players.find(playerId)->setLevel(newLevel);
+    Player* participant = players.find(playerId);
+    if (participant == nullptr) {
+      continue;
+    }
+    participant->setLevel(newLevel);
   }
   return {
       .succeeded = true, .newLevel = newLevel, .participants = participants};
