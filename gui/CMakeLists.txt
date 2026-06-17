@@ -101,6 +101,8 @@ add_executable(zappy_gui
     Render/SpeedControl.cpp
     Render/WorldCamera.cpp
     Render/TileGridRenderer.cpp
+    Render/Panel/HudPanel.cpp
+    Render/Panel/InfoPanel.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES

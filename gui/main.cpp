@@ -6,7 +6,6 @@
 */
 
 #include <raylib.h>
-#include <format>
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -16,6 +15,8 @@
 #include "Network/NetworkManager.hpp"
 #include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
+#include "Render/Panel/HudPanel.hpp"
+#include "Render/Panel/InfoPanel.hpp"
 #include "Render/SpeedControl.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
@@ -78,11 +79,6 @@ int main(int argc, char** argv) {
       network.runOnce(0);
       camera.update(GetFrameTime());
 
-      const std::string hudText =
-          std::format("{}:{}  |  Map: {}x{}  |  Players: {}  |  Teams: {}",
-                      config.hostname, config.port, world.width, world.height,
-                      world.players.size(), world.teams.size());
-
       BeginDrawing();
       ClearBackground(RAYWHITE);
 
@@ -90,11 +86,8 @@ int main(int argc, char** argv) {
       zappy::gui::TileGridRenderer::draw(world);
       EndMode3D();
 
-      DrawText(cfg::WINDOW_TITLE, cfg::MARGIN_X, cfg::TITLE_Y,
-               cfg::TITLE_FONT_SIZE, DARKBLUE);
-      DrawText(hudText.c_str(), cfg::MARGIN_X, cfg::HUD_Y, cfg::HUD_FONT_SIZE,
-               DARKGRAY);
-      speedControl.draw(world.timeUnit);
+      zappy::gui::HudPanel::draw(config, world);
+      zappy::gui::InfoPanel::draw(world, camera.camera());
       EndDrawing();
     }
 
