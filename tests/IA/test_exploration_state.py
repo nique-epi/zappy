@@ -206,6 +206,22 @@ def test_self_fork_when_no_free_slot():
     assert result == State.EXPLORATION
 
 
+def test_self_fork_ignores_non_numeric_connect_reply():
+    """
+    Given a level-1 bot whose Connect_nbr recv returns a non-numeric frame
+    When the periodic fork check fires during exploration
+    Then it does not crash nor fork and keeps exploring
+    """
+    bot = _make_bot(["ko", _NO_STONES, "ok"])
+    state = ExplorationState(bot)
+    state._fork_counter = FORK_CHECK_INTERVAL - 1
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert "Fork" not in sent
+    assert bot.fork_count == 0
+    assert result == State.EXPLORATION
+
+
 def test_no_fork_when_free_slot_available():
     """
     Given a level-1 bot whose Connect_nbr reports a free slot

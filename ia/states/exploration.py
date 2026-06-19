@@ -87,7 +87,11 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         response = self.bot.client.recv()
         if response is None:
             return
-        if parse_connect_nbr(response) == 0:
+        try:
+            free_slots = parse_connect_nbr(response)
+        except ValueError:
+            return
+        if free_slots == 0:
             self._fork()
 
     def _handle_broadcast(self, message: BroadcastMessage) -> None:
