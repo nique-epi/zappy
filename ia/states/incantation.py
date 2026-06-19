@@ -16,7 +16,7 @@ class IncantationState:  # pylint: disable=too-few-public-methods
     def handle(self) -> State:
         """Send or await Incantation and return the next state."""
         if self._bot.is_incantation_chef:
-            self._bot.client.send("Incantation\n")
+            self._bot.client.send("Incantation")
         return self._wait_for_result()
 
     def _wait_for_result(self) -> State:

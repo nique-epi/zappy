@@ -16,7 +16,7 @@ class SurvivalState:  # pylint: disable=too-few-public-methods
         if self._cycles_since_check < INVENTORY_CHECK_INTERVAL:
             return self.bot.state
 
-        self.bot.client.send("Inventory\n")
+        self.bot.client.send("Inventory")
         response = self.bot.client.recv()
         if response is None:
             return self.bot.state

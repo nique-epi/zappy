@@ -66,14 +66,30 @@ def test_chef_transitions_to_incantation_on_quorum():
     """
     Given a bot at level 2 (requires 2 players) and one JOIN with direction 0
     When handle reaches quorum
-    Then it becomes chef and transitions to INCANTATION
+    Then it becomes chef, transitions to INCANTATION and asks no fork
     """
     join_msg = _broadcast(MessageType.JOIN, 2, 0)
     bot = _make_bot(["ok", "ok", join_msg], level=2)
     state = CoordinationState(bot)
     result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
     assert result == State.INCANTATION
     assert bot.is_incantation_chef is True
+    assert "FORK_NEEDED" not in sent
+
+
+def test_chef_requests_fork_when_quorum_unreached():
+    """
+    Given a level-2 chef that times out without gathering enough players
+    When handle gives up on the incantation
+    Then it broadcasts FORK_NEEDED to grow the team
+    """
+    bot = _make_bot(["ok"] * 100, level=2)
+    state = CoordinationState(bot)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert result == State.EXPLORATION
+    assert "ZAPPY:FORK_NEEDED:2:" in sent
 
 
 def test_chef_ignores_join_from_wrong_level():

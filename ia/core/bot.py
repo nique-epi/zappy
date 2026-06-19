@@ -35,6 +35,7 @@ class Bot:
         self.state: State = State.SURVIVAL
         self.collect_target: int = 0
         self.is_incantation_chef: bool = True
+        self.fork_count: int = 0
 
     @property
     def client(self) -> "ZappyClient":
