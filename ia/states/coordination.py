@@ -34,7 +34,7 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
         return self._lead(required)
 
     def _lead(self, required: int) -> State:
-        """Broadcast LEAD periodically and count zero-direction JOINs."""
+        """Broadcast LEAD, count JOINs, request a fork if quorum is missed."""
         joined = 1
         steps = 0
 
@@ -60,6 +60,7 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
 
         if joined >= required:
             return self._incantate()
+        self._send_broadcast(MessageType.FORK_NEEDED, "")
         return State.EXPLORATION
 
     def _follow(self, initial_direction: int) -> State:

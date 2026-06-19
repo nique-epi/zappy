@@ -61,3 +61,12 @@ def test_bot_collect_target_defaults_zero(bot):
     Then it defaults to 0
     """
     assert bot.collect_target == 0
+
+
+def test_bot_fork_count_defaults_zero(bot):
+    """
+    Given a freshly created Bot
+    When its fork_count attribute is inspected
+    Then it defaults to 0
+    """
+    assert bot.fork_count == 0

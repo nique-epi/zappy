@@ -1,5 +1,17 @@
-from ia.config import INVENTORY_CHECK_INTERVAL, EXPLORATION_TURN_INTERVAL
+from ia.communication.broadcast import (
+    BroadcastMessage,
+    MessageType,
+    parse_broadcast,
+)
+from ia.config import (
+    EXPLORATION_TURN_INTERVAL,
+    FORK_CHECK_INTERVAL,
+    FORK_LIMIT,
+    FORK_MAX_LEVEL,
+    INVENTORY_CHECK_INTERVAL,
+)
 from ia.game.elevation import stones_missing
+from ia.parsing.connect import parse_connect_nbr
 from ia.parsing.look import parse_look
 from ia.shared.enum import State
 from ia.core.bot import Bot
@@ -10,6 +22,7 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         self.bot = bot
         self._steps = 0
         self._turn_counter = 0
+        self._fork_counter = 0
 
     def handle(self) -> State:
         """Send Look, transition to COLLECTING if a useful stone is visible."""
@@ -18,9 +31,16 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
             self._steps = 0
             return State.SURVIVAL
 
+        self._maybe_self_fork()
+
         self.bot.client.send("Look\n")
         response = self.bot.client.recv()
         if response is None:
+            return State.EXPLORATION
+
+        broadcast = parse_broadcast(response)
+        if broadcast is not None:
+            self._handle_broadcast(broadcast)
             return State.EXPLORATION
 
         tiles = parse_look(
@@ -48,6 +68,38 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         """Return the next exploration target; stub for ZAP-19."""
         # ZAP-19 : retournera nearest_resource() si carte mentale disponible
         return None
+
+    def _can_fork(self) -> bool:
+        """True when this bot is a low-level candidate below the fork cap."""
+        return (
+            self.bot.level <= FORK_MAX_LEVEL
+            and self.bot.fork_count < FORK_LIMIT
+        )
+
+    def _maybe_self_fork(self) -> None:
+        """Periodically fork when no free team slot remains."""
+        self._fork_counter += 1
+        if self._fork_counter % FORK_CHECK_INTERVAL != 0:
+            return
+        if not self._can_fork():
+            return
+        self.bot.client.send("Connect_nbr\n")
+        response = self.bot.client.recv()
+        if response is None:
+            return
+        if parse_connect_nbr(response) == 0:
+            self._fork()
+
+    def _handle_broadcast(self, message: BroadcastMessage) -> None:
+        """Fork on a FORK_NEEDED call when this bot is available."""
+        if message.msg_type == MessageType.FORK_NEEDED and self._can_fork():
+            self._fork()
+
+    def _fork(self) -> None:
+        """Lay an egg so a new teammate can connect, then keep exploring."""
+        self.bot.client.send("Fork\n")
+        self.bot.client.recv()
+        self.bot.fork_count += 1
 
     def _explore(self) -> None:
         """Advance and periodically turn to avoid looping in place."""
