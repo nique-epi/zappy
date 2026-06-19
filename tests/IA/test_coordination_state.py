@@ -30,63 +30,19 @@ def _make_bot(responses: list, level: int = 1) -> Bot:
     return bot
 
 
-def test_level1_incantates_alone():
+def test_level1_solo_transitions_to_incantation():
     """
     Given a bot at level 1 (requires 1 player)
     When handle is called
-    Then Incantation is sent without any Broadcast
-    """
-    bot = _make_bot(["elevation underway", "Current level: 2"])
-    state = CoordinationState(bot)
-    state.handle()
-    sent = b"".join(bot.client._sock.sent).decode()
-    assert "Incantation" in sent
-    assert "Broadcast" not in sent
-
-
-def test_level1_returns_survival_on_success():
-    """
-    Given a bot at level 1 receiving Current level: 2
-    When handle is called
-    Then State.SURVIVAL is returned
-    """
-    bot = _make_bot(["elevation underway", "Current level: 2"])
-    state = CoordinationState(bot)
-    assert state.handle() == State.SURVIVAL
-
-
-def test_level1_updates_bot_level_on_success():
-    """
-    Given a bot at level 1 receiving Current level: 2
-    When handle is called
-    Then bot.level is updated to 2
-    """
-    bot = _make_bot(["elevation underway", "Current level: 2"])
-    state = CoordinationState(bot)
-    state.handle()
-    assert bot.level == 2
-
-
-def test_level1_returns_survival_on_ko():
-    """
-    Given a bot at level 1 and a server that responds ko to Incantation
-    When handle is called
-    Then State.SURVIVAL is returned so the bot resumes collecting
-    """
-    bot = _make_bot(["ko"])
-    state = CoordinationState(bot)
-    assert state.handle() == State.SURVIVAL
-
-
-def test_level1_returns_survival_on_disconnect():
-    """
-    Given a bot at level 1 and a server that closes the connection
-    When handle is called
-    Then State.SURVIVAL is returned
+    Then it becomes chef and transitions to INCANTATION without broadcasting
     """
     bot = _make_bot([])
     state = CoordinationState(bot)
-    assert state.handle() == State.SURVIVAL
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert result == State.INCANTATION
+    assert bot.is_incantation_chef is True
+    assert "Broadcast" not in sent
 
 
 def test_chef_broadcasts_ready_then_lead():
@@ -106,36 +62,18 @@ def test_chef_broadcasts_ready_then_lead():
     assert "ZAPPY:LEAD:2:" in sent
 
 
-def test_chef_incantates_when_quorum_reached():
+def test_chef_transitions_to_incantation_on_quorum():
     """
     Given a bot at level 2 (requires 2 players) and one JOIN with direction 0
-    When handle is called
-    Then Incantation is sent after receiving the JOIN
+    When handle reaches quorum
+    Then it becomes chef and transitions to INCANTATION
     """
     join_msg = _broadcast(MessageType.JOIN, 2, 0)
-    bot = _make_bot(
-        ["ok", "ok", join_msg, "elevation underway", "Current level: 3"],
-        level=2,
-    )
+    bot = _make_bot(["ok", "ok", join_msg], level=2)
     state = CoordinationState(bot)
-    state.handle()
-    sent = b"".join(bot.client._sock.sent).decode()
-    assert "Incantation" in sent
-
-
-def test_chef_returns_survival_after_incantation():
-    """
-    Given a bot at level 2 that reaches quorum and receives Current level: 3
-    When handle is called
-    Then State.SURVIVAL is returned
-    """
-    join_msg = _broadcast(MessageType.JOIN, 2, 0)
-    bot = _make_bot(
-        ["ok", "ok", join_msg, "elevation underway", "Current level: 3"],
-        level=2,
-    )
-    state = CoordinationState(bot)
-    assert state.handle() == State.SURVIVAL
+    result = state.handle()
+    assert result == State.INCANTATION
+    assert bot.is_incantation_chef is True
 
 
 def test_chef_ignores_join_from_wrong_level():
@@ -243,21 +181,19 @@ def test_follower_broadcasts_join_when_on_same_tile():
     assert "ZAPPY:JOIN:2:" in sent
 
 
-def test_follower_returns_survival_on_ko():
+def test_follower_transitions_to_incantation_after_join():
     """
-    Given a follower on the chef's tile (direction 0) and incantation fails
-    When handle is called and the server responds ko after JOIN
-    Then State.SURVIVAL is returned without retrying JOIN
+    Given a follower that reaches the chef's tile (direction 0)
+    When handle broadcasts JOIN
+    Then it becomes follower and transitions to INCANTATION once
     """
     lead_same_tile = _broadcast(MessageType.LEAD, 2, 0)
-    bot = _make_bot(
-        ["ok", "ok", lead_same_tile, "ok", "ko"],
-        level=2,
-    )
+    bot = _make_bot(["ok", "ok", lead_same_tile, "ok"], level=2)
     state = CoordinationState(bot)
     result = state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
-    assert result == State.SURVIVAL
+    assert result == State.INCANTATION
+    assert bot.is_incantation_chef is False
     assert sent.count("ZAPPY:JOIN:2:") == 1
 
 

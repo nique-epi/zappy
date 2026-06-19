@@ -209,3 +209,50 @@ def test_client_recv_dead_raises(client, fake_socket):
 
     with pytest.raises(PlayerDeadError):
         client.recv()
+
+
+def test_client_connected_false_before_socket(client):
+    """
+    Given a freshly built client with no socket
+    When connected is checked
+    Then it is False
+    """
+    assert client.connected is False
+
+
+def test_client_connected_true_when_socket_open(client, fake_socket):
+    """
+    Given a client with an open socket and no EOF read yet
+    When connected is checked
+    Then it is True
+    """
+    client._sock = fake_socket
+
+    assert client.connected is True
+
+
+def test_client_connected_false_after_eof(client, fake_socket):
+    """
+    Given a client whose socket reports a closed connection
+    When recv reads EOF
+    Then connected becomes False
+    """
+    fake_socket._responses = [b""]
+    client._sock = fake_socket
+
+    client.recv()
+
+    assert client.connected is False
+
+
+def test_client_connected_false_after_close(client, fake_socket):
+    """
+    Given a connected client
+    When close is called
+    Then connected becomes False
+    """
+    client._sock = fake_socket
+
+    client.close()
+
+    assert client.connected is False

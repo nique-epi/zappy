@@ -24,6 +24,7 @@ class State(Enum):
     COLLECTING = "collecting"
     EXPLORATION = "exploration"
     COORDINATION = "coordination"
+    INCANTATION = "incantation"
 
 
 class Resource(Enum):

@@ -26,6 +26,12 @@ class ZappyClient:
         self._sock_factory = sock_factory
         self._buffer = Buffer()
         self._queue = CommandQueue()
+        self._eof = False
+
+    @property
+    def connected(self) -> bool:
+        """True while a socket is open and no EOF has been read yet."""
+        return self._sock is not None and not self._eof
 
     def connect(self, team_name: str) -> tuple[int, int, int]:
         """Performs the complete handshake.
@@ -74,6 +80,7 @@ class ZappyClient:
         """
         chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
         if not chunk:
+            self._eof = True
             return False
         self._buffer.feed(chunk)
         return True

@@ -12,7 +12,6 @@ from ia.core.bot import Bot
 from ia.game.elevation import ELEVATION_REQUIREMENTS
 from ia.game.navigation import broadcast_direction_to_moves
 from ia.shared.enum import State
-from ia.states.incantation import IncantationState
 
 
 class CoordinationState:  # pylint: disable=too-few-public-methods
@@ -104,9 +103,11 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
         self._bot.client.recv()
 
     def _incantate(self) -> State:
-        """Delegate incantation (chef role) to IncantationState."""
-        return IncantationState(self._bot, is_chef=True).handle()
+        """Become incantation chef; the FSM runs the ritual next tick."""
+        self._bot.is_incantation_chef = True
+        return State.INCANTATION
 
     def _await_incantation(self) -> State:
-        """Delegate incantation wait (follower role) to IncantationState."""
-        return IncantationState(self._bot, is_chef=False).handle()
+        """Become incantation follower; the FSM awaits the ritual next tick."""
+        self._bot.is_incantation_chef = False
+        return State.INCANTATION
