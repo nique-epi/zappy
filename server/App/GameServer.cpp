@@ -114,6 +114,16 @@ void GameServer::admitAiClient(Session& session, const std::string& teamName) {
   session.ctx().spawnX = hatched.x;
   session.ctx().spawnY = hatched.y;
   session.ctx().playerId = player.id();
+  const std::string pnwLine =
+      "pnw #" + std::to_string(player.id()) + " " + std::to_string(player.x()) +
+      " " + std::to_string(player.y()) + " " +
+      std::to_string(static_cast<int>(player.direction())) + " " +
+      std::to_string(player.level()) + " " + teamName;
+  server_.forEachSession([&pnwLine](Session& other) {
+    if (other.ctx().type == ClientType::Gui) {
+      other.send(pnwLine);
+    }
+  });
   session.send(std::to_string(teams_.freeSlots(teamName)));
   session.send(worldSizeLine());
   session.completeHandshake();

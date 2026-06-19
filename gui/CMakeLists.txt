@@ -110,7 +110,7 @@ set_source_files_properties(Render/Raygui.cpp PROPERTIES
     COMPILE_OPTIONS "-w"
 )
 
-set_source_files_properties(Render/WorldCamera.cpp PROPERTIES
+set_source_files_properties(Render/WorldCamera.cpp Render/PlayerRenderer.cpp PROPERTIES
     COMPILE_OPTIONS "-Wno-missing-field-initializers"
 )
 

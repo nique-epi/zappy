@@ -38,6 +38,8 @@ constexpr int PLAYER_CYLINDER_SIDES = 12;
 constexpr int PLAYER_ARROW_SIDES = 6;
 
 constexpr float PLAYER_WIRE_DARKNESS = 0.35F;
+constexpr float PLAYER_MODEL_SCALE = 0.28F;
+constexpr const char* PLAYER_MODEL_PATH = "assets/character-a.glb";
 
 constexpr Color PLAYER_ARROW_COLOR = {255, 255, 255, 230};
 constexpr Color PLAYER_LABEL_COLOR = {255, 255, 255, 255};

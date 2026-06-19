@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
         static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
         static_cast<float>(world.height) * cfg::TILE_SIZE / 2.0F};
     zappy::gui::WorldCamera camera(mapCenter);
+    zappy::gui::PlayerRenderer playerRenderer;
 
     while (!WindowShouldClose()) {
       network.runOnce(0);
@@ -91,7 +92,7 @@ int main(int argc, char** argv) {
       BeginMode3D(camera.camera());
       zappy::gui::TileGridRenderer::draw(world);
       zappy::gui::EggRenderer::draw3D(world);
-      zappy::gui::PlayerRenderer::draw3D(world);
+      playerRenderer.draw3D(world);
       EndMode3D();
       zappy::gui::PlayerRenderer::drawLevelLabels(world, camera.camera());
 
