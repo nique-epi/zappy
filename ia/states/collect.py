@@ -14,7 +14,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
         if not self._move_to_target():
             return State.EXPLORATION
 
-        self.bot.client.send("Look\n")
+        self.bot.client.send("Look")
         response = self.bot.client.recv()
         if response is None:
             return State.EXPLORATION
@@ -36,7 +36,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
     def _move_to_target(self) -> bool:
         """Execute the move sequence; return False if any move fails."""
         for move in tile_to_moves(self.bot.collect_target):
-            self.bot.client.send(move.value + "\n")
+            self.bot.client.send(move.value)
             response = self.bot.client.recv()
             if response is None or response.strip() == "ko":
                 return False
@@ -51,7 +51,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
         for obj in objects:
             if obj not in missing:
                 continue
-            self.bot.client.send(f"Take {obj}\n")
+            self.bot.client.send(f"Take {obj}")
             response = self.bot.client.recv()
             if response and response.strip() == "ok":
                 resource = next(

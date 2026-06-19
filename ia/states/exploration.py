@@ -33,7 +33,7 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
 
         self._maybe_self_fork()
 
-        self.bot.client.send("Look\n")
+        self.bot.client.send("Look")
         response = self.bot.client.recv()
         if response is None:
             return State.EXPLORATION
@@ -83,7 +83,7 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
             return
         if not self._can_fork():
             return
-        self.bot.client.send("Connect_nbr\n")
+        self.bot.client.send("Connect_nbr")
         response = self.bot.client.recv()
         if response is None:
             return
@@ -101,7 +101,7 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
 
     def _fork(self) -> None:
         """Lay an egg so a new teammate can connect, then keep exploring."""
-        self.bot.client.send("Fork\n")
+        self.bot.client.send("Fork")
         self.bot.client.recv()
         self.bot.fork_count += 1
 
@@ -110,10 +110,10 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         self._turn_counter += 1
         if self._turn_counter % EXPLORATION_TURN_INTERVAL == 0:
             side = (self._turn_counter // EXPLORATION_TURN_INTERVAL) % 2
-            turn = "Left\n" if side == 0 else "Right\n"
+            turn = "Left" if side == 0 else "Right"
             self.bot.client.send(turn)
             self.bot.client.recv()
-        self.bot.client.send("Forward\n")
+        self.bot.client.send("Forward")
         self.bot.client.recv()
 
     def _handle_farmer(self) -> State:
