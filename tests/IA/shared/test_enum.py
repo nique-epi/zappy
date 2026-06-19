@@ -71,11 +71,23 @@ def test_state_eating_value():
     assert State.EATING.value == "eating"
 
 
+def test_state_incantation_value():
+    """
+    Given the State enum
+    When the INCANTATION member is inspected
+    Then its value is the string "incantation"
+    """
+    assert State.INCANTATION.value == "incantation"
+
+
 def test_state_has_expected_members():
     """
     Given the State enum
     When its members are inspected
     Then it contains all expected behaviour states
     """
-    expected = {"survival", "eating", "collecting", "exploration", "coordination"}
+    expected = {
+        "survival", "eating", "collecting",
+        "exploration", "coordination", "incantation",
+    }
     assert {s.value for s in State} == expected

@@ -6,9 +6,8 @@ from ia.core.bot import Bot
 
 
 class CollectState:  # pylint: disable=too-few-public-methods
-    def __init__(self, bot: Bot, tile_index: int):
+    def __init__(self, bot: Bot):
         self.bot = bot
-        self._tile_index = tile_index
 
     def handle(self) -> State:
         """Move to the target tile, take all useful stones."""
@@ -36,7 +35,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
 
     def _move_to_target(self) -> bool:
         """Execute the move sequence; return False if any move fails."""
-        for move in tile_to_moves(self._tile_index):
+        for move in tile_to_moves(self.bot.collect_target):
             self.bot.client.send(move.value + "\n")
             response = self.bot.client.recv()
             if response is None or response.strip() == "ko":
