@@ -9,8 +9,11 @@
 #include <string>
 #include "App/World/Ejection.hpp"
 #include "App/World/Player/Player.hpp"
+#include "App/World/Player/PlayerRegistry.hpp"
+#include "App/World/Team/Egg.hpp"
 #include "App/World/Team/TeamRegistry.hpp"
 #include "Net/Ai/AiHandlerSupport.hpp"
+#include "Net/Gui/GuiEventBroadcaster.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Message/IMessage.hpp"
 #include "Rpc/Session/Session.hpp"
@@ -24,7 +27,9 @@ void handleFork(AiSession& session, const AiHandlerContext& context) {
   if (player == nullptr) {
     return;
   }
-  context.teams.lay(player->teamName(), context.map, player->x(), player->y());
+  const world::Egg egg = context.teams.lay(player->teamName(), context.map,
+                                           player->x(), player->y());
+  context.gui.eggLaid(player->id(), egg);
   session.send(protocol::ai::Ok().opcode());
 }
 
@@ -40,6 +45,14 @@ void handleEject(AiServer& server, AiSession& session,
         other.send(line);
       }
     });
+    context.gui.playerExpelled(drone.playerId);
+    const world::Player* pushed = context.players.find(drone.playerId);
+    if (pushed != nullptr) {
+      context.gui.playerMoved(*pushed);
+    }
+  }
+  for (const int eggId : outcome.destroyedEggs) {
+    context.gui.eggDestroyed(eggId);
   }
   session.send(outcome.ejected.empty() ? protocol::ai::Ko().opcode()
                                        : protocol::ai::Ok().opcode());

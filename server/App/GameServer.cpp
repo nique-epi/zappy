@@ -117,6 +117,7 @@ void GameServer::admitAiClient(Session& session, const std::string& teamName) {
   session.ctx().spawnX = hatched.x;
   session.ctx().spawnY = hatched.y;
   session.ctx().playerId = player.id();
+  gui_.eggHatched(hatched.id);
   gui_.playerConnected(player);
   session.send(std::to_string(teams_.freeSlots(teamName)));
   session.send(worldSizeLine());
@@ -143,12 +144,17 @@ void GameServer::registerAiHandlers() {
 }
 
 void GameServer::executeIncantation(Session& session) {
+  const world::Player* initiator = players_.find(session.ctx().playerId);
+  const int ritualX = initiator != nullptr ? initiator->x() : 0;
+  const int ritualY = initiator != nullptr ? initiator->y() : 0;
+  const int ritualLevel = initiator != nullptr ? initiator->level() : 0;
   const world::IncantationOutcome outcome =
       world::getIncantationOutcome(session.ctx().playerId, players_, world_);
   if (!outcome.succeeded) {
     session.send(protocol::ai::Ko().opcode());
     return;
   }
+  gui_.incantationStarted(ritualX, ritualY, ritualLevel, outcome.participants);
   const std::string levelLine =
       "Current level: " + std::to_string(outcome.newLevel);
   for (int participantId : outcome.participants) {
@@ -162,6 +168,7 @@ void GameServer::executeIncantation(Session& session) {
       gui_.playerLevel(*participant);
     }
   }
+  gui_.incantationEnded(ritualX, ritualY, true);
   const std::optional<std::string> winningTeam =
       world::findWinningTeam(players_);
   if (winningTeam.has_value()) {
@@ -170,12 +177,8 @@ void GameServer::executeIncantation(Session& session) {
 }
 
 void GameServer::endGame(const std::string& winningTeam) {
-  const std::string line = "seg " + winningTeam;
-  server_.forEachSession([&line](Session& session) {
-    if (session.ctx().type == ClientType::Gui) {
-      session.send(line);
-    }
-  });
+  gui_.endGame(winningTeam);
+  gui_.serverMessage(winningTeam + " reached the victory threshold");
   gameOver_ = true;
   stop();
 }

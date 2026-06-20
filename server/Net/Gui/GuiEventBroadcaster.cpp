@@ -7,8 +7,10 @@
 
 #include "Net/Gui/GuiEventBroadcaster.hpp"
 #include <string>
+#include <vector>
 #include "App/World/Player/Player.hpp"
 #include "App/World/Resources/ResourceType.hpp"
+#include "App/World/Team/Egg.hpp"
 #include "App/World/Tile/Tile.hpp"
 #include "Rpc/Session/Session.hpp"
 
@@ -88,6 +90,52 @@ void GuiEventBroadcaster::tileChanged(int column, int row,
       "bct " + std::to_string(column) + " " + std::to_string(row);
   appendTileContent(line, tile);
   broadcast(line);
+}
+
+void GuiEventBroadcaster::playerBroadcast(int playerId,
+                                          const std::string& text) {
+  broadcast("pbc " + playerTag(playerId) + " " + text);
+}
+
+void GuiEventBroadcaster::playerExpelled(int playerId) {
+  broadcast("pex " + playerTag(playerId));
+}
+
+void GuiEventBroadcaster::incantationStarted(
+    int column, int row, int level, const std::vector<int>& participants) {
+  std::string line = "pic " + std::to_string(column) + " " +
+                     std::to_string(row) + " " + std::to_string(level);
+  for (const int participantId : participants) {
+    line += " " + playerTag(participantId);
+  }
+  broadcast(line);
+}
+
+void GuiEventBroadcaster::incantationEnded(int column, int row, bool success) {
+  broadcast("pie " + std::to_string(column) + " " + std::to_string(row) + " " +
+            std::to_string(success ? 1 : 0));
+}
+
+void GuiEventBroadcaster::eggLaid(int parentPlayerId, const world::Egg& egg) {
+  broadcast("pfk " + playerTag(parentPlayerId));
+  broadcast("enw " + playerTag(egg.id) + " " + playerTag(parentPlayerId) + " " +
+            std::to_string(egg.x) + " " + std::to_string(egg.y));
+}
+
+void GuiEventBroadcaster::eggHatched(int eggId) {
+  broadcast("ebo " + playerTag(eggId));
+}
+
+void GuiEventBroadcaster::eggDestroyed(int eggId) {
+  broadcast("edi " + playerTag(eggId));
+}
+
+void GuiEventBroadcaster::endGame(const std::string& teamName) {
+  broadcast("seg " + teamName);
+}
+
+void GuiEventBroadcaster::serverMessage(const std::string& text) {
+  broadcast("smg " + text);
 }
 
 void GuiEventBroadcaster::broadcast(const std::string& line) {

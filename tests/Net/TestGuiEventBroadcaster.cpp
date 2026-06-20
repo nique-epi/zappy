@@ -12,6 +12,7 @@
 #include "App/World/Player/Player.hpp"
 #include "App/World/Player/PlayerRegistry.hpp"
 #include "App/World/Resources/ResourceType.hpp"
+#include "App/World/Team/Egg.hpp"
 #include "App/World/Tile/Tile.hpp"
 #include "LoopbackClient.hpp"
 #include "Net/ClientContext.hpp"
@@ -28,6 +29,7 @@ using zappy::server::ClientContext;
 using zappy::server::ClientType;
 using zappy::server::GuiEventBroadcaster;
 using zappy::world::Direction;
+using zappy::world::Egg;
 using zappy::world::Map;
 using zappy::world::Player;
 using zappy::world::PlayerRegistry;
@@ -252,4 +254,149 @@ TEST(GuiEventBroadcaster, SkipsAiSessions) {
 
   EXPECT_EQ(gui.receive(), "pdi #1\n");
   EXPECT_EQ(aiClient.receive(), "sentinel\n");
+}
+
+TEST(GuiEventBroadcaster, PlayerBroadcastEmitsPbc) {
+  /*
+   * Given a GUI client
+   * When playerBroadcast is sent for drone 1 with text "hello world"
+   * Then the client receives "pbc #1 hello world"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.playerBroadcast(1, "hello world");
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "pbc #1 hello world\n");
+}
+
+TEST(GuiEventBroadcaster, PlayerExpelledEmitsPex) {
+  /*
+   * Given a GUI client
+   * When playerExpelled is sent for drone 2
+   * Then the client receives "pex #2"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.playerExpelled(2);
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "pex #2\n");
+}
+
+TEST(GuiEventBroadcaster, IncantationStartedEmitsPic) {
+  /*
+   * Given a GUI client
+   * When incantationStarted is sent at (3, 4) level 2 with drones 1 and 2
+   * Then the client receives "pic 3 4 2 #1 #2"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.incantationStarted(3, 4, 2, {1, 2});
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "pic 3 4 2 #1 #2\n");
+}
+
+TEST(GuiEventBroadcaster, IncantationEndedEmitsPie) {
+  /*
+   * Given a GUI client
+   * When incantationEnded is sent at (3, 4) with success
+   * Then the client receives "pie 3 4 1"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.incantationEnded(3, 4, true);
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "pie 3 4 1\n");
+}
+
+TEST(GuiEventBroadcaster, EggLaidEmitsPfkThenEnw) {
+  /*
+   * Given a GUI client and an egg #7 laid by drone 1 at (2, 5)
+   * When eggLaid is broadcast
+   * Then the client receives "pfk #1" then "enw #7 #1 2 5"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+  const Egg egg{.id = 7, .teamName = "red", .x = 2, .y = 5};
+
+  harness.gui.eggLaid(1, egg);
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "pfk #1\nenw #7 #1 2 5\n");
+}
+
+TEST(GuiEventBroadcaster, EggHatchedEmitsEbo) {
+  /*
+   * Given a GUI client
+   * When eggHatched is sent for egg 7
+   * Then the client receives "ebo #7"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.eggHatched(7);
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "ebo #7\n");
+}
+
+TEST(GuiEventBroadcaster, EggDestroyedEmitsEdi) {
+  /*
+   * Given a GUI client
+   * When eggDestroyed is sent for egg 7
+   * Then the client receives "edi #7"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.eggDestroyed(7);
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "edi #7\n");
+}
+
+TEST(GuiEventBroadcaster, EndGameEmitsSeg) {
+  /*
+   * Given a GUI client
+   * When endGame is broadcast for team "red"
+   * Then the client receives "seg red"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.endGame("red");
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "seg red\n");
+}
+
+TEST(GuiEventBroadcaster, ServerMessageEmitsSmg) {
+  /*
+   * Given a GUI client
+   * When serverMessage is broadcast with "shutting down"
+   * Then the client receives "smg shutting down"
+   */
+  BroadcasterHarness harness(mapSide, mapSide);
+  LoopbackClient client(harness.server.port());
+  handshake(harness, client, graphicTeam);
+
+  harness.gui.serverMessage("shutting down");
+  harness.drive();
+
+  EXPECT_EQ(client.receive(), "smg shutting down\n");
 }

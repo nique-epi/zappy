@@ -25,11 +25,11 @@ struct EjectedDrone {
 };
 
 /**
- * @brief Outcome of an ejection: who was pushed and how many eggs died.
+ * @brief Outcome of an ejection: who was pushed and which eggs died.
  */
 struct EjectOutcome {
   std::vector<EjectedDrone> ejected;
-  std::size_t eggsDestroyed;
+  std::vector<int> destroyedEggs;
 };
 
 /**
