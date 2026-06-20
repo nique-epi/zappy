@@ -18,6 +18,7 @@
 #include "App/World/Player/PlayerRegistry.hpp"
 #include "App/World/Team/TeamRegistry.hpp"
 #include "Net/ClientContext.hpp"
+#include "Net/Gui/GuiEventBroadcaster.hpp"
 #include "Rpc/Server/RPCServer.hpp"
 
 namespace zappy::server {
@@ -119,6 +120,7 @@ class GameServer {
   ServerConfig config_;
   TimeUnit timeUnit_;
   zappy::rpc::RPCServer<ClientContext> server_;
+  GuiEventBroadcaster gui_;
   world::Map world_;
   std::mt19937 rng_;
   world::TeamRegistry teams_;

@@ -13,6 +13,7 @@
 #include "App/World/Resources/ResourceType.hpp"
 #include "App/World/Tile/Tile.hpp"
 #include "Net/Ai/AiHandlerSupport.hpp"
+#include "Net/Gui/GuiEventBroadcaster.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Session/Session.hpp"
 
@@ -33,9 +34,13 @@ void handleTake(AiSession& session, const protocol::ai::ObjectArgs& args,
     return;
   }
   world::Tile& tile = context.map.tileAt(player->x(), player->y());
-  session.send(world::takeResource(*player, tile, *type)
-                   ? protocol::ai::Ok().opcode()
-                   : protocol::ai::Ko().opcode());
+  if (!world::takeResource(*player, tile, *type)) {
+    session.send(protocol::ai::Ko().opcode());
+    return;
+  }
+  context.gui.resourceCollected(player->id(), *type);
+  context.gui.playerInventory(*player);
+  session.send(protocol::ai::Ok().opcode());
 }
 
 void handleSet(AiSession& session, const protocol::ai::ObjectArgs& args,
@@ -51,9 +56,13 @@ void handleSet(AiSession& session, const protocol::ai::ObjectArgs& args,
     return;
   }
   world::Tile& tile = context.map.tileAt(player->x(), player->y());
-  session.send(world::dropResource(*player, tile, *type)
-                   ? protocol::ai::Ok().opcode()
-                   : protocol::ai::Ko().opcode());
+  if (!world::dropResource(*player, tile, *type)) {
+    session.send(protocol::ai::Ko().opcode());
+    return;
+  }
+  context.gui.resourceDropped(player->id(), *type);
+  context.gui.playerInventory(*player);
+  session.send(protocol::ai::Ok().opcode());
 }
 
 }  // namespace

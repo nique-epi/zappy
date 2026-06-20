@@ -11,9 +11,15 @@
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <set>
+#include <utility>
 #include "App/Scheduler/Scheduler.hpp"
 #include "App/World/Map/Map.hpp"
 #include "App/World/Resources/ResourceType.hpp"
+
+namespace zappy::server {
+class GuiEventBroadcaster;
+}  // namespace zappy::server
 
 namespace zappy::loot {
 
@@ -41,13 +47,16 @@ class LootService {
    *         positive, so the broken contract fails fast at construction rather
    *         than when the refill period is later computed.
    */
-  LootService(world::Map &map, int frequency, std::uint_fast32_t seed);
+  LootService(world::Map &map, server::GuiEventBroadcaster &gui, int frequency,
+              std::uint_fast32_t seed);
 
   /**
    * @brief Top every resource kind back up to its target stock on the map.
    *
    * Used both for the start-up distribution (on an empty map the stock reaches
-   * the target exactly) and for each periodic refill.
+   * the target exactly) and for each periodic refill. Every tile whose stock
+   * changed is pushed to the GUI as a single `bct` line, so a refill never
+   * dumps the whole map.
    */
   void replenish();
 
@@ -69,9 +78,11 @@ class LootService {
   void scheduleNext(server::Scheduler &scheduler,
                     server::Scheduler::TimePoint deadline);
   [[nodiscard]] std::size_t currentTotal(world::ResourceType type) const;
-  void scatter(world::ResourceType type, std::size_t amount);
+  void scatter(world::ResourceType type, std::size_t amount,
+               std::set<std::pair<int, int>> &changed);
 
   world::Map &map_;
+  server::GuiEventBroadcaster &gui_;
   int frequency_;
   std::mt19937 rng_;
 };

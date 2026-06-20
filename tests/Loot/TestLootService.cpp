@@ -16,6 +16,7 @@
 #include "App/World/Map/Map.hpp"
 #include "App/World/Resources/ResourceType.hpp"
 #include "App/World/Tile/Tile.hpp"
+#include "Net/Gui/GuiEventBroadcaster.hpp"
 
 using zappy::loot::LootService;
 using zappy::loot::refillTimeUnits;
@@ -31,6 +32,12 @@ using zappy::world::ResourceType;
 namespace {
 constexpr int frequency = 100;
 constexpr std::uint_fast32_t seed = 42;
+
+zappy::server::GuiEventBroadcaster &silentGui() {
+  static zappy::rpc::RPCServer<zappy::server::ClientContext> server(0);
+  static zappy::server::GuiEventBroadcaster gui(server);
+  return gui;
+}
 
 std::size_t totalOnMap(const Map &map, ResourceType type) {
   std::size_t total = 0;
@@ -58,7 +65,7 @@ void emptyMap(Map &map) {
 
 TEST(LootService, StocksEveryKindToTargetOnFreshMap) {
   Map map(10, 10);
-  LootService loot(map, frequency, seed);
+  LootService loot(map, silentGui(), frequency, seed);
 
   loot.replenish();
 
@@ -70,14 +77,16 @@ TEST(LootService, StocksEveryKindToTargetOnFreshMap) {
 TEST(LootService, RejectsNonPositiveFrequencyAtConstruction) {
   Map map(10, 10);
 
-  EXPECT_THROW(LootService(map, 0, seed), InvalidFrequencyException);
-  EXPECT_THROW(LootService(map, -1, seed), InvalidFrequencyException);
-  EXPECT_THROW(LootService(map, 0, seed), SchedulerException);
+  EXPECT_THROW(LootService(map, silentGui(), 0, seed),
+               InvalidFrequencyException);
+  EXPECT_THROW(LootService(map, silentGui(), -1, seed),
+               InvalidFrequencyException);
+  EXPECT_THROW(LootService(map, silentGui(), 0, seed), SchedulerException);
 }
 
 TEST(LootService, LeavesAtLeastOneOfEachKind) {
   Map map(3, 3);
-  LootService loot(map, frequency, seed);
+  LootService loot(map, silentGui(), frequency, seed);
 
   loot.replenish();
 
@@ -88,7 +97,7 @@ TEST(LootService, LeavesAtLeastOneOfEachKind) {
 
 TEST(LootService, RefillTopsBackUpToTargetAfterDepletion) {
   Map map(10, 10);
-  LootService loot(map, frequency, seed);
+  LootService loot(map, silentGui(), frequency, seed);
   loot.replenish();
   emptyMap(map);
 
@@ -102,7 +111,7 @@ TEST(LootService, RefillTopsBackUpToTargetAfterDepletion) {
 
 TEST(LootService, NeverRemovesSurplusAboveTarget) {
   Map map(10, 10);
-  LootService loot(map, frequency, seed);
+  LootService loot(map, silentGui(), frequency, seed);
   loot.replenish();
   const std::size_t target = targetQuantity(ResourceType::Sibur, 10, 10);
   map.tileAt(0, 0).drop(ResourceType::Sibur, target + 7);
@@ -118,8 +127,8 @@ TEST(LootService, SameSeedYieldsSameDistribution) {
   Map first(10, 10);
   Map second(10, 10);
 
-  LootService(first, frequency, seed).replenish();
-  LootService(second, frequency, seed).replenish();
+  LootService(first, silentGui(), frequency, seed).replenish();
+  LootService(second, silentGui(), frequency, seed).replenish();
 
   for (int row = 0; row < 10; ++row) {
     for (int column = 0; column < 10; ++column) {
@@ -133,14 +142,14 @@ TEST(LootService, SameSeedYieldsSameDistribution) {
 
 TEST(LootService, RefillPeriodFollowsTheTimeUnitFormula) {
   Map map(10, 10);
-  LootService loot(map, frequency, seed);
+  LootService loot(map, silentGui(), frequency, seed);
 
   EXPECT_EQ(loot.refillPeriod(), actionDuration(refillTimeUnits, frequency));
 }
 
 TEST(LootService, StartArmsRecurringRefillTopsUpEachPeriod) {
   Map map(10, 10);
-  LootService loot(map, frequency, seed);
+  LootService loot(map, silentGui(), frequency, seed);
   Scheduler scheduler;
   const Scheduler::TimePoint base{};
   const std::size_t foodTarget = targetQuantity(ResourceType::Food, 10, 10);

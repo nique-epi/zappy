@@ -16,6 +16,8 @@
 
 namespace zappy::server {
 
+class GuiEventBroadcaster;
+
 /// Game time units a single food unit is worth (subject rule: 126/f seconds).
 constexpr int gameTicksPerFoodUnit = 126;
 
@@ -37,7 +39,7 @@ class HungerService {
  public:
   HungerService(zappy::rpc::RPCServer<ClientContext>& server,
                 Scheduler& scheduler, world::PlayerRegistry& players,
-                world::Map& map, int frequency);
+                world::Map& map, GuiEventBroadcaster& gui, int frequency);
 
   /**
    * @brief Arm the first food tick for the AI session backing @p
@@ -59,6 +61,7 @@ class HungerService {
   Scheduler& scheduler_;
   world::PlayerRegistry& players_;
   world::Map& map_;
+  GuiEventBroadcaster& gui_;
   int frequency_;
 };
 
