@@ -16,7 +16,8 @@
 #include "Network/NetworkManager.hpp"
 #include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
-#include "Render/PlayerRenderer.hpp"
+#include "Render/Entity/EggRenderer.hpp"
+#include "Render/Entity/PlayerRenderer.hpp"
 #include "Render/SpeedControl.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
@@ -89,6 +90,7 @@ int main(int argc, char** argv) {
 
       BeginMode3D(camera.camera());
       zappy::gui::TileGridRenderer::draw(world);
+      zappy::gui::EggRenderer::draw3D(world);
       zappy::gui::PlayerRenderer::draw3D(world);
       EndMode3D();
       zappy::gui::PlayerRenderer::drawLevelLabels(world, camera.camera());
