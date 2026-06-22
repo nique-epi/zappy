@@ -5,9 +5,9 @@
 ** EggRenderer
 */
 
-#include "Render/EggRenderer.hpp"
+#include "Render/Entity/EggRenderer.hpp"
 #include <raylib.h>
-#include "Render/EggRendererConfig.hpp"
+#include "Render/Entity/EggRendererConfig.hpp"
 #include "Render/RenderUtils.hpp"
 #include "World/WorldState.hpp"
 

@@ -5,12 +5,12 @@
 ** PlayerRenderer
 */
 
-#include "Render/PlayerRenderer.hpp"
+#include "Render/Entity/PlayerRenderer.hpp"
 #include <raylib.h>
 #include <cstddef>
 #include <format>
 #include <string>
-#include "Render/PlayerRendererConfig.hpp"
+#include "Render/Entity/PlayerRendererConfig.hpp"
 #include "Render/RenderUtils.hpp"
 #include "Render/WindowConfig.hpp"
 #include "World/WorldState.hpp"
