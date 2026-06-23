@@ -15,6 +15,8 @@ class TeamRegistry;
 
 namespace zappy::server {
 
+class GuiEventBroadcaster;
+
 /**
  * @brief References to the world state the AI command handlers operate on.
  *
@@ -27,6 +29,7 @@ struct AiHandlerContext {
   world::PlayerRegistry& players;
   world::Map& map;
   world::TeamRegistry& teams;
+  GuiEventBroadcaster& gui;
 };
 
 }  // namespace zappy::server

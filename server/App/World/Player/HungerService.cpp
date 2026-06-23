@@ -9,6 +9,7 @@
 #include "App/World/Player/HungerService.hpp"
 #include "App/Scheduler/ActionTiming.hpp"
 #include "App/World/Player/Player.hpp"
+#include "Net/Gui/GuiEventBroadcaster.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Session/Session.hpp"
 
@@ -19,11 +20,12 @@ using AiSession = zappy::rpc::Session<ClientContext>;
 HungerService::HungerService(zappy::rpc::RPCServer<ClientContext>& server,
                              Scheduler& scheduler,
                              world::PlayerRegistry& players, world::Map& map,
-                             int frequency)
+                             GuiEventBroadcaster& gui, int frequency)
     : server_(server),
       scheduler_(scheduler),
       players_(players),
       map_(map),
+      gui_(gui),
       frequency_(frequency) {}
 
 void HungerService::armFirstTick(int fileDescriptor, Scheduler::TimePoint now) {
@@ -66,6 +68,7 @@ void HungerService::killPlayer(AiSession& session) {
   const int playerId = session.ctx().playerId;
   players_.remove(playerId, map_);
   session.ctx().playerId = 0;
+  gui_.playerDied(playerId);
 }
 
 }  // namespace zappy::server

@@ -80,6 +80,7 @@ add_executable(zappy_server_tests
   Net/TestActionQueue.cpp
   Net/TestAiActionPipeline.cpp
   Net/TestGuiQueryHandlers.cpp
+  Net/TestGuiEventBroadcaster.cpp
   App/TestActionCosts.cpp
   App/TestTimeUnit.cpp
   App/TestGameServerHandshake.cpp
