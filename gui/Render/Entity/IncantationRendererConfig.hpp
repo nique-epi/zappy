@@ -16,7 +16,5 @@ constexpr float INCANTATION_GROUND_Y = 0.5F;
 constexpr unsigned char INCANTATION_ACTIVE_ALPHA = 220;
 constexpr float INCANTATION_FLASH_DURATION = 3.0F;
 constexpr float INCANTATION_ROTATION_DEG = 1000.0F;
-constexpr const char* INCANTATION_LOAD_ERROR =
-    "[IncantationRenderer] ERROR: failed to load ";
 
 }  // namespace zappy::gui::config

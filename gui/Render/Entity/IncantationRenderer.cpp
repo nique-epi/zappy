@@ -26,6 +26,8 @@ namespace {
 constexpr const char* FRAME_PATH_FORMAT =
     ASSETS_DIR "/incantation/001_FX_{:04d}.png";
 constexpr const char* SHADER_PATH = ASSETS_DIR "/shaders/alpha_discard.frag";
+constexpr const char* LOAD_ERROR =
+    "[IncantationRenderer] ERROR: failed to load ";
 
 std::vector<Texture2D>
     frames;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
@@ -52,7 +54,7 @@ void IncantationRenderer::loadTextures() {
     const std::string path = std::format(FRAME_PATH_FORMAT, i);
     const Texture2D tex = LoadTexture(path.c_str());
     if (tex.id == 0) {
-      std::cerr << cfg::INCANTATION_LOAD_ERROR << path << '\n';
+      std::cerr << LOAD_ERROR << path << '\n';
     }
     frames.push_back(tex);
   }
