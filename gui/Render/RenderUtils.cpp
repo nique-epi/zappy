@@ -36,13 +36,4 @@ Color teamColor(const WorldState& world, const std::string& teamName) {
   return cfg::TEAM_COLORS[0];
 }
 
-const Player* findPlayerById(const WorldState& world, int playerId) {
-  for (const auto& player : world.players) {
-    if (player.id == playerId) {
-      return &player;
-    }
-  }
-  return nullptr;
-}
-
 }  // namespace zappy::gui

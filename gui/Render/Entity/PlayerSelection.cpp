@@ -7,7 +7,7 @@
 
 #include "Render/Entity/PlayerSelection.hpp"
 #include <optional>
-#include "Render/RenderUtils.hpp"
+#include "World/WorldQuery.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {

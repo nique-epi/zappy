@@ -158,6 +158,18 @@ target_link_libraries(zappy_gui_commands_tests
     GTest::gtest_main
 )
 
+add_executable(zappy_gui_selection_tests
+  Gui/TestPlayerSelection.cpp
+  ${CMAKE_SOURCE_DIR}/gui/Render/Entity/PlayerSelection.cpp
+  ${CMAKE_SOURCE_DIR}/gui/World/WorldQuery.cpp
+)
+
+target_link_libraries(zappy_gui_selection_tests
+  PRIVATE
+    zappy_gui_cli
+    GTest::gtest_main
+)
+
 add_executable(zappy_gui_world_init_tests
   Gui/TestWorldInitializer.cpp
   Gui/mocks/FakeNetwork.cpp
@@ -211,6 +223,9 @@ gtest_discover_tests(zappy_gui_parser_tests
   DISCOVERY_MODE PRE_TEST
 )
 gtest_discover_tests(zappy_gui_commands_tests
+  DISCOVERY_MODE PRE_TEST
+)
+gtest_discover_tests(zappy_gui_selection_tests
   DISCOVERY_MODE PRE_TEST
 )
 gtest_discover_tests(zappy_gui_world_init_tests

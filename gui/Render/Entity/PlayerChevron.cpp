@@ -10,6 +10,7 @@
 #include <optional>
 #include "Render/Entity/PlayerRendererConfig.hpp"
 #include "Render/RenderUtils.hpp"
+#include "World/WorldQuery.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {

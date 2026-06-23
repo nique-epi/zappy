@@ -97,6 +97,7 @@ add_executable(zappy_gui
     main.cpp
     Network/NetworkManager.cpp
     World/MockWorld.cpp
+    World/WorldQuery.cpp
     Render/Raygui.cpp
     Render/RenderUtils.cpp
     Render/Entity/EggRenderer.cpp

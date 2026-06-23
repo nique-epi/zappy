@@ -13,6 +13,7 @@
 #include "Render/Panel/PanelConfig.hpp"
 #include "Render/Panel/ResourceList.hpp"
 #include "Render/RenderUtils.hpp"
+#include "World/WorldQuery.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {
