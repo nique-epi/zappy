@@ -23,6 +23,7 @@ def _make_bot(responses: list, level: int = 1, chef: bool = True) -> Bot:
     bot = Bot(10, 10, 1, zc)
     bot.level = level
     bot.inventory = dict.fromkeys(Resource, 0)
+    bot.inventory[Resource.FOOD] = 10
     bot.is_incantation_chef = chef
     return bot
 

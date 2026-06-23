@@ -6,11 +6,13 @@ from ia.communication.broadcast import (
 )
 from ia.config import (
     COORDINATION_MAX_WAIT_STEPS,
+    COORDINATION_POLL_TIMEOUT,
     COORDINATION_REBROADCAST_STEPS,
 )
 from ia.core.bot import Bot
 from ia.game.elevation import ELEVATION_REQUIREMENTS
 from ia.game.navigation import broadcast_direction_to_moves
+from ia.parsing.inventory import needs_food
 from ia.shared.enum import State
 
 
@@ -22,6 +24,9 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
 
     def handle(self) -> State:
         """Broadcast READY, lead the ritual or follow an existing leader."""
+        if needs_food(self._bot.inventory):
+            return State.EATING
+
         level = self._bot.level
         required = ELEVATION_REQUIREMENTS.get(level, {}).get(
             "players", 1
@@ -31,6 +36,7 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
             return self._incantate()
 
         self._send_broadcast(MessageType.READY, "")
+        self._send_broadcast(MessageType.FORK_NEEDED, "")
         return self._lead(required)
 
     def _lead(self, required: int) -> State:
@@ -40,11 +46,18 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
 
         while joined < required and steps < COORDINATION_MAX_WAIT_STEPS:
             if steps % COORDINATION_REBROADCAST_STEPS == 0:
-                self._send_broadcast(MessageType.LEAD, "")
+                self._send_broadcast(
+                    MessageType.LEAD, str(self._bot.client_num)
+                )
+                if self._bot.food_critical():
+                    return State.EATING
 
-            line = self._bot.client.recv()
+            line = self._next_event()
             if line is None:
-                return State.EXPLORATION
+                if not self._bot.client.connected:
+                    return State.EXPLORATION
+                steps += 1
+                continue
 
             msg = parse_broadcast(line)
             if not msg or msg.level != self._bot.level:
@@ -53,14 +66,15 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
 
             if msg.msg_type == MessageType.JOIN and msg.direction == 0:
                 joined += 1
-            elif msg.msg_type == MessageType.LEAD:
-                return self._follow(msg.direction)
+            elif msg.msg_type == MessageType.LEAD and msg.direction != 0:
+                if self._loses_tie_break(msg.data):
+                    self._discard_pending_notifications()
+                    return self._follow(msg.direction)
 
             steps += 1
 
         if joined >= required:
             return self._incantate()
-        self._send_broadcast(MessageType.FORK_NEEDED, "")
         return State.EXPLORATION
 
     def _follow(self, initial_direction: int) -> State:
@@ -73,11 +87,19 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
                 self._send_broadcast(MessageType.JOIN, "")
                 return self._await_incantation()
 
+            if steps % COORDINATION_REBROADCAST_STEPS == 0 and (
+                self._bot.food_critical()
+            ):
+                return State.EATING
+
             self._move_toward(direction)
 
-            line = self._bot.client.recv()
+            line = self._next_event()
             if line is None:
-                return State.EXPLORATION
+                if not self._bot.client.connected:
+                    return State.EXPLORATION
+                steps += 1
+                continue
 
             msg = parse_broadcast(line)
             if (
@@ -95,13 +117,33 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
         """Send movement commands toward broadcast direction K."""
         for move in broadcast_direction_to_moves(direction):
             self._bot.client.send(move.value)
-            self._bot.client.recv()
+            self._bot.client.recv_ack()
 
     def _send_broadcast(self, msg_type: MessageType, data: str) -> None:
         """Send a ZAPPY broadcast and consume the server acknowledgement."""
         payload = format_message(msg_type, self._bot.level, data)
         self._bot.client.send(f"Broadcast {payload}")
-        self._bot.client.recv()
+        self._bot.client.recv_ack()
+
+    def _next_event(self) -> str | None:
+        """Return a notification queued during an ack wait, or poll fresh."""
+        queued = self._bot.client.pop_notification()
+        if queued is not None:
+            return queued
+        return self._bot.client.recv_timeout(COORDINATION_POLL_TIMEOUT)
+
+    def _loses_tie_break(self, rival_data: str) -> bool:
+        """True when the rival leader's client_num outranks ours."""
+        try:
+            rival_client_num = int(rival_data)
+        except ValueError:
+            return True
+        return rival_client_num < self._bot.client_num
+
+    def _discard_pending_notifications(self) -> None:
+        """Drop notifications captured while still a leader candidate."""
+        while self._bot.client.pop_notification() is not None:
+            pass
 
     def _incantate(self) -> State:
         """Become incantation chef; the FSM runs the ritual next tick."""

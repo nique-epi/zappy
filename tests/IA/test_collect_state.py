@@ -22,6 +22,7 @@ def _make_bot(responses=None, target=0) -> Bot:
     zc._sock = fake_socket
     bot = Bot(10, 10, 1, zc)
     bot.collect_target = target
+    bot.inventory[Resource.FOOD] = 10
     return bot
 
 

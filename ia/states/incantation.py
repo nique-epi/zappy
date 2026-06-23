@@ -1,9 +1,10 @@
 """Incantation state: send Incantation, wait for result, update bot level."""
 import sys
 
-from ia.config import COORDINATION_MAX_WAIT_STEPS
+from ia.config import COORDINATION_MAX_WAIT_STEPS, COORDINATION_POLL_TIMEOUT
 from ia.core.bot import Bot
 from ia.game.elevation import ELEVATION_REQUIREMENTS, MAX_LEVEL
+from ia.parsing.inventory import needs_food
 from ia.shared.enum import State
 
 
@@ -15,6 +16,9 @@ class IncantationState:  # pylint: disable=too-few-public-methods
 
     def handle(self) -> State:
         """Send or await Incantation and return the next state."""
+        if needs_food(self._bot.inventory):
+            return State.EATING
+
         if self._bot.is_incantation_chef:
             self._set_required_stones()
             self._bot.client.send("Incantation")
@@ -32,15 +36,22 @@ class IncantationState:  # pylint: disable=too-few-public-methods
                 continue
             for _ in range(amount):
                 self._bot.client.send(f"Set {stone}")
-                self._bot.client.recv()
+                self._bot.client.recv_ack()
 
     def _wait_for_result(self) -> State:
         """Read server lines until incantation concludes or timeout."""
         steps = 0
         while steps < COORDINATION_MAX_WAIT_STEPS:
-            line = self._bot.client.recv()
+            line = self._bot.client.pop_notification()
             if line is None:
-                return State.SURVIVAL
+                line = self._bot.client.recv_timeout(COORDINATION_POLL_TIMEOUT)
+            if line is None:
+                if not self._bot.client.connected:
+                    return State.SURVIVAL
+                if needs_food(self._bot.inventory):
+                    return State.EATING
+                steps += 1
+                continue
             if line.startswith("Current level:"):
                 return self._apply_level(line)
             if line.strip() == "ko":

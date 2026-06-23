@@ -17,7 +17,7 @@ class SurvivalState:  # pylint: disable=too-few-public-methods
             return self.bot.state
 
         self.bot.client.send("Inventory")
-        response = self.bot.client.recv()
+        response = self.bot.client.recv_ack()
         if response is None:
             return self.bot.state
         self._cycles_since_check = 0

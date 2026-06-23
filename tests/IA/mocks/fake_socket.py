@@ -26,3 +26,6 @@ class FakeSocket:
 
     def close(self):
         self.closed = True
+
+    def settimeout(self, timeout):
+        pass
