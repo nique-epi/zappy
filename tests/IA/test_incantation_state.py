@@ -105,7 +105,7 @@ class TestChefIncantation:
         Then bot.level is updated to 3 and State.SURVIVAL is returned
         """
         bot = _make_bot(
-            ["elevation underway", "some noise", "Current level: 3"],
+            ["ok", "ok", "ok", "elevation underway", "some noise", "Current level: 3"],
             level=2,
         )
         result = IncantationState(bot).handle()
@@ -118,7 +118,7 @@ class TestChefIncantation:
         When handle is called
         Then sys.exit(0) is raised
         """
-        bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
+        bot = _make_bot(["ok"] * 11 + ["Current level: 8"], level=MAX_LEVEL - 1)
         with pytest.raises(SystemExit) as exc_info:
             IncantationState(bot).handle()
         assert exc_info.value.code == 0
@@ -129,7 +129,7 @@ class TestChefIncantation:
         When handle triggers sys.exit
         Then bot.level is 8 at the time of exit
         """
-        bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
+        bot = _make_bot(["ok"] * 11 + ["Current level: 8"], level=MAX_LEVEL - 1)
         with pytest.raises(SystemExit):
             IncantationState(bot).handle()
         assert bot.level == MAX_LEVEL
