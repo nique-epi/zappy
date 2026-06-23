@@ -13,7 +13,7 @@ from ia.config import (
 from ia.game.elevation import stones_missing
 from ia.parsing.connect import parse_connect_nbr
 from ia.parsing.look import parse_look
-from ia.shared.enum import State
+from ia.shared.enum import Move, State
 from ia.core.bot import Bot
 
 
@@ -46,6 +46,7 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         tiles = parse_look(
             response, self.bot.pos, self.bot.orientation, self.bot.level
         )
+        self.bot.world_map.update_from_look(tiles, self.bot.turn)
         missing = stones_missing(
             self.bot.level,
             {r.value: v for r, v in self.bot.inventory.items()},
@@ -63,11 +64,6 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
 
         self._explore()
         return State.EXPLORATION
-
-    def next_exploration_target(self):
-        """Return the next exploration target; stub for ZAP-19."""
-        # ZAP-19 : retournera nearest_resource() si carte mentale disponible
-        return None
 
     def _can_fork(self) -> bool:
         """True when this bot is a low-level candidate below the fork cap."""
@@ -106,15 +102,50 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         self.bot.fork_count += 1
 
     def _explore(self) -> None:
-        """Advance and periodically turn to avoid looping in place."""
+        """Head for a known resource, or wander while turning periodically."""
+        target = self.bot.next_exploration_target()
+        if target is not None and target != self.bot.pos:
+            self._move_towards(target)
+            return
         self._turn_counter += 1
         if self._turn_counter % EXPLORATION_TURN_INTERVAL == 0:
             side = (self._turn_counter // EXPLORATION_TURN_INTERVAL) % 2
-            turn = "Left" if side == 0 else "Right"
-            self.bot.client.send(turn)
-            self.bot.client.recv()
+            if side == 0:
+                self._send_left()
+            else:
+                self._send_right()
+        self._send_forward()
+
+    def _move_towards(self, target: tuple[int, int]) -> None:
+        """Send the next move command on the path to target."""
+        moves = self.bot.world_map.path_to(
+            self.bot.pos, self.bot.orientation, target
+        )
+        if not moves:
+            self._send_forward()
+            return
+        move = moves[0]
+        if move == Move.FORWARD:
+            self._send_forward()
+        elif move == Move.LEFT:
+            self._send_left()
+        else:
+            self._send_right()
+
+    def _send_forward(self) -> None:
         self.bot.client.send("Forward")
         self.bot.client.recv()
+        self.bot.advance()
+
+    def _send_left(self) -> None:
+        self.bot.client.send("Left")
+        self.bot.client.recv()
+        self.bot.turn_left()
+
+    def _send_right(self) -> None:
+        self.bot.client.send("Right")
+        self.bot.client.recv()
+        self.bot.turn_right()
 
     def _handle_farmer(self) -> State:
         """Stub for ZAP-21 farmer role."""

@@ -38,11 +38,13 @@ def _shortest_lateral(lateral: int, width: int | None) -> int:
     return reduced
 
 
-def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
-    """Build the ordered move commands to reach a Look tile from the bot."""
-    forward, lateral = _tile_index_to_offset(index)
-    lateral = _shortest_lateral(lateral, width)
-    moves = [Move.FORWARD] * forward
+def forward_lateral_to_moves(forward: int, lateral: int) -> list[Move]:
+    """Build forward/turn/forward commands for a (forward, lateral) offset."""
+    moves: list[Move] = []
+    if forward < 0:
+        moves += [Move.RIGHT, Move.RIGHT]
+        forward = -forward
+    moves += [Move.FORWARD] * forward
     if lateral < 0:
         moves.append(Move.LEFT)
         moves += [Move.FORWARD] * -lateral
@@ -50,6 +52,13 @@ def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
         moves.append(Move.RIGHT)
         moves += [Move.FORWARD] * lateral
     return moves
+
+
+def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
+    """Build the ordered move commands to reach a Look tile from the bot."""
+    forward, lateral = _tile_index_to_offset(index)
+    lateral = _shortest_lateral(lateral, width)
+    return forward_lateral_to_moves(forward, lateral)
 
 
 def broadcast_direction_to_moves(direction: int) -> list[Move]:

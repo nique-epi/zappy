@@ -14,8 +14,8 @@ def test_bot_init(bot):
     assert bot.client_num == 1
     assert bot.level == 1
     assert bot.role == "generic"
-    assert len(bot.map) == 10
-    assert len(bot.map[0]) == 10
+    assert len(bot.world_map.world_map) == 10
+    assert len(bot.world_map.world_map[0]) == 10
 
 
 def test_bot_assign_role(bot):

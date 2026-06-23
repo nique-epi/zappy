@@ -10,7 +10,7 @@ from ia.config import (
 )
 from ia.core.bot import Bot
 from ia.network.client import ZappyClient
-from ia.shared.enum import Resource, State
+from ia.shared.enum import Direction, Resource, State
 from ia.states.exploration import ExplorationState
 from tests.IA.mocks.fake_socket import FakeSocket
 
@@ -179,15 +179,36 @@ def test_explore_alternates_turn_direction():
     assert "Right" in sent
 
 
-def test_next_exploration_target_returns_none():
+def test_explore_heads_towards_known_resource():
     """
-    Given an ExplorationState (ZAP-19 not yet implemented)
-    When next_exploration_target is called
-    Then None is returned
+    Given a bot with a known linemate tile recorded to its right
+    When handle explores with no useful stone in the current Look
+    Then it turns Right, the first step of the path to that tile
     """
-    bot = _make_bot()
+    bot = _make_bot([_NO_STONES, "ok"])
+    bot.inventory[Resource.LINEMATE] = 0
+    bot.world_map.update_from_look(
+        [{"coords": (3, 0), "objects": ["linemate"]}], bot.turn
+    )
     state = ExplorationState(bot)
-    assert state.next_exploration_target() is None
+    state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert "Right" in sent
+    assert bot.orientation == Direction.EAST
+
+
+def test_explore_updates_bot_position_on_forward():
+    """
+    Given a bot facing north at the map origin
+    When handle explores and sends Forward with no known resource
+    Then the bot's position advances and wraps toroidally
+    """
+    bot = _make_bot([_NO_STONES, "ok"])
+    bot.inventory[Resource.LINEMATE] = 1
+    bot.fork_count = FORK_LIMIT
+    state = ExplorationState(bot)
+    state.handle()
+    assert bot.pos == (0, 9)
 
 
 def test_self_fork_when_no_free_slot():
