@@ -7,9 +7,10 @@
 
 #include "Render/Entity/IncantationRenderer.hpp"
 #include <raylib.h>
-#include <algorithm>
 #include <chrono>
-#include <cstdio>
+#include <format>
+#include <iostream>
+#include <string>
 #include <vector>
 #include "Render/Entity/IncantationRendererConfig.hpp"
 #include "Render/RenderUtils.hpp"
@@ -22,18 +23,24 @@ namespace cfg = config;
 
 namespace {
 
-std::vector<Texture2D> frames;
-Model planeModel{};
+constexpr const char* FRAME_PATH_FORMAT =
+    ASSETS_DIR "/incantation/001_FX_{:04d}.png";
+constexpr const char* SHADER_PATH = ASSETS_DIR "/shaders/alpha_discard.frag";
 
-void drawSprite(const Texture2D& tex, float worldX, float worldZ,
-                unsigned char alpha) {
+std::vector<Texture2D>
+    frames;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+Model
+    planeModel{};  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+
+void drawSprite(const Texture2D& tex, Vector2 worldPos, unsigned char alpha) {
   const float scale = cfg::TILE_SIZE * cfg::INCANTATION_CIRCLE_SCALE;
   planeModel.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = tex;
-  const Vector3 pos{worldX, cfg::INCANTATION_GROUND_Y, worldZ};
+  const Vector3 pos{worldPos.x, cfg::INCANTATION_GROUND_Y, worldPos.y};
+  auto tint = WHITE;
+  tint.a = alpha;
   BeginBlendMode(BLEND_ALPHA);
   DrawModelEx(planeModel, pos, {0.0F, 1.0F, 0.0F},
-              cfg::INCANTATION_ROTATION_DEG, {scale, scale, scale},
-              {255, 255, 255, alpha});
+              cfg::INCANTATION_ROTATION_DEG, {scale, scale, scale}, tint);
   EndBlendMode();
 }
 
@@ -42,18 +49,15 @@ void drawSprite(const Texture2D& tex, float worldX, float worldZ,
 void IncantationRenderer::loadTextures() {
   frames.reserve(cfg::INCANTATION_FRAME_COUNT);
   for (int i = 0; i < cfg::INCANTATION_FRAME_COUNT; ++i) {
-    char path[256];
-    std::snprintf(path, sizeof(path), ASSETS_DIR "/incantation/001_FX_%04d.png",
-                  i);
-    Texture2D tex = LoadTexture(path);
+    const std::string path = std::format(FRAME_PATH_FORMAT, i);
+    const Texture2D tex = LoadTexture(path.c_str());
     if (tex.id == 0) {
-      std::printf("[IncantationRenderer] ERROR: failed to load %s\n", path);
+      std::cerr << cfg::INCANTATION_LOAD_ERROR << path << '\n';
     }
     frames.push_back(tex);
   }
   planeModel = LoadModelFromMesh(GenMeshPlane(1.0F, 1.0F, 1, 1));
-  planeModel.materials[0].shader =
-      LoadShader(nullptr, ASSETS_DIR "/shaders/alpha_discard.frag");
+  planeModel.materials[0].shader = LoadShader(nullptr, SHADER_PATH);
 }
 
 void IncantationRenderer::unloadTextures() {
@@ -75,7 +79,7 @@ void IncantationRenderer::draw3D(WorldState& world) {
   const Texture2D& tex = frames[frameIndex];
 
   for (const auto& incantation : world.activeIncantations) {
-    drawSprite(tex, tileToWorld(incantation.x), tileToWorld(incantation.y),
+    drawSprite(tex, {tileToWorld(incantation.x), tileToWorld(incantation.y)},
                cfg::INCANTATION_ACTIVE_ALPHA);
   }
 
@@ -89,7 +93,7 @@ void IncantationRenderer::draw3D(WorldState& world) {
     const auto alpha = static_cast<unsigned char>(
         static_cast<float>(cfg::INCANTATION_ACTIVE_ALPHA) *
         (1.0F - elapsed / cfg::INCANTATION_FLASH_DURATION));
-    drawSprite(tex, tileToWorld(end.x), tileToWorld(end.y), alpha);
+    drawSprite(tex, {tileToWorld(end.x), tileToWorld(end.y)}, alpha);
   }
 
   std::erase_if(world.finishedIncantations, [&now](const IncantationEnd& end) {
