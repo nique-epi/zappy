@@ -5,13 +5,13 @@
 ** PlayerRenderer
 */
 
-#include "Render/PlayerRenderer.hpp"
+#include "Render/Entity/PlayerRenderer.hpp"
 #include <raylib.h>
 #include <cstddef>
 #include <format>
 #include <string>
-#include "Render/PlayerRendererConfig.hpp"
-#include "Render/TileGridConfig.hpp"
+#include "Render/Entity/PlayerRendererConfig.hpp"
+#include "Render/RenderUtils.hpp"
 #include "Render/WindowConfig.hpp"
 #include "World/WorldState.hpp"
 
@@ -42,14 +42,6 @@ Color resolveTeamColor(const WorldState& world, const std::string& teamName) {
     }
   }
   return cfg::TEAM_COLORS[0];
-}
-
-float tileWorldX(int gridX) {
-  return (static_cast<float>(gridX) + cfg::TILE_CENTER_OFFSET) * cfg::TILE_SIZE;
-}
-
-float tileWorldZ(int gridY) {
-  return (static_cast<float>(gridY) + cfg::TILE_CENTER_OFFSET) * cfg::TILE_SIZE;
 }
 
 void drawPlayerBody(Vector3 position, Color color) {
@@ -86,7 +78,7 @@ void PlayerRenderer::draw3D(const WorldState& world) {
     if (!player.alive) {
       continue;
     }
-    const Vector3 position{tileWorldX(player.x), 0.0F, tileWorldZ(player.y)};
+    const Vector3 position{tileToWorld(player.x), 0.0F, tileToWorld(player.y)};
     const Color color = resolveTeamColor(world, player.teamName);
 
     drawPlayerBody(position, color);
@@ -102,9 +94,9 @@ void PlayerRenderer::drawLevelLabels(const WorldState& world,
     }
 
     const Vector3 labelWorldPos{
-        tileWorldX(player.x),
+        tileToWorld(player.x),
         cfg::PLAYER_LABEL_Y,
-        tileWorldZ(player.y),
+        tileToWorld(player.y),
     };
 
     const Vector2 screenPos = GetWorldToScreen(labelWorldPos, camera);
