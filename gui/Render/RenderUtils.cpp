@@ -2,13 +2,17 @@
 ** EPITECH PROJECT, 2026
 ** zappy
 ** File description:
-** RenderUtils
+** RenderUtils — shared geometry and world-query helpers for the renderers
 */
 
 #include "Render/RenderUtils.hpp"
 #include <cmath>
+#include <cstddef>
+#include <string>
+#include "Render/Entity/PlayerRendererConfig.hpp"
 #include "Render/TileGridConfig.hpp"
 #include "Render/WindowConfig.hpp"
+#include "World/WorldState.hpp"
 
 namespace zappy::gui {
 
@@ -21,6 +25,24 @@ float tileToWorld(int gridCoord) {
 
 int worldToTile(float worldCoord) {
   return static_cast<int>(std::floor(worldCoord / cfg::TILE_SIZE));
+}
+
+Color teamColor(const WorldState& world, const std::string& teamName) {
+  for (std::size_t i = 0; i < world.teams.size(); ++i) {
+    if (world.teams[i] == teamName) {
+      return cfg::TEAM_COLORS[i % cfg::TEAM_COLORS.size()];
+    }
+  }
+  return cfg::TEAM_COLORS[0];
+}
+
+const Player* findPlayerById(const WorldState& world, int playerId) {
+  for (const auto& player : world.players) {
+    if (player.id == playerId) {
+      return &player;
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace zappy::gui

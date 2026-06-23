@@ -54,4 +54,13 @@ constexpr std::array<Color, 8> TEAM_COLORS = {{
     Color{220, 220, 220, 255},
 }};
 
+constexpr float PLAYER_PICK_RADIUS = 26.0F;
+
+constexpr float PLAYER_CHEVRON_Y = PLAYER_LABEL_Y + 0.35F;
+constexpr float PLAYER_CHEVRON_HALF_WIDTH = 9.0F;
+constexpr float PLAYER_CHEVRON_HEIGHT = 11.0F;
+constexpr float PLAYER_CHEVRON_THICKNESS = 3.0F;
+constexpr Color PLAYER_CHEVRON_HOVER_COLOR = {255, 255, 255, 235};
+constexpr Color PLAYER_CHEVRON_SELECTED_COLOR = {122, 162, 247, 255};
+
 }  // namespace zappy::gui::config
