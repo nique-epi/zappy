@@ -45,7 +45,7 @@ struct EjectOutcome {
  * @param[in,out] map       World whose tiles are updated.
  * @param[in,out] teams     Registry the destroyed eggs are removed from.
  * @returns The pushed drones (empty when the ejector is gone or alone) and the
- *          number of eggs destroyed.
+ *          identifiers of the destroyed eggs.
  */
 [[nodiscard]] EjectOutcome ejectFromTile(int ejectorId, PlayerRegistry& players,
                                          Map& map, TeamRegistry& teams);
