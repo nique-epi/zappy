@@ -1,7 +1,14 @@
 """Conversion of Look tile indices into bot movement command sequences."""
 import math
 
-from ia.shared.enum import Move
+from ia.shared.enum import Direction, Move
+
+ORIENTATION_DELTAS: dict[Direction, tuple[int, int, int, int]] = {
+    Direction.NORTH: (0, -1, 1, 0),
+    Direction.SOUTH: (0, 1, -1, 0),
+    Direction.EAST: (1, 0, 0, 1),
+    Direction.WEST: (-1, 0, 0, -1),
+}
 
 _BROADCAST_DIRECTION_MOVES: dict[int, list[Move]] = {
     1: [Move.FORWARD],
