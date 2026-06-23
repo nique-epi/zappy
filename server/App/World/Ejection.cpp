@@ -18,7 +18,7 @@ namespace zappy::world {
 
 EjectOutcome ejectFromTile(int ejectorId, PlayerRegistry& players, Map& map,
                            TeamRegistry& teams) {
-  EjectOutcome outcome{.ejected = {}, .eggsDestroyed = 0};
+  EjectOutcome outcome{.ejected = {}, .destroyedEggs = {}};
   const Player* ejector = players.find(ejectorId);
   if (ejector == nullptr) {
     return outcome;
@@ -52,7 +52,7 @@ EjectOutcome ejectFromTile(int ejectorId, PlayerRegistry& players, Map& map,
   for (const int eggId : doomedEggs) {
     teams.removeEgg(eggId);
     origin.removeEgg(eggId);
-    ++outcome.eggsDestroyed;
+    outcome.destroyedEggs.push_back(eggId);
   }
   return outcome;
 }

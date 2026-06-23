@@ -25,11 +25,11 @@ struct EjectedDrone {
 };
 
 /**
- * @brief Outcome of an ejection: who was pushed and how many eggs died.
+ * @brief Outcome of an ejection: who was pushed and which eggs died.
  */
 struct EjectOutcome {
   std::vector<EjectedDrone> ejected;
-  std::size_t eggsDestroyed;
+  std::vector<int> destroyedEggs;
 };
 
 /**
@@ -45,7 +45,7 @@ struct EjectOutcome {
  * @param[in,out] map       World whose tiles are updated.
  * @param[in,out] teams     Registry the destroyed eggs are removed from.
  * @returns The pushed drones (empty when the ejector is gone or alone) and the
- *          number of eggs destroyed.
+ *          identifiers of the destroyed eggs.
  */
 [[nodiscard]] EjectOutcome ejectFromTile(int ejectorId, PlayerRegistry& players,
                                          Map& map, TeamRegistry& teams);

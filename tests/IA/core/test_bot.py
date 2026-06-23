@@ -1,9 +1,6 @@
 """Unit tests for the Bot class."""
 # pylint: disable=redefined-outer-name
-from ia.network.exceptions import PlayerDeadError
-from ia.shared.enum import Resource
-from tests.IA.mocks.fake_socket import FakeSocket
-from ia.core.bot import Bot
+from ia.shared.enum import Resource, State
 
 
 def test_bot_init(bot):
@@ -30,40 +27,6 @@ def test_bot_assign_role(bot):
     assert bot._assign_role(1) == "generic"  # pylint: disable=protected-access
 
 
-def test_bot_run_exit_on_none(bot, fake_socket):
-    """
-    Given a client whose recv immediately returns None
-    When the bot runs its loop
-    Then it stops without error
-    """
-    fake_socket._responses = [b""]
-    bot.run()
-    assert not fake_socket._responses
-
-
-def test_bot_run_processes_lines_then_exits(bot, fake_socket):
-    """
-    Given a client returning a couple of lines then a closed connection
-    When the bot runs its loop
-    Then all lines are consumed before stopping
-    """
-    fake_socket._responses = [b"ok\nko\n", b""]
-    bot.run()
-    assert not fake_socket._responses
-
-
-def test_bot_run_exit_on_dead(client):
-    """
-    Given a client whose recv raises PlayerDeadError
-    When the bot runs its loop
-    Then it exits cleanly without propagating the error
-    """
-    fake_socket = FakeSocket([b"dead\n"])
-    client._sock = fake_socket
-    dead_bot = Bot(10, 10, 1, client)
-    dead_bot.run()
-
-
 def test_bot_inventory_initialised_to_zeros(bot):
     """
     Given a freshly created Bot
@@ -73,39 +36,37 @@ def test_bot_inventory_initialised_to_zeros(bot):
     assert bot.inventory == dict.fromkeys(Resource, 0)
 
 
-def test_bot_handle_response_updates_inventory_on_inventory_line(bot):
+def test_bot_default_state_is_survival(bot):
     """
-    Given a bot and a server inventory response line
-    When _handle_response is called with that line
-    Then the bot's inventory reflects the parsed values
+    Given a freshly created Bot
+    When its state attribute is inspected
+    Then it defaults to State.SURVIVAL
     """
-    inventory_line = (
-        "[food 10, linemate 2, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]"
-    )
-    bot._handle_response(inventory_line)  # pylint: disable=protected-access
-    assert bot.inventory[Resource.FOOD] == 10
-    assert bot.inventory[Resource.LINEMATE] == 2
+    assert bot.state == State.SURVIVAL
 
 
-def test_bot_handle_response_ignores_non_inventory_line(bot):
+def test_bot_is_incantation_chef_defaults_true(bot):
     """
-    Given a bot and a non-inventory server response
-    When _handle_response is called with that line
-    Then the bot's inventory remains all zeros
+    Given a freshly created Bot
+    When its is_incantation_chef flag is inspected
+    Then it defaults to True
     """
-    bot._handle_response("ok")  # pylint: disable=protected-access
-    assert bot.inventory == dict.fromkeys(Resource, 0)
+    assert bot.is_incantation_chef is True
 
 
-def test_bot_run_updates_inventory_from_server_line(bot, fake_socket):
+def test_bot_collect_target_defaults_zero(bot):
     """
-    Given a client returning an inventory line then closing
-    When the bot runs its loop
-    Then the bot's inventory is updated to reflect the server response
+    Given a freshly created Bot
+    When its collect_target attribute is inspected
+    Then it defaults to 0
     """
-    inventory_line = (
-        b"[food 7, linemate 0, deraumere 0, sibur 0, mendiane 0, phiras 0, thystame 0]\n"
-    )
-    fake_socket._responses = [inventory_line, b""]
-    bot.run()
-    assert bot.inventory[Resource.FOOD] == 7
+    assert bot.collect_target == 0
+
+
+def test_bot_fork_count_defaults_zero(bot):
+    """
+    Given a freshly created Bot
+    When its fork_count attribute is inspected
+    Then it defaults to 0
+    """
+    assert bot.fork_count == 0

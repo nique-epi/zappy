@@ -3,7 +3,6 @@
 import pytest
 from ia.network.client import ZappyClient
 from ia.core.bot import Bot
-from ia.states.survival import SurvivalState
 from tests.IA.mocks.fake_socket import FakeSocket
 
 
@@ -31,9 +30,3 @@ def connected_client(fake_socket):
 def bot(connected_client):
     """Provide a real Bot wired to the test client."""
     return Bot(10, 10, 1, connected_client)
-
-
-@pytest.fixture
-def state():
-    """Provide a fresh SurvivalState for each test."""
-    return SurvivalState()

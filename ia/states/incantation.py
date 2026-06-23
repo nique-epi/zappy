@@ -10,14 +10,13 @@ from ia.shared.enum import State
 class IncantationState:  # pylint: disable=too-few-public-methods
     """Send Incantation as chef or await its result as follower."""
 
-    def __init__(self, bot: Bot, is_chef: bool = True) -> None:
+    def __init__(self, bot: Bot) -> None:
         self._bot = bot
-        self._is_chef = is_chef
 
     def handle(self) -> State:
         """Send or await Incantation and return the next state."""
-        if self._is_chef:
-            self._bot.client.send("Incantation\n")
+        if self._bot.is_incantation_chef:
+            self._bot.client.send("Incantation")
         return self._wait_for_result()
 
     def _wait_for_result(self) -> State:

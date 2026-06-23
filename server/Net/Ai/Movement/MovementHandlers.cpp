@@ -10,6 +10,7 @@
 #include "App/World/Player/Direction.hpp"
 #include "App/World/Player/Player.hpp"
 #include "Net/Ai/AiHandlerSupport.hpp"
+#include "Net/Gui/GuiEventBroadcaster.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Message/IMessage.hpp"
 #include "Rpc/Session/Session.hpp"
@@ -24,6 +25,7 @@ void handleForward(AiSession& session, const AiHandlerContext& context) {
     return;
   }
   world::moveForward(*player, context.map);
+  context.gui.playerMoved(*player);
   session.send(protocol::ai::Ok().opcode());
 }
 
@@ -33,6 +35,7 @@ void handleRight(AiSession& session, const AiHandlerContext& context) {
     return;
   }
   player->setDirection(world::turnRight(player->direction()));
+  context.gui.playerMoved(*player);
   session.send(protocol::ai::Ok().opcode());
 }
 
@@ -42,6 +45,7 @@ void handleLeft(AiSession& session, const AiHandlerContext& context) {
     return;
   }
   player->setDirection(world::turnLeft(player->direction()));
+  context.gui.playerMoved(*player);
   session.send(protocol::ai::Ok().opcode());
 }
 

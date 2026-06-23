@@ -10,7 +10,7 @@ from ia.states.incantation import IncantationState
 from tests.IA.mocks.fake_socket import FakeSocket
 
 
-def _make_bot(responses: list, level: int = 1) -> Bot:
+def _make_bot(responses: list, level: int = 1, chef: bool = True) -> Bot:
     """Build a Bot wired to a FakeSocket with preset server responses."""
     encoded = [
         r if isinstance(r, bytes)
@@ -23,11 +23,12 @@ def _make_bot(responses: list, level: int = 1) -> Bot:
     bot = Bot(10, 10, 1, zc)
     bot.level = level
     bot.inventory = dict.fromkeys(Resource, 0)
+    bot.is_incantation_chef = chef
     return bot
 
 
 class TestChefIncantation:
-    """Tests for IncantationState when is_chef=True."""
+    """Tests for IncantationState when the bot is the incantation chef."""
 
     def test_sends_incantation_command(self):
         """
@@ -36,7 +37,7 @@ class TestChefIncantation:
         Then Incantation is sent to the server
         """
         bot = _make_bot(["elevation underway", "Current level: 2"])
-        state = IncantationState(bot, is_chef=True)
+        state = IncantationState(bot)
         state.handle()
         sent = b"".join(bot.client._sock.sent).decode()
         assert "Incantation" in sent
@@ -48,7 +49,7 @@ class TestChefIncantation:
         Then State.SURVIVAL is returned
         """
         bot = _make_bot(["elevation underway", "Current level: 2"])
-        assert IncantationState(bot, is_chef=True).handle() == State.SURVIVAL
+        assert IncantationState(bot).handle() == State.SURVIVAL
 
     def test_updates_bot_level_on_success(self):
         """
@@ -57,7 +58,7 @@ class TestChefIncantation:
         Then bot.level is updated to 2
         """
         bot = _make_bot(["elevation underway", "Current level: 2"])
-        IncantationState(bot, is_chef=True).handle()
+        IncantationState(bot).handle()
         assert bot.level == 2
 
     def test_returns_survival_on_ko(self):
@@ -67,7 +68,7 @@ class TestChefIncantation:
         Then State.SURVIVAL is returned so the bot resumes collecting
         """
         bot = _make_bot(["ko"])
-        assert IncantationState(bot, is_chef=True).handle() == State.SURVIVAL
+        assert IncantationState(bot).handle() == State.SURVIVAL
 
     def test_does_not_update_level_on_ko(self):
         """
@@ -76,7 +77,7 @@ class TestChefIncantation:
         Then bot.level stays at 1
         """
         bot = _make_bot(["ko"])
-        IncantationState(bot, is_chef=True).handle()
+        IncantationState(bot).handle()
         assert bot.level == 1
 
     def test_returns_survival_on_disconnect(self):
@@ -86,7 +87,7 @@ class TestChefIncantation:
         Then State.SURVIVAL is returned
         """
         bot = _make_bot([])
-        assert IncantationState(bot, is_chef=True).handle() == State.SURVIVAL
+        assert IncantationState(bot).handle() == State.SURVIVAL
 
     def test_returns_survival_on_timeout(self):
         """
@@ -95,7 +96,7 @@ class TestChefIncantation:
         Then State.SURVIVAL is returned
         """
         bot = _make_bot(["noise"] * 100)
-        assert IncantationState(bot, is_chef=True).handle() == State.SURVIVAL
+        assert IncantationState(bot).handle() == State.SURVIVAL
 
     def test_ignores_noise_before_current_level(self):
         """
@@ -107,7 +108,7 @@ class TestChefIncantation:
             ["elevation underway", "some noise", "Current level: 3"],
             level=2,
         )
-        result = IncantationState(bot, is_chef=True).handle()
+        result = IncantationState(bot).handle()
         assert result == State.SURVIVAL
         assert bot.level == 3
 
@@ -119,7 +120,7 @@ class TestChefIncantation:
         """
         bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
         with pytest.raises(SystemExit) as exc_info:
-            IncantationState(bot, is_chef=True).handle()
+            IncantationState(bot).handle()
         assert exc_info.value.code == 0
 
     def test_exits_updates_level_before_exit(self):
@@ -130,12 +131,12 @@ class TestChefIncantation:
         """
         bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
         with pytest.raises(SystemExit):
-            IncantationState(bot, is_chef=True).handle()
+            IncantationState(bot).handle()
         assert bot.level == MAX_LEVEL
 
 
 class TestFollowerIncantation:
-    """Tests for IncantationState when is_chef=False."""
+    """Tests for IncantationState when the bot is an incantation follower."""
 
     def test_does_not_send_incantation_command(self):
         """
@@ -143,8 +144,8 @@ class TestFollowerIncantation:
         When handle is called
         Then no Incantation command is sent
         """
-        bot = _make_bot(["Current level: 2"])
-        IncantationState(bot, is_chef=False).handle()
+        bot = _make_bot(["Current level: 2"], chef=False)
+        IncantationState(bot).handle()
         sent = b"".join(bot.client._sock.sent).decode()
         assert "Incantation" not in sent
 
@@ -154,8 +155,8 @@ class TestFollowerIncantation:
         When handle is called
         Then State.SURVIVAL is returned
         """
-        bot = _make_bot(["Current level: 2"])
-        assert IncantationState(bot, is_chef=False).handle() == State.SURVIVAL
+        bot = _make_bot(["Current level: 2"], chef=False)
+        assert IncantationState(bot).handle() == State.SURVIVAL
 
     def test_updates_bot_level_on_success(self):
         """
@@ -163,8 +164,8 @@ class TestFollowerIncantation:
         When handle is called
         Then bot.level is updated to 2
         """
-        bot = _make_bot(["Current level: 2"])
-        IncantationState(bot, is_chef=False).handle()
+        bot = _make_bot(["Current level: 2"], chef=False)
+        IncantationState(bot).handle()
         assert bot.level == 2
 
     def test_returns_survival_on_ko(self):
@@ -173,8 +174,8 @@ class TestFollowerIncantation:
         When handle is called
         Then State.SURVIVAL is returned
         """
-        bot = _make_bot(["ko"])
-        assert IncantationState(bot, is_chef=False).handle() == State.SURVIVAL
+        bot = _make_bot(["ko"], chef=False)
+        assert IncantationState(bot).handle() == State.SURVIVAL
 
     def test_exits_at_max_level(self):
         """
@@ -182,7 +183,7 @@ class TestFollowerIncantation:
         When handle is called
         Then sys.exit(0) is raised
         """
-        bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
+        bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1, chef=False)
         with pytest.raises(SystemExit) as exc_info:
-            IncantationState(bot, is_chef=False).handle()
+            IncantationState(bot).handle()
         assert exc_info.value.code == 0

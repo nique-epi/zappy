@@ -3,6 +3,7 @@ import argparse
 import sys
 from ia.network.client import ZappyClient
 from ia.core.bot import Bot
+from ia.core.fsm import StateMachine
 
 
 def parse_arguments(argv=None) -> argparse.Namespace:
@@ -43,8 +44,9 @@ def main(argv=None, client_factory=ZappyClient, bot_factory=Bot) -> None:
         sys.exit(1)
 
     bot = bot_factory(width, height, client_num, client)
+    machine = StateMachine(bot)
     try:
-        bot.run()
+        machine.run()
     finally:
         client.close()
 

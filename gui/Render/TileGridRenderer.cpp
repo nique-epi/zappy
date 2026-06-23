@@ -6,6 +6,7 @@
 */
 
 #include "Render/TileGridRenderer.hpp"
+#include "Render/RenderUtils.hpp"
 #include "Render/TileGridConfig.hpp"
 #include "Render/WindowConfig.hpp"
 #include "World/WorldState.hpp"
@@ -17,11 +18,8 @@ namespace cfg = config;
 namespace {
 
 Vector3 tileCenter(int gridX, int gridY) {
-  return Vector3{
-      (static_cast<float>(gridX) + cfg::TILE_CENTER_OFFSET) * cfg::TILE_SIZE,
-      -cfg::TILE_HALF_HEIGHT,
-      (static_cast<float>(gridY) + cfg::TILE_CENTER_OFFSET) * cfg::TILE_SIZE,
-  };
+  return Vector3{tileToWorld(gridX), -cfg::TILE_HALF_HEIGHT,
+                 tileToWorld(gridY)};
 }
 
 void drawOneTile(int gridX, int gridY, Color fillColor) {

@@ -6,16 +6,15 @@ from ia.core.bot import Bot
 
 
 class CollectState:  # pylint: disable=too-few-public-methods
-    def __init__(self, bot: Bot, tile_index: int):
+    def __init__(self, bot: Bot):
         self.bot = bot
-        self._tile_index = tile_index
 
     def handle(self) -> State:
         """Move to the target tile, take all useful stones."""
         if not self._move_to_target():
             return State.EXPLORATION
 
-        self.bot.client.send("Look\n")
+        self.bot.client.send("Look")
         response = self.bot.client.recv()
         if response is None:
             return State.EXPLORATION
@@ -36,8 +35,8 @@ class CollectState:  # pylint: disable=too-few-public-methods
 
     def _move_to_target(self) -> bool:
         """Execute the move sequence; return False if any move fails."""
-        for move in tile_to_moves(self._tile_index):
-            self.bot.client.send(move.value + "\n")
+        for move in tile_to_moves(self.bot.collect_target):
+            self.bot.client.send(move.value)
             response = self.bot.client.recv()
             if response is None or response.strip() == "ko":
                 return False
@@ -52,7 +51,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
         for obj in objects:
             if obj not in missing:
                 continue
-            self.bot.client.send(f"Take {obj}\n")
+            self.bot.client.send(f"Take {obj}")
             response = self.bot.client.recv()
             if response and response.strip() == "ok":
                 resource = next(

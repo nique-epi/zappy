@@ -80,6 +80,7 @@ add_executable(zappy_server_tests
   Net/TestActionQueue.cpp
   Net/TestAiActionPipeline.cpp
   Net/TestGuiQueryHandlers.cpp
+  Net/TestGuiEventBroadcaster.cpp
   App/TestActionCosts.cpp
   App/TestTimeUnit.cpp
   App/TestGameServerHandshake.cpp
@@ -131,6 +132,7 @@ target_link_libraries(zappy_gui_handshake_tests
 
 add_executable(zappy_gui_parser_tests
   Gui/TestMessageParser.cpp
+  Gui/TestEggRenderer.cpp
 )
 
 target_link_libraries(zappy_gui_parser_tests

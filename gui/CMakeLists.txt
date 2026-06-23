@@ -98,6 +98,9 @@ add_executable(zappy_gui
     Network/NetworkManager.cpp
     World/MockWorld.cpp
     Render/Raygui.cpp
+    Render/RenderUtils.cpp
+    Render/Entity/EggRenderer.cpp
+    Render/Entity/PlayerRenderer.cpp
     Render/SpeedControl.cpp
     Render/WorldCamera.cpp
     Render/TileGridRenderer.cpp

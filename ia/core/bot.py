@@ -1,11 +1,8 @@
 """Core bot logic for the Zappy AI client."""
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
-from ia.network.exceptions import PlayerDeadError
-from ia.parsing.inventory import needs_food, parse_inventory
 from ia.shared.enum import Direction, Resource, State
 
 if TYPE_CHECKING:
@@ -37,6 +34,8 @@ class Bot:
         self.inventory: dict[Resource, int] = dict.fromkeys(Resource, 0)
         self.state: State = State.SURVIVAL
         self.collect_target: int = 0
+        self.is_incantation_chef: bool = True
+        self.fork_count: int = 0
 
     @property
     def client(self) -> "ZappyClient":
@@ -55,22 +54,3 @@ class Bot:
         """
         _ = client_num
         return "generic"
-
-    def run(self) -> None:
-        """Main reception loop; exits cleanly when the player dies."""
-        try:
-            while True:
-                line = self._client.recv()
-                if line is None:
-                    break
-                self._handle_response(line)
-                logging.debug("Received: %s", line)
-        except PlayerDeadError:
-            pass
-
-    def _handle_response(self, line: str) -> None:
-        """Dispatch a raw server line to the appropriate handler."""
-        if line.startswith("["):
-            self.inventory = parse_inventory(line)
-            if needs_food(self.inventory):
-                logging.debug("food below threshold, foraging needed")

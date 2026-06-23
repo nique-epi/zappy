@@ -12,7 +12,6 @@ from ia.core.bot import Bot
 from ia.game.elevation import ELEVATION_REQUIREMENTS
 from ia.game.navigation import broadcast_direction_to_moves
 from ia.shared.enum import State
-from ia.states.incantation import IncantationState
 
 
 class CoordinationState:  # pylint: disable=too-few-public-methods
@@ -35,7 +34,7 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
         return self._lead(required)
 
     def _lead(self, required: int) -> State:
-        """Broadcast LEAD periodically and count zero-direction JOINs."""
+        """Broadcast LEAD, count JOINs, request a fork if quorum is missed."""
         joined = 1
         steps = 0
 
@@ -61,6 +60,7 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
 
         if joined >= required:
             return self._incantate()
+        self._send_broadcast(MessageType.FORK_NEEDED, "")
         return State.EXPLORATION
 
     def _follow(self, initial_direction: int) -> State:
@@ -94,19 +94,21 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
     def _move_toward(self, direction: int) -> None:
         """Send movement commands toward broadcast direction K."""
         for move in broadcast_direction_to_moves(direction):
-            self._bot.client.send(f"{move.value}\n")
+            self._bot.client.send(move.value)
             self._bot.client.recv()
 
     def _send_broadcast(self, msg_type: MessageType, data: str) -> None:
         """Send a ZAPPY broadcast and consume the server acknowledgement."""
         payload = format_message(msg_type, self._bot.level, data)
-        self._bot.client.send(f"Broadcast {payload}\n")
+        self._bot.client.send(f"Broadcast {payload}")
         self._bot.client.recv()
 
     def _incantate(self) -> State:
-        """Delegate incantation (chef role) to IncantationState."""
-        return IncantationState(self._bot, is_chef=True).handle()
+        """Become incantation chef; the FSM runs the ritual next tick."""
+        self._bot.is_incantation_chef = True
+        return State.INCANTATION
 
     def _await_incantation(self) -> State:
-        """Delegate incantation wait (follower role) to IncantationState."""
-        return IncantationState(self._bot, is_chef=False).handle()
+        """Become incantation follower; the FSM awaits the ritual next tick."""
+        self._bot.is_incantation_chef = False
+        return State.INCANTATION

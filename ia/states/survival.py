@@ -4,24 +4,26 @@ from ia.shared.enum import State
 from ia.core.bot import Bot
 
 
-class SurvivalState:
-    def __init__(self):
+class SurvivalState:  # pylint: disable=too-few-public-methods
+    def __init__(self, bot: Bot):
+        self.bot = bot
         self._cycles_since_check = 0
 
-    def handle(self, bot: Bot) -> str | State:
+    def handle(self) -> State:
+        """Periodically check food: EATING if low, EXPLORATION otherwise."""
         self._cycles_since_check += 1
 
         if self._cycles_since_check < INVENTORY_CHECK_INTERVAL:
-            return bot.state
+            return self.bot.state
 
-        bot.client.send("Inventory\n")
-        response = bot.client.recv()
+        self.bot.client.send("Inventory")
+        response = self.bot.client.recv()
         if response is None:
-            return bot.state
+            return self.bot.state
         self._cycles_since_check = 0
-        bot.inventory = parse_inventory(response)
+        self.bot.inventory = parse_inventory(response)
 
-        if needs_food(bot.inventory):
+        if needs_food(self.bot.inventory):
             return State.EATING
 
-        return bot.state
+        return State.EXPLORATION

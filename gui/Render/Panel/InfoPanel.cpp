@@ -13,7 +13,7 @@
 #include <format>
 #include <string>
 #include "Render/Panel/PanelConfig.hpp"
-#include "Render/WindowConfig.hpp"
+#include "Render/RenderUtils.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {
@@ -50,8 +50,8 @@ HoveredTile getTile(const WorldState& world, const Camera3D& camera) {
   }
   const float worldX = ray.position.x + (distance * ray.direction.x);
   const float worldZ = ray.position.z + (distance * ray.direction.z);
-  const int tileX = static_cast<int>(std::floor(worldX / cfg::TILE_SIZE));
-  const int tileY = static_cast<int>(std::floor(worldZ / cfg::TILE_SIZE));
+  const int tileX = worldToTile(worldX);
+  const int tileY = worldToTile(worldZ);
   if (tileY < 0 || tileY >= static_cast<int>(world.tiles.size())) {
     return {.valid = false, .x = 0, .y = 0};
   }

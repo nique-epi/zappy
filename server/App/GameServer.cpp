@@ -40,11 +40,12 @@ GameServer::GameServer(const ServerConfig& config)
     : config_(config),
       timeUnit_(config.frequency),
       server_(config.port),
+      gui_(server_),
       world_(config.width, config.height),
       rng_(std::random_device{}()),
       teams_(config.teamNames),
-      loot_(world_, config.frequency, std::random_device{}()),
-      hunger_(server_, scheduler_, players_, world_, config.frequency) {
+      loot_(world_, gui_, config.frequency, std::random_device{}()),
+      hunger_(server_, scheduler_, players_, world_, gui_, config.frequency) {
   teams_.seedInitialEggs(world_, config_.clientsPerTeam, rng_);
   registerHandshake();
   registerAiHandlers();
@@ -55,8 +56,10 @@ GameServer::GameServer(const ServerConfig& config)
     session.ctx().pendingActions.clear();
     session.ctx().actionInFlight = false;
     if (session.ctx().playerId != 0) {
-      players_.remove(session.ctx().playerId, world_);
+      const int playerId = session.ctx().playerId;
+      players_.remove(playerId, world_);
       session.ctx().playerId = 0;
+      gui_.playerDied(playerId);
     }
   });
 }
@@ -114,6 +117,8 @@ void GameServer::admitAiClient(Session& session, const std::string& teamName) {
   session.ctx().spawnX = hatched.x;
   session.ctx().spawnY = hatched.y;
   session.ctx().playerId = player.id();
+  gui_.eggHatched(hatched.id);
+  gui_.playerConnected(player);
   session.send(std::to_string(teams_.freeSlots(teamName)));
   session.send(worldSizeLine());
   session.completeHandshake();
@@ -126,7 +131,7 @@ std::string GameServer::worldSizeLine() const {
 
 void GameServer::registerAiHandlers() {
   const AiHandlerContext context{
-      .players = players_, .map = world_, .teams = teams_};
+      .players = players_, .map = world_, .teams = teams_, .gui = gui_};
   installMovementHandlers(server_, context);
   installResourceHandlers(server_, context);
   installObservationHandlers(server_, context);
@@ -139,12 +144,17 @@ void GameServer::registerAiHandlers() {
 }
 
 void GameServer::executeIncantation(Session& session) {
+  const world::Player* initiator = players_.find(session.ctx().playerId);
+  const int ritualX = initiator != nullptr ? initiator->x() : 0;
+  const int ritualY = initiator != nullptr ? initiator->y() : 0;
+  const int ritualLevel = initiator != nullptr ? initiator->level() : 0;
   const world::IncantationOutcome outcome =
       world::getIncantationOutcome(session.ctx().playerId, players_, world_);
   if (!outcome.succeeded) {
     session.send(protocol::ai::Ko().opcode());
     return;
   }
+  gui_.incantationStarted(ritualX, ritualY, ritualLevel, outcome.participants);
   const std::string levelLine =
       "Current level: " + std::to_string(outcome.newLevel);
   for (int participantId : outcome.participants) {
@@ -153,7 +163,12 @@ void GameServer::executeIncantation(Session& session) {
         other.send(levelLine);
       }
     });
+    const world::Player* participant = players_.find(participantId);
+    if (participant != nullptr) {
+      gui_.playerLevel(*participant);
+    }
   }
+  gui_.incantationEnded(ritualX, ritualY, true);
   const std::optional<std::string> winningTeam =
       world::findWinningTeam(players_);
   if (winningTeam.has_value()) {
@@ -162,12 +177,8 @@ void GameServer::executeIncantation(Session& session) {
 }
 
 void GameServer::endGame(const std::string& winningTeam) {
-  const std::string line = "seg " + winningTeam;
-  server_.forEachSession([&line](Session& session) {
-    if (session.ctx().type == ClientType::Gui) {
-      session.send(line);
-    }
-  });
+  gui_.endGame(winningTeam);
+  gui_.serverMessage(winningTeam + " reached the victory threshold");
   gameOver_ = true;
   stop();
 }
