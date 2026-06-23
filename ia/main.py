@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Main entry point for the Zappy AI client."""
 import argparse
 import sys
@@ -15,6 +16,9 @@ def parse_arguments(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine",
         add_help=False)
+    parser.add_argument("--help", action="help",
+                        default=argparse.SUPPRESS,
+                        help="show this help message and exit")
     parser.add_argument("-p", type=int, required=True,
                         dest="port",    help="port number")
     parser.add_argument("-n", type=str, required=True,

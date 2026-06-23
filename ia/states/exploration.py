@@ -12,6 +12,7 @@ from ia.config import (
 )
 from ia.game.elevation import stones_missing
 from ia.parsing.connect import parse_connect_nbr
+from ia.parsing.eject import parse_eject
 from ia.parsing.look import parse_look
 from ia.shared.enum import Move, State
 from ia.core.bot import Bot
@@ -41,6 +42,9 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         broadcast = parse_broadcast(response)
         if broadcast is not None:
             self._handle_broadcast(broadcast)
+            return State.EXPLORATION
+
+        if parse_eject(response) is not None:
             return State.EXPLORATION
 
         tiles = parse_look(
