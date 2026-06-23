@@ -17,6 +17,7 @@
 #include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
 #include "Render/Entity/EggRenderer.hpp"
+#include "Render/Entity/IncantationRenderer.hpp"
 #include "Render/Entity/PlayerRenderer.hpp"
 #include "Render/SpeedControl.hpp"
 #include "Render/TileGridRenderer.hpp"
@@ -70,6 +71,7 @@ int main(int argc, char** argv) {
 
     InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
     SetTargetFPS(cfg::TARGET_FPS);
+    zappy::gui::IncantationRenderer::loadTextures();
 
     const Vector3 mapCenter{
         static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
@@ -92,6 +94,7 @@ int main(int argc, char** argv) {
       zappy::gui::TileGridRenderer::draw(world);
       zappy::gui::EggRenderer::draw3D(world);
       zappy::gui::PlayerRenderer::draw3D(world);
+      zappy::gui::IncantationRenderer::draw3D(world);
       EndMode3D();
       zappy::gui::PlayerRenderer::drawLevelLabels(world, camera.camera());
 
@@ -103,6 +106,7 @@ int main(int argc, char** argv) {
       EndDrawing();
     }
 
+    zappy::gui::IncantationRenderer::unloadTextures();
     CloseWindow();
   } catch (const zappy::cli::ParserException& error) {
     std::cerr << error.what() << '\n';
