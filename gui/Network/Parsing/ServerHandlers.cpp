@@ -16,7 +16,9 @@
 
 namespace zappy::gui {
 
-void registerServerHandlers(HandlerMap& handlers, WorldState& world) {
+namespace {
+
+void registerGameHandlers(HandlerMap& handlers, WorldState& world) {
   handlers["tna"] = [&world](std::istringstream& stream) {
     std::string name;
     stream >> name;
@@ -34,7 +36,9 @@ void registerServerHandlers(HandlerMap& handlers, WorldState& world) {
     world.gameOver = true;
     stream >> world.winnerTeam;
   };
+}
 
+void registerDiagnosticHandlers(HandlerMap& handlers) {
   handlers["suc"] = [](std::istringstream&) {
     std::cerr << "[suc] unknown command sent by GUI\n";
   };
@@ -45,7 +49,9 @@ void registerServerHandlers(HandlerMap& handlers, WorldState& world) {
   for (const auto* cmd : {"pex", "pbc", "pfk", "smg"}) {
     handlers[cmd] = [](std::istringstream&) {};
   }
+}
 
+void registerIncantationHandlers(HandlerMap& handlers, WorldState& world) {
   handlers["pic"] = [&world](std::istringstream& stream) {
     Incantation incantation;
     stream >> incantation.x >> incantation.y >> incantation.level;
@@ -72,6 +78,14 @@ void registerServerHandlers(HandlerMap& handlers, WorldState& world) {
       world.activeIncantations.erase(it);
     }
   };
+}
+
+}  // namespace
+
+void registerServerHandlers(HandlerMap& handlers, WorldState& world) {
+  registerGameHandlers(handlers, world);
+  registerDiagnosticHandlers(handlers);
+  registerIncantationHandlers(handlers, world);
 }
 
 }  // namespace zappy::gui
