@@ -12,6 +12,7 @@
 #include "App/World/Player/Player.hpp"
 #include "App/World/Player/PlayerRegistry.hpp"
 #include "Net/Ai/AiHandlerSupport.hpp"
+#include "Net/Gui/GuiEventBroadcaster.hpp"
 #include "Protocol/AiProtocol.hpp"
 #include "Rpc/Session/Session.hpp"
 
@@ -44,10 +45,12 @@ void handleBroadcast(AiServer& server, AiSession& session,
   }
   const int emitterX = emitter->x();
   const int emitterY = emitter->y();
+  const int emitterId = emitter->id();
   const std::string& text = args.text;
   server.forEachSession([&](AiSession& listener) {
     pushSoundToListener(listener, emitterX, emitterY, text, context);
   });
+  context.gui.playerBroadcast(emitterId, text);
   session.send(protocol::ai::Ok().opcode());
 }
 

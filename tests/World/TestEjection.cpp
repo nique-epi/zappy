@@ -116,7 +116,7 @@ TEST(Ejection, DestroysEveryEggOnTheTileAndDropsTheirSlots) {
 
   const EjectOutcome outcome = ejectFromTile(ejector, players, map, teams);
 
-  EXPECT_EQ(outcome.eggsDestroyed, 2U);
+  EXPECT_EQ(outcome.destroyedEggs.size(), 2U);
   EXPECT_EQ(teams.freeSlots("red"), 0U);
   EXPECT_TRUE(map.tileAt(2, 2).eggs().empty());
 }
@@ -134,5 +134,5 @@ TEST(Ejection, MissingEjectorIsANoOp) {
   const EjectOutcome outcome = ejectFromTile(404, players, map, teams);
 
   EXPECT_TRUE(outcome.ejected.empty());
-  EXPECT_EQ(outcome.eggsDestroyed, 0U);
+  EXPECT_EQ(outcome.destroyedEggs.size(), 0U);
 }
