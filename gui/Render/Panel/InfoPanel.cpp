@@ -7,6 +7,7 @@
 
 #include "Render/Panel/InfoPanel.hpp"
 #include <raylib.h>
+#include <algorithm>
 #include <cmath>
 #include <format>
 #include <string>
@@ -59,14 +60,19 @@ float panelHeight() {
 }
 
 Vector2 panelOrigin(Vector2 mouse, float height) {
+  const auto screenWidth = static_cast<float>(GetScreenWidth());
+  const auto screenHeight = static_cast<float>(GetScreenHeight());
   float originX = mouse.x + cfg::INFO_PANEL_MOUSE_OFFSET;
   float originY = mouse.y + cfg::INFO_PANEL_MOUSE_OFFSET;
-  if (originX + cfg::INFO_PANEL_WIDTH > static_cast<float>(GetScreenWidth())) {
+  if (originX + cfg::INFO_PANEL_WIDTH > screenWidth) {
     originX = mouse.x - cfg::INFO_PANEL_WIDTH - cfg::INFO_PANEL_MOUSE_OFFSET;
   }
-  if (originY + height > static_cast<float>(GetScreenHeight())) {
-    originY = static_cast<float>(GetScreenHeight()) - height;
+  if (originY + height > screenHeight) {
+    originY = screenHeight - height;
   }
+  originX =
+      std::max(0.0F, std::min(originX, screenWidth - cfg::INFO_PANEL_WIDTH));
+  originY = std::max(0.0F, std::min(originY, screenHeight - height));
   return Vector2{originX, originY};
 }
 

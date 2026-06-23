@@ -18,6 +18,9 @@ std::optional<int> PlayerSelection::click(std::optional<int> hoveredId,
     return std::nullopt;
   }
   if (hoveredId.has_value()) {
+    if (hoveredId == selectedId_) {
+      return std::nullopt;
+    }
     selectedId_ = hoveredId;
     return hoveredId;
   }
