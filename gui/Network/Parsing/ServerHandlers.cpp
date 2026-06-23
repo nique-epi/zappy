@@ -6,6 +6,7 @@
 */
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -41,9 +42,36 @@ void registerServerHandlers(HandlerMap& handlers, WorldState& world) {
     std::cerr << "[sbp] bad parameter sent by GUI\n";
   };
 
-  for (const auto* cmd : {"pex", "pbc", "pic", "pie", "pfk", "smg"}) {
+  for (const auto* cmd : {"pex", "pbc", "pfk", "smg"}) {
     handlers[cmd] = [](std::istringstream&) {};
   }
+
+  handlers["pic"] = [&world](std::istringstream& stream) {
+    Incantation incantation;
+    stream >> incantation.x >> incantation.y >> incantation.level;
+    const bool alreadyActive = std::ranges::any_of(
+        world.activeIncantations, [&](const Incantation& inc) {
+          return inc.x == incantation.x && inc.y == incantation.y;
+        });
+    if (!alreadyActive) {
+      world.activeIncantations.push_back(incantation);
+    }
+  };
+
+  handlers["pie"] = [&world](std::istringstream& stream) {
+    int posX = 0;
+    int posY = 0;
+    int result = 0;
+    stream >> posX >> posY >> result;
+    const auto it = std::ranges::find_if(
+        world.activeIncantations,
+        [&](const Incantation& inc) { return inc.x == posX && inc.y == posY; });
+    if (it != world.activeIncantations.end()) {
+      world.finishedIncantations.push_back(
+          {posX, posY, result == 1, std::chrono::steady_clock::now()});
+      world.activeIncantations.erase(it);
+    }
+  };
 }
 
 }  // namespace zappy::gui

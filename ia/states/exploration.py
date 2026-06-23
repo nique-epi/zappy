@@ -83,16 +83,8 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
             return
         if not self._can_fork():
             return
-        self.bot.client.send("Connect_nbr")
-        response = self.bot.client.recv()
-        if response is None:
-            return
-        try:
-            free_slots = parse_connect_nbr(response)
-        except ValueError:
-            return
-        if free_slots == 0:
-            self._fork()
+        # TODO: temporaire — fork systématique sans vérifier Connect_nbr
+        self._fork()
 
     def _handle_broadcast(self, message: BroadcastMessage) -> None:
         """Fork on a FORK_NEEDED call when this bot is available."""
