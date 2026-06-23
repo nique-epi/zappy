@@ -1,7 +1,14 @@
 """Conversion of Look tile indices into bot movement command sequences."""
 import math
 
-from ia.shared.enum import Move
+from ia.shared.enum import Direction, Move
+
+ORIENTATION_DELTAS: dict[Direction, tuple[int, int, int, int]] = {
+    Direction.NORTH: (0, -1, 1, 0),
+    Direction.SOUTH: (0, 1, -1, 0),
+    Direction.EAST: (1, 0, 0, 1),
+    Direction.WEST: (-1, 0, 0, -1),
+}
 
 _BROADCAST_DIRECTION_MOVES: dict[int, list[Move]] = {
     1: [Move.FORWARD],
@@ -15,7 +22,7 @@ _BROADCAST_DIRECTION_MOVES: dict[int, list[Move]] = {
 }
 
 
-def _tile_index_to_offset(index: int) -> tuple[int, int]:
+def tile_index_to_offset(index: int) -> tuple[int, int]:
     """Return the (forward, lateral) offset of a Look tile index."""
     row = math.isqrt(index)
     return row, index - row * row - row
@@ -31,11 +38,13 @@ def _shortest_lateral(lateral: int, width: int | None) -> int:
     return reduced
 
 
-def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
-    """Build the ordered move commands to reach a Look tile from the bot."""
-    forward, lateral = _tile_index_to_offset(index)
-    lateral = _shortest_lateral(lateral, width)
-    moves = [Move.FORWARD] * forward
+def forward_lateral_to_moves(forward: int, lateral: int) -> list[Move]:
+    """Build forward/turn/forward commands for a (forward, lateral) offset."""
+    moves: list[Move] = []
+    if forward < 0:
+        moves += [Move.RIGHT, Move.RIGHT]
+        forward = -forward
+    moves += [Move.FORWARD] * forward
     if lateral < 0:
         moves.append(Move.LEFT)
         moves += [Move.FORWARD] * -lateral
@@ -43,6 +52,13 @@ def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
         moves.append(Move.RIGHT)
         moves += [Move.FORWARD] * lateral
     return moves
+
+
+def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
+    """Build the ordered move commands to reach a Look tile from the bot."""
+    forward, lateral = tile_index_to_offset(index)
+    lateral = _shortest_lateral(lateral, width)
+    return forward_lateral_to_moves(forward, lateral)
 
 
 def broadcast_direction_to_moves(direction: int) -> list[Move]:

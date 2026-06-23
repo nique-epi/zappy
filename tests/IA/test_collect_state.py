@@ -29,13 +29,14 @@ def test_handle_moves_to_target_tile():
     """
     Given a bot whose collect_target is 0 (current tile)
     When handle is called
-    Then no movement command is sent before Look
+    Then no Forward command is sent before Eject/Look
     """
-    bot = _make_bot([_LOOK_EMPTY], target=0)
+    bot = _make_bot(["ok", _LOOK_EMPTY], target=0)
     state = CollectState(bot)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
-    assert sent.startswith("Look")
+    assert "Forward" not in sent
+    assert sent.startswith("Eject")
 
 
 def test_handle_sends_forward_to_reach_adjacent_tile():
@@ -44,7 +45,7 @@ def test_handle_sends_forward_to_reach_adjacent_tile():
     When handle is called
     Then a Forward command is sent before Look
     """
-    bot = _make_bot(["ok", "ok", "ok", _LOOK_EMPTY], target=1)
+    bot = _make_bot(["ok", "ok", "ok", "ok", _LOOK_EMPTY], target=1)
     state = CollectState(bot)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
@@ -57,7 +58,7 @@ def test_handle_takes_useful_stone_on_tile():
     When handle is called with collect_target 0
     Then Take linemate is sent to the server
     """
-    bot = _make_bot([_LOOK_LINEMATE, "ok"], target=0)
+    bot = _make_bot(["ok", _LOOK_LINEMATE, "ok", "ok"], target=0)
     bot.inventory[Resource.LINEMATE] = 0
     state = CollectState(bot)
     state.handle()
@@ -67,11 +68,13 @@ def test_handle_takes_useful_stone_on_tile():
 
 def test_handle_updates_inventory_on_ok():
     """
-    Given a bot missing linemate and a server responding ok to Take
+    Given a bot at level 2 missing only linemate and a server responding ok
     When handle is called
-    Then bot.inventory[LINEMATE] is incremented
+    Then bot.inventory[LINEMATE] is incremented and not yet dropped, since
+    deraumere/sibur are still missing
     """
-    bot = _make_bot([_LOOK_LINEMATE, "ok"], target=0)
+    bot = _make_bot(["ok", _LOOK_LINEMATE, "ok"], target=0)
+    bot.level = 2
     bot.inventory[Resource.LINEMATE] = 0
     state = CollectState(bot)
     state.handle()
@@ -97,7 +100,7 @@ def test_handle_returns_coordination_when_all_stones_collected():
     When handle is called and Take returns ok
     Then State.COORDINATION is returned
     """
-    bot = _make_bot([_LOOK_LINEMATE, "ok"], target=0)
+    bot = _make_bot(["ok", _LOOK_LINEMATE, "ok", "ok"], target=0)
     bot.inventory[Resource.LINEMATE] = 0
     state = CollectState(bot)
     assert state.handle() == State.COORDINATION
@@ -121,7 +124,7 @@ def test_handle_takes_multiple_stones_on_same_tile():
     When handle is called
     Then two Take linemate commands are sent
     """
-    bot = _make_bot([_LOOK_MULTI, "ok", "ok"], target=0)
+    bot = _make_bot(["ok", _LOOK_MULTI, "ok", "ok"], target=0)
     bot.inventory[Resource.LINEMATE] = 0
     state = CollectState(bot)
     state.handle()
@@ -135,7 +138,7 @@ def test_handle_skips_stone_not_in_missing():
     When handle is called
     Then no Take command is sent
     """
-    bot = _make_bot([_LOOK_LINEMATE], target=0)
+    bot = _make_bot(["ok", _LOOK_LINEMATE, "ok"], target=0)
     bot.inventory[Resource.LINEMATE] = 1
     state = CollectState(bot)
     state.handle()

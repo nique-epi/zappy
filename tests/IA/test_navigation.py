@@ -1,5 +1,5 @@
 """Unit tests for the Look tile index to movement command conversion."""
-from ia.game.navigation import tile_to_moves, _tile_index_to_offset
+from ia.game.navigation import tile_to_moves, tile_index_to_offset
 from ia.shared.enum import Move
 
 
@@ -9,7 +9,7 @@ def test_offset_current_tile_is_origin():
     When its bot-frame offset is computed
     Then it sits at zero forward and zero lateral
     """
-    assert _tile_index_to_offset(0) == (0, 0)
+    assert tile_index_to_offset(0) == (0, 0)
 
 
 def test_offset_row_grows_with_perfect_squares():
@@ -18,9 +18,9 @@ def test_offset_row_grows_with_perfect_squares():
     When their bot-frame offsets are computed
     Then they share the same forward depth and span lateral -2..+2
     """
-    assert _tile_index_to_offset(4) == (2, -2)
-    assert _tile_index_to_offset(6) == (2, 0)
-    assert _tile_index_to_offset(8) == (2, 2)
+    assert tile_index_to_offset(4) == (2, -2)
+    assert tile_index_to_offset(6) == (2, 0)
+    assert tile_index_to_offset(8) == (2, 2)
 
 
 def test_current_tile_needs_no_move():

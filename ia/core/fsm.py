@@ -31,6 +31,7 @@ class StateMachine:
 
     def tick(self) -> None:
         """Run the current state handler and apply the returned transition."""
+        self._bot.turn += 1
         handler = self._handlers[self._bot.state]
         self._bot.state = handler.handle()
 
