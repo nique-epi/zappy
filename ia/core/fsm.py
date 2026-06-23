@@ -31,13 +31,8 @@ class StateMachine:
 
     def tick(self) -> None:
         """Run the current state handler and apply the returned transition."""
-        # TODO: temporaire — logs de debug
-        print(f"[FSM] state={self._bot.state.value} level={self._bot.level}", flush=True)
         handler = self._handlers[self._bot.state]
-        next_state = handler.handle()
-        if next_state != self._bot.state:
-            print(f"[FSM] → {next_state.value}", flush=True)
-        self._bot.state = next_state
+        self._bot.state = handler.handle()
 
     def run(self) -> None:
         """Drive ticks until the player dies or the server closes the link."""

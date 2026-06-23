@@ -16,7 +16,6 @@ class IncantationState:  # pylint: disable=too-few-public-methods
     def handle(self) -> State:
         """Send or await Incantation and return the next state."""
         if self._bot.is_incantation_chef:
-            # TODO: temporaire — la pose des pierres devra être gérée en amont
             self._set_required_stones()
             self._bot.client.send("Incantation")
         return self._wait_for_result()
@@ -27,7 +26,6 @@ class IncantationState:  # pylint: disable=too-few-public-methods
         When called before Incantation
         Then places each required stone on the tile with Set
         """
-        # TODO: temporaire
         requirements = ELEVATION_REQUIREMENTS.get(self._bot.level, {})
         for stone, amount in requirements.items():
             if stone == "players":

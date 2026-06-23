@@ -83,7 +83,6 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
             return
         if not self._can_fork():
             return
-        # TODO: temporaire — fork systématique sans vérifier Connect_nbr
         self._fork()
 
     def _handle_broadcast(self, message: BroadcastMessage) -> None:
