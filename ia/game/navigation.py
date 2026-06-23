@@ -22,7 +22,7 @@ _BROADCAST_DIRECTION_MOVES: dict[int, list[Move]] = {
 }
 
 
-def _tile_index_to_offset(index: int) -> tuple[int, int]:
+def tile_index_to_offset(index: int) -> tuple[int, int]:
     """Return the (forward, lateral) offset of a Look tile index."""
     row = math.isqrt(index)
     return row, index - row * row - row
@@ -56,7 +56,7 @@ def forward_lateral_to_moves(forward: int, lateral: int) -> list[Move]:
 
 def tile_to_moves(index: int, width: int | None = None) -> list[Move]:
     """Build the ordered move commands to reach a Look tile from the bot."""
-    forward, lateral = _tile_index_to_offset(index)
+    forward, lateral = tile_index_to_offset(index)
     lateral = _shortest_lateral(lateral, width)
     return forward_lateral_to_moves(forward, lateral)
 

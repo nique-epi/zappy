@@ -172,3 +172,52 @@ def test_toroidal_distance_wraps_on_both_axes():
     """
     world_map = WorldMap(10, 10)
     assert world_map.toroidal_distance((0, 0), (9, 9)) == 2
+
+
+def test_update_from_look_wraps_each_axis_with_its_own_size():
+    """
+    Given a non-square WorldMap (width 8, height 4)
+    When update_from_look records a coordinate out of bounds on both axes
+    Then x wraps modulo width and y wraps modulo height independently
+    """
+    world_map = WorldMap(8, 4)
+    world_map.update_from_look(
+        [{"coords": (9, 5), "objects": ["food"]}], turn=1
+    )
+    cell = world_map.world_map[1][1]
+    assert cell["resources"] == {"food": 1}
+
+
+def test_toroidal_distance_on_non_square_map_uses_matching_axis_size():
+    """
+    Given a non-square WorldMap (width 10, height 4)
+    When toroidal_distance wraps a tile near the height edge
+    Then the wrap uses height, not width, for the y axis
+    """
+    world_map = WorldMap(10, 4)
+    assert world_map.toroidal_distance((0, 0), (0, 3)) == 1
+    assert world_map.toroidal_distance((0, 0), (9, 0)) == 1
+
+
+def test_path_to_uses_toroidal_shortcut_on_non_square_map():
+    """
+    Given a non-square WorldMap (width 6, height 10)
+    When path_to wraps laterally around the narrower width
+    Then it takes the shorter wrapped lateral step sized on width
+    """
+    world_map = WorldMap(6, 10)
+    moves = world_map.path_to((0, 0), Direction.NORTH, (5, 0))
+    assert moves == [Move.LEFT, Move.FORWARD]
+
+
+def test_nearest_resource_on_non_square_map_respects_each_axis():
+    """
+    Given a non-square WorldMap (width 10, height 4) with a known resource
+    When nearest_resource is called near the height edge
+    Then the wrapped distance on the shorter axis is used to pick it
+    """
+    world_map = WorldMap(10, 4)
+    world_map.update_from_look(
+        [{"coords": (0, 3), "objects": ["linemate"]}], turn=1
+    )
+    assert world_map.nearest_resource((0, 0), "linemate") == (0, 3)

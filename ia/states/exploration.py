@@ -50,7 +50,8 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         tiles = parse_look(
             response, self.bot.pos, self.bot.orientation, self.bot.level
         )
-        self.bot.world_map.update_from_look(tiles, self.bot.turn)
+        if self.bot.mental_map_enabled:
+            self.bot.world_map.update_from_look(tiles, self.bot.turn)
         missing = stones_missing(
             self.bot.level,
             {r.value: v for r, v in self.bot.inventory.items()},
@@ -107,7 +108,11 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
 
     def _explore(self) -> None:
         """Head for a known resource, or wander while turning periodically."""
-        target = self.bot.next_exploration_target()
+        target = (
+            self.bot.next_exploration_target()
+            if self.bot.mental_map_enabled
+            else None
+        )
         if target is not None and target != self.bot.pos:
             self._move_towards(target)
             return

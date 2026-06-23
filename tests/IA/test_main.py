@@ -54,8 +54,10 @@ def test_main_success():
         created["client"] = zc
         return zc
 
-    def bot_factory(width, height, client_num, client):
-        created["bot"] = Bot(width, height, client_num, client)
+    def bot_factory(width, height, client_num, client, mental_map=False):
+        created["bot"] = Bot(
+            width, height, client_num, client, mental_map=mental_map
+        )
         return created["bot"]
 
     main(["-p", "4242", "-n", "team1", "-h", "localhost"],

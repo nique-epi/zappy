@@ -1,7 +1,7 @@
 """Parsing of the Zappy server response to the ``Look`` command."""
 from typing import TypedDict
 
-from ia.game.navigation import ORIENTATION_DELTAS, _tile_index_to_offset
+from ia.game.navigation import ORIENTATION_DELTAS, tile_index_to_offset
 from ia.shared.enum import Direction
 
 
@@ -27,7 +27,7 @@ def _tile_index_to_abs_coords(
 ) -> tuple[int, int] | None:
     """Map a Look tile index to the bot's absolute (unwrapped) coords."""
     del level
-    forward, lateral = _tile_index_to_offset(index)
+    forward, lateral = tile_index_to_offset(index)
     forward_dx, forward_dy, lateral_dx, lateral_dy = ORIENTATION_DELTAS[
         direction
     ]

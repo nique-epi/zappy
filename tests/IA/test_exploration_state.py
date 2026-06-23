@@ -179,13 +179,15 @@ def test_explore_alternates_turn_direction():
     assert "Right" in sent
 
 
-def test_explore_heads_towards_known_resource():
+def test_explore_heads_towards_known_resource_when_mental_map_enabled():
     """
-    Given a bot with a known linemate tile recorded to its right
+    Given a bot with the mental-map bonus enabled and known linemate to its
+    right
     When handle explores with no useful stone in the current Look
     Then it turns Right, the first step of the path to that tile
     """
     bot = _make_bot([_NO_STONES, "ok"])
+    bot.mental_map_enabled = True
     bot.inventory[Resource.LINEMATE] = 0
     bot.world_map.update_from_look(
         [{"coords": (3, 0), "objects": ["linemate"]}], bot.turn
@@ -195,6 +197,26 @@ def test_explore_heads_towards_known_resource():
     sent = b"".join(bot.client._sock.sent).decode()
     assert "Right" in sent
     assert bot.orientation == Direction.EAST
+
+
+def test_explore_ignores_known_resource_when_mental_map_disabled():
+    """
+    Given a bot without the mental-map bonus enabled but a known linemate
+    tile recorded to its right
+    When handle explores with no useful stone in the current Look
+    Then it falls back to the plain wander behaviour (Forward, no turn)
+    """
+    bot = _make_bot([_NO_STONES, "ok"])
+    bot.inventory[Resource.LINEMATE] = 0
+    bot.world_map.update_from_look(
+        [{"coords": (3, 0), "objects": ["linemate"]}], bot.turn
+    )
+    state = ExplorationState(bot)
+    state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert "Right" not in sent
+    assert "Forward" in sent
+    assert bot.orientation == Direction.NORTH
 
 
 def test_explore_updates_bot_position_on_forward():

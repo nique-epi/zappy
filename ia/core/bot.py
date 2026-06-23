@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from ia.bonus.map import WorldMap
 from ia.config import STALE_TURNS
+from ia.game.elevation import stones_missing
 from ia.game.navigation import ORIENTATION_DELTAS
 from ia.shared.enum import Direction, Resource, State
 
@@ -17,6 +18,7 @@ _DIRECTION_ORDER = [
 
 
 # pylint: disable=too-many-instance-attributes,too-few-public-methods
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 class Bot:
     """Class representing the AI bot."""
 
@@ -26,11 +28,13 @@ class Bot:
         height: int,
         client_num: int,
         client: "ZappyClient",
+        mental_map: bool = False,
     ) -> None:
         self._client = client
         self.width = width
         self.height = height
         self.client_num = client_num
+        self.mental_map_enabled = mental_map
 
         self.level = 1
         self.pos = (0, 0)
@@ -80,10 +84,15 @@ class Bot:
         )
 
     def next_exploration_target(self) -> tuple[int, int] | None:
-        """Pick the closest known resource as the next exploration target."""
+        """Pick the closest known tile holding a stone still missing."""
+        missing = stones_missing(
+            self.level, {r.value: v for r, v in self.inventory.items()}
+        )
         best_target: tuple[int, int] | None = None
         best_distance = float("inf")
         for resource in Resource:
+            if resource.value not in missing:
+                continue
             target = self.nearest_resource(resource)
             if target is None:
                 continue
