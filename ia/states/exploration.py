@@ -134,18 +134,18 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
 
     def _send_forward(self) -> None:
         self.bot.client.send("Forward")
-        self.bot.client.recv()
-        self.bot.advance()
+        if self.bot.client.recv() is not None:
+            self.bot.advance()
 
     def _send_left(self) -> None:
         self.bot.client.send("Left")
-        self.bot.client.recv()
-        self.bot.turn_left()
+        if self.bot.client.recv() is not None:
+            self.bot.turn_left()
 
     def _send_right(self) -> None:
         self.bot.client.send("Right")
-        self.bot.client.recv()
-        self.bot.turn_right()
+        if self.bot.client.recv() is not None:
+            self.bot.turn_right()
 
     def _handle_farmer(self) -> State:
         """Stub for ZAP-21 farmer role."""
