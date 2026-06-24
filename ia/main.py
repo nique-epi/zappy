@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Main entry point for the Zappy AI client."""
 import argparse
 import sys
@@ -15,12 +16,18 @@ def parse_arguments(argv=None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="zappy_ai", usage="./zappy_ai -p port -n name -h machine",
         add_help=False)
+    parser.add_argument("--help", action="help",
+                        default=argparse.SUPPRESS,
+                        help="show this help message and exit")
     parser.add_argument("-p", type=int, required=True,
                         dest="port",    help="port number")
     parser.add_argument("-n", type=str, required=True,
                         dest="name",    help="team name")
     parser.add_argument("-h", type=str, default="localhost",
                         dest="host", help="hostname")
+    parser.add_argument("-b", action="store_true",
+                        dest="mental_map",
+                        help="enable the mental-map pathfinding bonus")
 
     args = parser.parse_args(argv)
     if not 1 <= args.port <= 65535:
@@ -43,7 +50,9 @@ def main(argv=None, client_factory=ZappyClient, bot_factory=Bot) -> None:
         print(f"[ERROR] {e}", file=sys.stderr)
         sys.exit(1)
 
-    bot = bot_factory(width, height, client_num, client)
+    bot = bot_factory(
+        width, height, client_num, client, mental_map=args.mental_map
+    )
     machine = StateMachine(bot)
     try:
         machine.run()

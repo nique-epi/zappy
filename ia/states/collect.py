@@ -1,4 +1,4 @@
-from ia.game.elevation import stones_missing
+from ia.game.elevation import ELEVATION_REQUIREMENTS, stones_missing
 from ia.game.navigation import tile_to_moves
 from ia.parsing.look import parse_look
 from ia.shared.enum import State
@@ -13,6 +13,8 @@ class CollectState:  # pylint: disable=too-few-public-methods
         """Move to the target tile, take all useful stones."""
         if not self._move_to_target():
             return State.EXPLORATION
+
+        self._eject_competitors()
 
         self.bot.client.send("Look")
         response = self.bot.client.recv()
@@ -29,9 +31,11 @@ class CollectState:  # pylint: disable=too-few-public-methods
             self.bot.level,
             {r.value: v for r, v in self.bot.inventory.items()},
         )
-        if not missing:
-            return State.COORDINATION
-        return State.EXPLORATION
+        if missing:
+            return State.EXPLORATION
+
+        self._drop_required_stones()
+        return State.COORDINATION
 
     def _move_to_target(self) -> bool:
         """Execute the move sequence; return False if any move fails."""
@@ -41,6 +45,32 @@ class CollectState:  # pylint: disable=too-few-public-methods
             if response is None or response.strip() == "ko":
                 return False
         return True
+
+    def _eject_competitors(self) -> None:
+        """Clear rival players from the tile before claiming its stones."""
+        self.bot.client.send("Eject")
+        self.bot.client.recv()
+
+    def _drop_required_stones(self) -> None:
+        """Set every stone needed for the next elevation onto the ground.
+
+        The incantation's prerequisites are checked on the tile, not in a
+        player's inventory, so the gathered stones must be laid down here.
+        """
+        requirements = ELEVATION_REQUIREMENTS[self.bot.level]
+        for stone, amount in requirements.items():
+            if stone == "players" or amount == 0:
+                continue
+            resource = next(
+                (r for r in self.bot.inventory if r.value == stone), None
+            )
+            if resource is None:
+                continue
+            for _ in range(amount):
+                self.bot.client.send(f"Set {stone}")
+                response = self.bot.client.recv()
+                if response and response.strip() == "ok":
+                    self.bot.inventory[resource] -= 1
 
     def _take_stones_on_current_tile(self, objects: list[str]) -> None:
         """Take every useful stone present on the current tile."""

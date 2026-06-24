@@ -101,6 +101,7 @@ add_executable(zappy_gui
     Render/Raygui.cpp
     Render/RenderUtils.cpp
     Render/Entity/EggRenderer.cpp
+    Render/Entity/IncantationRenderer.cpp
     Render/Entity/PlayerChevron.cpp
     Render/Entity/PlayerPicker.cpp
     Render/Entity/PlayerRenderer.cpp
@@ -124,5 +125,9 @@ set_source_files_properties(Render/WorldCamera.cpp PROPERTIES
 )
 
 target_link_libraries(zappy_gui PRIVATE zappy_gui_cli zappy_gui_handshake zappy_gui_commands zappy_gui_parser zappy_gui_world_init zappy_network raylib)
+
+target_compile_definitions(zappy_gui PRIVATE
+    "ASSETS_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/assets\""
+)
 
 target_compile_options(zappy_gui PRIVATE -Wall -Wextra -Werror)

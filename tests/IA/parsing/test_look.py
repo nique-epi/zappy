@@ -79,7 +79,7 @@ def test_parse_look_wraps_each_tile_in_a_dict():
     Then each tile becomes a dict exposing coords and objects
     """
     result = parse_look("[player,food]", (0, 0), Direction.NORTH, 1)
-    assert result[0] == {"coords": None, "objects": ["player"]}
+    assert result[0] == {"coords": (0, 0), "objects": ["player"]}
 
 
 def test_parse_look_objects_match_split_tiles():
@@ -94,11 +94,12 @@ def test_parse_look_objects_match_split_tiles():
     assert objects == _split_tiles(response)
 
 
-def test_parse_look_coords_are_stubbed_to_none():
+def test_parse_look_coords_are_absolute_unwrapped_positions():
     """
-    Given a Look response parsed before the mental map exists
+    Given a Look response from a bot facing south at (1, 1)
     When it is parsed
-    Then every tile's coords is None (ZAP-19 stub)
+    Then each tile's coords is its absolute, unwrapped position
     """
     result = parse_look("[player,,food]", (1, 1), Direction.SOUTH, 1)
-    assert all(tile["coords"] is None for tile in result)
+    coords = [tile["coords"] for tile in result]
+    assert coords == [(1, 1), (2, 2), (1, 2)]

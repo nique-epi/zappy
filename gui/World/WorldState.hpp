@@ -8,6 +8,7 @@
 #pragma once
 
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -48,6 +49,19 @@ struct alignas(EGG_ALIGN) Egg {
   int y{};
 };
 
+struct Incantation {
+  int x{};
+  int y{};
+  int level{};
+};
+
+struct IncantationEnd {
+  int x{};
+  int y{};
+  bool success{};
+  std::chrono::steady_clock::time_point endTime{};
+};
+
 struct WorldState {
   int width{};
   int height{};
@@ -58,6 +72,8 @@ struct WorldState {
   int timeUnit{};
   bool gameOver{};
   std::string winnerTeam;
+  std::vector<Incantation> activeIncantations;
+  std::vector<IncantationEnd> finishedIncantations;
 };
 
 WorldState mockWorld();
