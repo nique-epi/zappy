@@ -89,15 +89,15 @@ void drawAtSlot(Model& model, cfg::SlotDrawConfig drawCfg) {
               {drawCfg.scale, drawCfg.scale, drawCfg.scale}, WHITE);
 }
 
-}  // namespace
-
-void ResourceRenderer::loadModels() {
+void loadColormap() {
   colormap = LoadTexture(colormapPath);
   if (colormap.id == 0) {
     std::cerr << "[ResourceRenderer] failed to load colormap: " << colormapPath
               << '\n';
   }
+}
 
+void loadFoodModels() {
   for (std::size_t i = 0; i < foodModelCount; ++i) {
     foodModels[i] = LoadModel(foodModelPaths[i]);
     if (foodModels[i].meshCount == 0) {
@@ -110,7 +110,9 @@ void ResourceRenderer::loadModels() {
           colormap;
     }
   }
+}
 
+void loadGemModels() {
   for (std::size_t i = 0; i < gemCount; ++i) {
     gemModels[i] = LoadModel(gemModelPaths[i]);
     if (gemModels[i].meshCount == 0) {
@@ -120,43 +122,66 @@ void ResourceRenderer::loadModels() {
   }
 }
 
-void ResourceRenderer::draw3D(const WorldState& world) {
-  for (int tileY = 0; tileY < world.height; ++tileY) {
-    for (int tileX = 0; tileX < world.width; ++tileX) {
-      const Tile& tile = world.tiles[tileY][tileX];
-      const cfg::TileWorldPos pos{.x = tileToWorld(tileX),
-                                  .z = tileToWorld(tileY)};
+void drawTileFood(const Tile& tile, int tileX, int tileY,
+                  cfg::TileWorldPos pos) {
+  if (tile.resources[0] == 0) {
+    return;
+  }
+  const std::size_t foodIdx = foodIndexForTile(tileX, tileY);
+  drawAtSlot(
+      foodModels[foodIdx],
+      {.slotIndex = 0, .scale = cfg::RESOURCE_FOOD_SCALE, .worldPos = pos});
+}
 
-      if (tile.resources[0] > 0) {
-        const std::size_t foodIdx = foodIndexForTile(tileX, tileY);
-        drawAtSlot(foodModels[foodIdx], {.slotIndex = 0,
-                                         .scale = cfg::RESOURCE_FOOD_SCALE,
-                                         .worldPos = pos});
-      }
-
-      for (std::size_t i = 1; i < RESOURCE_COUNT; ++i) {
-        if (tile.resources[i] > 0) {
-          drawAtSlot(gemModels[i - 1], {.slotIndex = i,
-                                        .scale = cfg::RESOURCE_GEM_SCALE,
-                                        .worldPos = pos});
-        }
-      }
+void drawTileGems(const Tile& tile, cfg::TileWorldPos pos) {
+  for (std::size_t i = 1; i < RESOURCE_COUNT; ++i) {
+    if (tile.resources[i] > 0) {
+      drawAtSlot(
+          gemModels[i - 1],
+          {.slotIndex = i, .scale = cfg::RESOURCE_GEM_SCALE, .worldPos = pos});
     }
   }
 }
 
-void ResourceRenderer::unloadModels() {
+void unloadFoodModels() {
   for (auto& model : foodModels) {
     for (int matIdx = 0; matIdx < model.materialCount; ++matIdx) {
       model.materials[matIdx].maps[MATERIAL_MAP_DIFFUSE].texture = {};
     }
     UnloadModel(model);
   }
-  UnloadTexture(colormap);
+}
 
+void unloadGemModels() {
   for (auto& model : gemModels) {
     UnloadModel(model);
   }
+}
+
+}  // namespace
+
+void ResourceRenderer::loadModels() {
+  loadColormap();
+  loadFoodModels();
+  loadGemModels();
+}
+
+void ResourceRenderer::draw3D(const WorldState& world) {
+  for (int tileY = 0; tileY < world.height; ++tileY) {
+    for (int tileX = 0; tileX < world.width; ++tileX) {
+      const Tile& tile = world.tiles[tileY][tileX];
+      const cfg::TileWorldPos pos{.x = tileToWorld(tileX),
+                                  .z = tileToWorld(tileY)};
+      drawTileFood(tile, tileX, tileY, pos);
+      drawTileGems(tile, pos);
+    }
+  }
+}
+
+void ResourceRenderer::unloadModels() {
+  unloadFoodModels();
+  UnloadTexture(colormap);
+  unloadGemModels();
 }
 
 }  // namespace zappy::gui
