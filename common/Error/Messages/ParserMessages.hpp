@@ -12,6 +12,8 @@ namespace zappy::error::messages {
 inline constexpr const char *UNKNOWN_OPTION = "unknown option ";
 inline constexpr const char *MISSING_VALUE = "missing value for ";
 
+inline constexpr const char *USAGE_PREFIX = "USAGE: ";
+
 inline constexpr const char *INVALID_VALUE_PREFIX = "invalid value '";
 inline constexpr const char *INVALID_VALUE_INFIX = "' for ";
 inline constexpr const char *REASON_SEPARATOR = ": ";
