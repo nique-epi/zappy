@@ -7,12 +7,10 @@
 
 #include "Render/Entity/PlayerRenderer.hpp"
 #include <raylib.h>
-#include <cstddef>
 #include <format>
 #include <string>
 #include "Render/Entity/PlayerRendererConfig.hpp"
 #include "Render/RenderUtils.hpp"
-#include "Render/WindowConfig.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {
@@ -33,15 +31,6 @@ DirectionVec orientationDirection(Orientation orientation) {
       return {.x = -1.0F, .z = 0.0F};
   }
   return {.x = 0.0F, .z = -1.0F};
-}
-
-Color resolveTeamColor(const WorldState& world, const std::string& teamName) {
-  for (std::size_t i = 0; i < world.teams.size(); ++i) {
-    if (world.teams[i] == teamName) {
-      return cfg::TEAM_COLORS[i % cfg::TEAM_COLORS.size()];
-    }
-  }
-  return cfg::TEAM_COLORS[0];
 }
 
 void drawPlayerBody(Vector3 position, Color color) {
@@ -79,7 +68,7 @@ void PlayerRenderer::draw3D(const WorldState& world) {
       continue;
     }
     const Vector3 position{tileToWorld(player.x), 0.0F, tileToWorld(player.y)};
-    const Color color = resolveTeamColor(world, player.teamName);
+    const Color color = teamColor(world, player.teamName);
 
     drawPlayerBody(position, color);
     drawOrientationArrow(position, player.orientation);

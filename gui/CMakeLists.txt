@@ -97,14 +97,23 @@ add_executable(zappy_gui
     main.cpp
     Network/NetworkManager.cpp
     World/MockWorld.cpp
+    World/WorldQuery.cpp
     Render/Raygui.cpp
     Render/RenderUtils.cpp
     Render/Entity/EggRenderer.cpp
     Render/Entity/IncantationRenderer.cpp
+    Render/Entity/PlayerChevron.cpp
+    Render/Entity/PlayerPicker.cpp
     Render/Entity/PlayerRenderer.cpp
+    Render/Entity/PlayerSelection.cpp
     Render/SpeedControl.cpp
     Render/WorldCamera.cpp
     Render/TileGridRenderer.cpp
+    Render/Panel/HudPanel.cpp
+    Render/Panel/InfoPanel.cpp
+    Render/Panel/PanelChrome.cpp
+    Render/Panel/PlayerPanel.cpp
+    Render/Panel/ResourceList.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES

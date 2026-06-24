@@ -6,8 +6,8 @@
 */
 
 #include <raylib.h>
-#include <format>
 #include <iostream>
+#include <optional>
 #include <string>
 #include <string_view>
 #include "Cli/ArgsParser.hpp"
@@ -18,7 +18,13 @@
 #include "Network/ServerHandshake.hpp"
 #include "Render/Entity/EggRenderer.hpp"
 #include "Render/Entity/IncantationRenderer.hpp"
+#include "Render/Entity/PlayerChevron.hpp"
+#include "Render/Entity/PlayerPicker.hpp"
 #include "Render/Entity/PlayerRenderer.hpp"
+#include "Render/Entity/PlayerSelection.hpp"
+#include "Render/Panel/HudPanel.hpp"
+#include "Render/Panel/InfoPanel.hpp"
+#include "Render/Panel/PlayerPanel.hpp"
 #include "Render/SpeedControl.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
@@ -77,15 +83,26 @@ int main(int argc, char** argv) {
         static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
         static_cast<float>(world.height) * cfg::TILE_SIZE / 2.0F};
     zappy::gui::WorldCamera camera(mapCenter);
+    zappy::gui::PlayerSelection selection;
 
     while (!WindowShouldClose()) {
       network.runOnce(0);
       camera.update(GetFrameTime());
 
-      const std::string hudText =
-          std::format("{}:{}  |  Map: {}x{}  |  Players: {}  |  Teams: {}",
-                      config.hostname, config.port, world.width, world.height,
-                      world.players.size(), world.teams.size());
+      selection.syncWithWorld(world);
+      const std::optional<int> hoveredPlayer =
+          zappy::gui::PlayerPicker::nearest(world, camera.camera());
+      if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        const bool insidePanel =
+            selection.selectedId().has_value() &&
+            zappy::gui::PlayerPanel::contains(GetMousePosition());
+        const std::optional<int> picked =
+            selection.click(hoveredPlayer, insidePanel);
+        if (picked.has_value()) {
+          sender.requestPlayerInventory(*picked);
+          sender.requestPlayerLevel(*picked);
+        }
+      }
 
       BeginDrawing();
       ClearBackground(RAYWHITE);
@@ -97,12 +114,17 @@ int main(int argc, char** argv) {
       zappy::gui::IncantationRenderer::draw3D(world);
       EndMode3D();
       zappy::gui::PlayerRenderer::drawLevelLabels(world, camera.camera());
+      zappy::gui::PlayerChevron::draw(world, camera.camera(), hoveredPlayer,
+                                      selection.selectedId());
 
-      DrawText(cfg::WINDOW_TITLE, cfg::MARGIN_X, cfg::TITLE_Y,
-               cfg::TITLE_FONT_SIZE, DARKBLUE);
-      DrawText(hudText.c_str(), cfg::MARGIN_X, cfg::HUD_Y, cfg::HUD_FONT_SIZE,
-               DARKGRAY);
+      zappy::gui::HudPanel::draw(config, world);
+      zappy::gui::InfoPanel::draw(world, camera.camera());
       speedControl.draw(world.timeUnit);
+      if (selection.selectedId().has_value()) {
+        if (zappy::gui::PlayerPanel::draw(world, *selection.selectedId())) {
+          selection.close();
+        }
+      }
       EndDrawing();
     }
 
