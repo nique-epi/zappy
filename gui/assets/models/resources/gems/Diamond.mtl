@@ -1,0 +1,12 @@
+# Blender MTL File: 'Gems.blend'
+# Material Count: 1
+
+newmtl TransparentLightBlueGem
+Ns 692.646679
+Ka 1.000000 1.000000 1.000000
+Kd 0.233783 0.824992 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.550000
+d 1.000000
+illum 2

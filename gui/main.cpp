@@ -22,6 +22,7 @@
 #include "Render/Entity/PlayerPicker.hpp"
 #include "Render/Entity/PlayerRenderer.hpp"
 #include "Render/Entity/PlayerSelection.hpp"
+#include "Render/Entity/ResourceRenderer.hpp"
 #include "Render/Panel/HudPanel.hpp"
 #include "Render/Panel/InfoPanel.hpp"
 #include "Render/Panel/PlayerPanel.hpp"
@@ -78,6 +79,7 @@ int main(int argc, char** argv) {
     InitWindow(cfg::WINDOW_WIDTH, cfg::WINDOW_HEIGHT, cfg::WINDOW_TITLE);
     SetTargetFPS(cfg::TARGET_FPS);
     zappy::gui::IncantationRenderer::loadTextures();
+    zappy::gui::ResourceRenderer::loadModels();
 
     const Vector3 mapCenter{
         static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
@@ -109,6 +111,7 @@ int main(int argc, char** argv) {
 
       BeginMode3D(camera.camera());
       zappy::gui::TileGridRenderer::draw(world);
+      zappy::gui::ResourceRenderer::draw3D(world);
       zappy::gui::EggRenderer::draw3D(world);
       zappy::gui::PlayerRenderer::draw3D(world);
       zappy::gui::IncantationRenderer::draw3D(world);
@@ -129,6 +132,7 @@ int main(int argc, char** argv) {
     }
 
     zappy::gui::IncantationRenderer::unloadTextures();
+    zappy::gui::ResourceRenderer::unloadModels();
     CloseWindow();
   } catch (const zappy::cli::ParserException& error) {
     std::cerr << error.what() << '\n';
