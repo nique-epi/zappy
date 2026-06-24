@@ -1,7 +1,7 @@
 """Core bot logic for the Zappy AI client."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 from ia.bonus.map import WorldMap
 from ia.config import STALE_TURNS
@@ -49,6 +49,8 @@ class Bot:
         self.collect_target: int = 0
         self.is_incantation_chef: bool = True
         self.fork_count: int = 0
+        self.fork_depth: int = 0
+        self.spawn_player: Callable[[int], None] | None = None
 
     @property
     def client(self) -> "ZappyClient":

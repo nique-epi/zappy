@@ -2,6 +2,7 @@
 # pylint: disable=redefined-outer-name,protected-access
 import pytest
 
+from ia.config import FOOD_SAFE_THRESHOLD
 from ia.core.bot import Bot
 from ia.game.elevation import MAX_LEVEL
 from ia.network.client import ZappyClient
@@ -23,7 +24,7 @@ def _make_bot(responses: list, level: int = 1, chef: bool = True) -> Bot:
     bot = Bot(10, 10, 1, zc)
     bot.level = level
     bot.inventory = dict.fromkeys(Resource, 0)
-    bot.inventory[Resource.FOOD] = 10
+    bot.inventory[Resource.FOOD] = 25
     bot.is_incantation_chef = chef
     return bot
 
@@ -99,6 +100,20 @@ class TestChefIncantation:
         bot = _make_bot(["noise"] * 100)
         assert IncantationState(bot).handle() == State.SURVIVAL
 
+    def test_never_sends_inventory_while_waiting_for_result(self):
+        """
+        Given a chef bot waiting for the ritual's result among noise lines
+        When handle times out without a conclusive response
+        Then no Inventory command is sent while the player is frozen
+
+        Sending one would have its reply read as the answer to whatever
+        command is next in the queue, desynchronizing the whole stream.
+        """
+        bot = _make_bot(["noise"] * 100)
+        IncantationState(bot).handle()
+        sent = b"".join(bot.client._sock.sent).decode()
+        assert "Inventory" not in sent
+
     def test_ignores_noise_before_current_level(self):
         """
         Given a chef bot receiving noise then Current level: 3
@@ -106,12 +121,26 @@ class TestChefIncantation:
         Then bot.level is updated to 3 and State.SURVIVAL is returned
         """
         bot = _make_bot(
-            ["ok", "ok", "ok", "elevation underway", "some noise", "Current level: 3"],
+            ["elevation underway", "some noise", "Current level: 3"],
             level=2,
         )
         result = IncantationState(bot).handle()
         assert result == State.SURVIVAL
         assert bot.level == 3
+
+    def test_waits_for_safe_food_before_incantating(self):
+        """
+        Given a chef bot whose food is above the critical but below the
+        safe threshold
+        When handle is called
+        Then it returns EATING without sending Incantation
+        """
+        bot = _make_bot([])
+        bot.inventory[Resource.FOOD] = FOOD_SAFE_THRESHOLD - 1
+        result = IncantationState(bot).handle()
+        sent = b"".join(bot.client._sock.sent).decode()
+        assert result == State.EATING
+        assert "Incantation" not in sent
 
     def test_exits_at_max_level(self):
         """
@@ -119,7 +148,7 @@ class TestChefIncantation:
         When handle is called
         Then sys.exit(0) is raised
         """
-        bot = _make_bot(["ok"] * 11 + ["Current level: 8"], level=MAX_LEVEL - 1)
+        bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
         with pytest.raises(SystemExit) as exc_info:
             IncantationState(bot).handle()
         assert exc_info.value.code == 0
@@ -130,7 +159,7 @@ class TestChefIncantation:
         When handle triggers sys.exit
         Then bot.level is 8 at the time of exit
         """
-        bot = _make_bot(["ok"] * 11 + ["Current level: 8"], level=MAX_LEVEL - 1)
+        bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
         with pytest.raises(SystemExit):
             IncantationState(bot).handle()
         assert bot.level == MAX_LEVEL

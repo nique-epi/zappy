@@ -25,4 +25,4 @@ def needs_food(inventory: dict[Resource, int]) -> bool:
 
 
 def needs_food_safe(inventory: dict[Resource, int]) -> bool:
-    return inventory.get(Resource.FOOD, 0) <= FOOD_SAFE_THRESHOLD
+    return inventory.get(Resource.FOOD, 0) < FOOD_SAFE_THRESHOLD

@@ -9,6 +9,7 @@ from ia.config import (
     FORK_LIMIT,
     FORK_MAX_LEVEL,
     INVENTORY_CHECK_INTERVAL,
+    MAX_FORK_DEPTH,
 )
 from ia.game.elevation import stones_missing
 from ia.game.navigation import broadcast_direction_to_moves
@@ -65,14 +66,15 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         return State.EXPLORATION
 
     def _can_fork(self) -> bool:
-        """True when this bot is a low-level candidate below the fork cap."""
+        """True when this bot is a low-level, shallow-enough candidate."""
         return (
             self.bot.level <= FORK_MAX_LEVEL
             and self.bot.fork_count < FORK_LIMIT
+            and self.bot.fork_depth < MAX_FORK_DEPTH
         )
 
     def _maybe_self_fork(self) -> None:
-        """Periodically fork when no free team slot remains."""
+        """Periodically claim a free slot, or fork one if none remains."""
         self._fork_counter += 1
         if self._fork_counter % FORK_CHECK_INTERVAL != 0:
             return
@@ -88,6 +90,8 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
             return
         if free_slots == 0:
             self._fork()
+        elif self.bot.spawn_player is not None:
+            self.bot.spawn_player(self.bot.fork_depth + 1)
 
     def _drain_notifications(self) -> None:
         """Process broadcasts and ejects queued since the last tick."""
@@ -122,6 +126,8 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         self.bot.client.send("Fork")
         self.bot.client.recv_ack()
         self.bot.fork_count += 1
+        if self.bot.spawn_player is not None:
+            self.bot.spawn_player(self.bot.fork_depth + 1)
 
     def _explore(self) -> None:
         """Head for a known resource, or wander while turning periodically."""

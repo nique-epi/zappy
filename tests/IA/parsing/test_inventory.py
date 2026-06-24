@@ -104,14 +104,19 @@ def test_needs_food_false_when_food_above_threshold():
     assert needs_food(inventory) is False
 
 
-def test_needs_food_safe_true_when_food_at_safe_threshold():
+def test_needs_food_safe_false_when_food_at_safe_threshold():
     """
     Given an inventory with food exactly at FOOD_SAFE_THRESHOLD
     When needs_food_safe is called
-    Then it returns True
+    Then it returns False
+
+    EatState stops eating once food reaches FOOD_SAFE_THRESHOLD (>=), so
+    needs_food_safe must use a strict comparison: otherwise the bot would
+    leave EATING exactly at the threshold and immediately be sent back to
+    EATING by IncantationState, looping forever without ever incantating.
     """
     inventory = {Resource.FOOD: FOOD_SAFE_THRESHOLD}
-    assert needs_food_safe(inventory) is True
+    assert needs_food_safe(inventory) is False
 
 
 def test_needs_food_safe_false_when_food_above_safe_threshold():
