@@ -65,17 +65,6 @@ std::array<Model, foodModelCount>
 std::array<Model, gemCount>
     gemModels{};  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-struct TileWorldPos {
-  float x;
-  float z;
-};
-
-struct SlotDrawConfig {
-  std::size_t slotIndex{};
-  float scale{};
-  TileWorldPos worldPos{};
-};
-
 std::size_t foodIndexForTile(int tileX, int tileY) {
   const auto hash = (static_cast<unsigned>(tileX) * 31U +
                      static_cast<unsigned>(tileY) * 97U) &
@@ -83,7 +72,7 @@ std::size_t foodIndexForTile(int tileX, int tileY) {
   return hash % foodModelCount;
 }
 
-void drawAtSlot(Model& model, SlotDrawConfig drawCfg) {
+void drawAtSlot(Model& model, cfg::SlotDrawConfig drawCfg) {
   const cfg::ResourceLayoutSlot& slot = cfg::RESOURCE_LAYOUT[drawCfg.slotIndex];
   const auto time = static_cast<float>(GetTime());
   const float bobY = sinf((time * cfg::RESOURCE_BOB_SPEED) + slot.phase) *
@@ -135,7 +124,8 @@ void ResourceRenderer::draw3D(const WorldState& world) {
   for (int tileY = 0; tileY < world.height; ++tileY) {
     for (int tileX = 0; tileX < world.width; ++tileX) {
       const Tile& tile = world.tiles[tileY][tileX];
-      const TileWorldPos pos{.x = tileToWorld(tileX), .z = tileToWorld(tileY)};
+      const cfg::TileWorldPos pos{.x = tileToWorld(tileX),
+                                  .z = tileToWorld(tileY)};
 
       if (tile.resources[0] > 0) {
         const std::size_t foodIdx = foodIndexForTile(tileX, tileY);

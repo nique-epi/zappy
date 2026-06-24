@@ -11,6 +11,17 @@
 
 namespace zappy::gui::config {
 
+struct TileWorldPos {
+  float x{};
+  float z{};
+};
+
+struct SlotDrawConfig {
+  std::size_t slotIndex{};
+  float scale{};
+  TileWorldPos worldPos{};
+};
+
 constexpr float RESOURCE_FOOD_SCALE = 0.80F;
 constexpr float RESOURCE_GEM_SCALE = 0.267F;
 constexpr float RESOURCE_BASE_Y = 0.05F;
