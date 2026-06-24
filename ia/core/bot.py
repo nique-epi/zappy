@@ -31,10 +31,12 @@ class Bot:
         client: "ZappyClient",
         mental_map: bool = False,
     ) -> None:
+        import uuid
         self._client = client
         self.width = width
         self.height = height
         self.client_num = client_num
+        self.bot_id = uuid.uuid4().int % 1000000
         self.mental_map_enabled = mental_map
 
         self.level = 1

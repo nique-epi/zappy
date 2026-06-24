@@ -34,6 +34,8 @@ ELEVATION_REQUIREMENTS = {
 
 def stones_missing(level, inventory):
     """Given a level and an inventory of stones"""
+    if level >= MAX_LEVEL:
+        return {}
     requirements = ELEVATION_REQUIREMENTS.get(level)
     if not requirements:
         raise ValueError(f"Invalid level: {level}")
@@ -51,6 +53,8 @@ def stones_missing(level, inventory):
 
 def is_ready_to_elevate(level, inventory):
     """Given a level and an inventory of stones"""
+    if level >= MAX_LEVEL:
+        return False
     requirements = ELEVATION_REQUIREMENTS.get(level)
     if not requirements:
         raise ValueError(f"Invalid level: {level}")

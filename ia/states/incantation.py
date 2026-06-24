@@ -49,11 +49,13 @@ class IncantationState:  # pylint: disable=too-few-public-methods
 
     def _apply_level(self, line: str) -> State:
         """Parse the new level, update bot, exit if max level reached."""
+        import logging
         try:
             new_level = int(line.split(":")[1].strip())
         except (ValueError, IndexError):
             return State.SURVIVAL
         self._bot.level = new_level
-        if self._bot.level >= MAX_LEVEL:
-            sys.exit(0)
+        
+        logging.debug(f"Player {self._bot.bot_id} leveled up to {new_level}")
+        
         return State.SURVIVAL

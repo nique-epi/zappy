@@ -41,76 +41,94 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
 
     def _lead(self, required: int) -> State:
         """Broadcast LEAD, count JOINs, request a fork if quorum is missed."""
+        from ia.parsing.inventory import parse_inventory
         joined = 1
-        steps = 0
+        ticks_waited = 0
+        MAX_WAIT_TICKS = 1000
+        REBROADCAST_TICKS = 40
 
-        while joined < required and steps < COORDINATION_MAX_WAIT_STEPS:
-            if steps % COORDINATION_REBROADCAST_STEPS == 0:
-                self._send_broadcast(
-                    MessageType.LEAD, str(self._bot.client_num)
-                )
+        while joined < required and ticks_waited < MAX_WAIT_TICKS:
+            self._send_broadcast(MessageType.LEAD, str(self._bot.bot_id))
+            ticks_waited += 7
+
+            for _ in range(REBROADCAST_TICKS):
+                self._bot.client.send("Inventory")
+                resp = self._bot.client.recv_ack()
+                ticks_waited += 1
+                if resp:
+                    self._bot.inventory = parse_inventory(resp)
+                
                 if self._bot.food_critical():
                     return State.EATING
 
-            line = self._next_event()
-            if line is None:
-                if not self._bot.client.connected:
-                    return State.EXPLORATION
-                steps += 1
-                continue
-
-            msg = parse_broadcast(line)
-            if not msg or msg.level != self._bot.level:
-                steps += 1
-                continue
-
-            if msg.msg_type == MessageType.JOIN and msg.direction == 0:
-                joined += 1
-            elif msg.msg_type == MessageType.LEAD and msg.direction != 0:
-                if self._loses_tie_break(msg.data):
-                    self._discard_pending_notifications()
-                    return self._follow(msg.direction)
-
-            steps += 1
+                while (line := self._bot.client.pop_notification()) is not None:
+                    msg = parse_broadcast(line)
+                    if not msg or msg.level != self._bot.level:
+                        continue
+                    if msg.msg_type == MessageType.JOIN and msg.direction == 0:
+                        joined += 1
+                        if joined >= required:
+                            return self._incantate()
+                    elif msg.msg_type == MessageType.LEAD and msg.direction != 0:
+                        try:
+                            rival_id = int(msg.data)
+                        except ValueError:
+                            continue
+                        if rival_id < self._bot.bot_id:
+                            self._discard_pending_notifications()
+                            return self._follow(msg.direction, rival_id)
 
         if joined >= required:
             return self._incantate()
         return State.EXPLORATION
 
-    def _follow(self, initial_direction: int) -> State:
+    def _follow(self, initial_direction: int, leader_id: int) -> State:
         """Follow direction K from each LEAD broadcast until K=0, then JOIN."""
+        from ia.parsing.inventory import parse_inventory
         direction = initial_direction
-        steps = 0
+        ticks_waited = 0
+        MAX_WAIT_TICKS = 1000
+        WAIT_LEAD_TICKS = 50
 
-        while steps < COORDINATION_MAX_WAIT_STEPS:
+        while ticks_waited < MAX_WAIT_TICKS:
             if direction == 0:
                 self._send_broadcast(MessageType.JOIN, "")
                 return self._await_incantation()
 
-            if steps % COORDINATION_REBROADCAST_STEPS == 0 and (
-                self._bot.food_critical()
-            ):
-                return State.EATING
-
             self._move_toward(direction)
+            moves = broadcast_direction_to_moves(direction)
+            ticks_waited += len(moves) * 7
+            
             self._discard_pending_notifications()
-
-            line = self._next_event()
-            if line is None:
-                if not self._bot.client.connected:
-                    return State.EXPLORATION
-                steps += 1
-                continue
-
-            msg = parse_broadcast(line)
-            if (
-                msg
-                and msg.msg_type == MessageType.LEAD
-                and msg.level == self._bot.level
-            ):
-                direction = msg.direction
-
-            steps += 1
+            
+            got_lead = False
+            for _ in range(WAIT_LEAD_TICKS):
+                self._bot.client.send("Inventory")
+                resp = self._bot.client.recv_ack()
+                ticks_waited += 1
+                if resp:
+                    self._bot.inventory = parse_inventory(resp)
+                
+                if self._bot.food_critical():
+                    return State.EATING
+                    
+                while (line := self._bot.client.pop_notification()) is not None:
+                    msg = parse_broadcast(line)
+                    if (msg and msg.msg_type == MessageType.LEAD and msg.level == self._bot.level):
+                        try:
+                            rival_id = int(msg.data)
+                        except ValueError:
+                            continue
+                        if rival_id < leader_id:
+                            leader_id = rival_id
+                            direction = msg.direction
+                            got_lead = True
+                        elif rival_id == leader_id:
+                            direction = msg.direction
+                            got_lead = True
+                
+                if got_lead:
+                    break
 
         return State.EXPLORATION
 
@@ -125,21 +143,6 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
         payload = format_message(msg_type, self._bot.level, data)
         self._bot.client.send(f"Broadcast {payload}")
         self._bot.client.recv_ack()
-
-    def _next_event(self) -> str | None:
-        """Return a notification queued during an ack wait, or poll fresh."""
-        queued = self._bot.client.pop_notification()
-        if queued is not None:
-            return queued
-        return self._bot.client.recv_timeout(COORDINATION_POLL_TIMEOUT)
-
-    def _loses_tie_break(self, rival_data: str) -> bool:
-        """True when the rival leader's client_num outranks ours."""
-        try:
-            rival_client_num = int(rival_data)
-        except ValueError:
-            return True
-        return rival_client_num < self._bot.client_num
 
     def _discard_pending_notifications(self) -> None:
         """Drop notifications captured while still a leader candidate."""
