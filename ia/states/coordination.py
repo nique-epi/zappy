@@ -93,6 +93,7 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
                 return State.EATING
 
             self._move_toward(direction)
+            self._discard_pending_notifications()
 
             line = self._next_event()
             if line is None:

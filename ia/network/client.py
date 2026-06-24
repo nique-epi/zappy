@@ -150,6 +150,9 @@ class ZappyClient:
             return None
         if line == DEAD_MESSAGE:
             raise PlayerDeadError()
+        if line.startswith("message ") or line.startswith("eject:"):
+            self._notifications.append(line)
+            return line
         self._queue.on_response()
         self._flush()
         return line

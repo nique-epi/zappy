@@ -18,7 +18,8 @@ class CollectState:  # pylint: disable=too-few-public-methods
         if not self._move_to_target():
             return State.EXPLORATION
 
-        self._eject_competitors()
+        if ELEVATION_REQUIREMENTS[self.bot.level]["players"] == 1:
+            self._eject_competitors()
 
         self.bot.client.send("Look")
         response = self.bot.client.recv_ack()

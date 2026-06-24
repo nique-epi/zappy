@@ -15,8 +15,8 @@ class IncantationState:  # pylint: disable=too-few-public-methods
         self._bot = bot
 
     def handle(self) -> State:
-        """Send or await Incantation, gated by the safe food threshold."""
-        if needs_food_safe(self._bot.inventory):
+        """Send or await Incantation, gated by the critical food threshold."""
+        if needs_food(self._bot.inventory):
             return State.EATING
 
         if self._bot.is_incantation_chef:
@@ -26,17 +26,20 @@ class IncantationState:  # pylint: disable=too-few-public-methods
     def _wait_for_result(self) -> State:
         """Read server lines until incantation concludes or timeout."""
         steps = 0
-        while steps < COORDINATION_MAX_WAIT_STEPS:
+        underway = False
+        while steps < 400 or underway:
             line = self._bot.client.pop_notification()
             if line is None:
                 line = self._bot.client.recv_timeout(COORDINATION_POLL_TIMEOUT)
             if line is None:
                 if not self._bot.client.connected:
                     return State.SURVIVAL
-                if needs_food(self._bot.inventory):
+                if not underway and needs_food(self._bot.inventory):
                     return State.EATING
                 steps += 1
                 continue
+            if line.strip() == "Elevation underway":
+                underway = True
             if line.startswith("Current level:"):
                 return self._apply_level(line)
             if line.strip() == "ko":
