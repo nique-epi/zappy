@@ -11,7 +11,9 @@ from ia.config import (
     INVENTORY_CHECK_INTERVAL,
 )
 from ia.game.elevation import stones_missing
+from ia.game.navigation import broadcast_direction_to_moves
 from ia.parsing.connect import parse_connect_nbr
+from ia.parsing.eject import parse_eject
 from ia.parsing.look import parse_look
 from ia.shared.enum import Move, State
 from ia.core.bot import Bot
@@ -35,9 +37,9 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
 
         self.bot.client.send("Look")
         response = self.bot.client.recv_ack()
-        self._drain_notifications()
         if response is None:
             return State.EXPLORATION
+        self._drain_notifications()
 
         tiles = parse_look(
             response, self.bot.pos, self.bot.orientation, self.bot.level
@@ -88,16 +90,32 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
             self._fork()
 
     def _drain_notifications(self) -> None:
-        """Process broadcasts queued by recv_ack() since the last tick."""
+        """Process broadcasts and ejects queued since the last tick."""
         while (line := self.bot.client.pop_notification()) is not None:
             broadcast = parse_broadcast(line)
             if broadcast is not None:
                 self._handle_broadcast(broadcast)
+                continue
+            if line.startswith("eject:"):
+                self._handle_eject_notification(line)
 
     def _handle_broadcast(self, message: BroadcastMessage) -> None:
         """Fork on a FORK_NEEDED call when this bot is available."""
         if message.msg_type == MessageType.FORK_NEEDED and self._can_fork():
             self._fork()
+
+    def _handle_eject_notification(self, line: str) -> None:
+        """Apply the server-driven displacement carried by an eject line."""
+        direction = parse_eject(line)
+        if direction is None:
+            return
+        for move in broadcast_direction_to_moves(direction):
+            if move == Move.FORWARD:
+                self.bot.advance()
+            elif move == Move.LEFT:
+                self.bot.turn_left()
+            else:
+                self.bot.turn_right()
 
     def _fork(self) -> None:
         """Lay an egg so a new teammate can connect, then keep exploring."""

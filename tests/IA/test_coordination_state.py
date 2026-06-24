@@ -1,5 +1,7 @@
 """Unit tests for CoordinationState."""
 # pylint: disable=redefined-outer-name,protected-access
+from typing import Optional
+
 from ia.communication.broadcast import format_message, MessageType
 from ia.config import (
     COORDINATION_MAX_WAIT_STEPS,
@@ -23,7 +25,7 @@ def _broadcast(
     return f"message {direction}, {payload}"
 
 
-def _lead_wait_responses(line_value: str, steps: int = None) -> list:
+def _lead_wait_responses(line_value: str, steps: Optional[int] = None) -> list:
     """Build the exact response sequence _lead consumes while polling.
 
     handle() consumes one ack for READY and one for the immediate

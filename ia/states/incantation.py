@@ -48,7 +48,7 @@ class IncantationState:  # pylint: disable=too-few-public-methods
             if line is None:
                 if not self._bot.client.connected:
                     return State.SURVIVAL
-                if needs_food(self._bot.inventory):
+                if self._bot.food_critical():
                     return State.EATING
                 steps += 1
                 continue
