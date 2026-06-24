@@ -102,6 +102,7 @@ add_executable(zappy_gui
     Render/RenderUtils.cpp
     Render/Entity/EggRenderer.cpp
     Render/Entity/IncantationRenderer.cpp
+    Render/Entity/ResourceRenderer.cpp
     Render/Entity/PlayerChevron.cpp
     Render/Entity/PlayerPicker.cpp
     Render/Entity/PlayerRenderer.cpp
