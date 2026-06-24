@@ -70,8 +70,11 @@ class ZappyClient:
         return client_num, width, height
 
     def _send_line(self, msg: str) -> None:
-        """Sends a line terminated by \\n."""
-        self._sock.sendall((msg + "\n").encode())
+        """Sends a line terminated by \\n, treating a dead socket as EOF."""
+        try:
+            self._sock.sendall((msg + "\n").encode())
+        except OSError:
+            self._eof = True
 
     def _fill_buffer(self) -> bool:
         """Reads one chunk from the socket into the reception buffer.
@@ -79,7 +82,11 @@ class ZappyClient:
         Returns:
             True if data was read, False if the server closed the connection.
         """
-        chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
+        try:
+            chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
+        except OSError:
+            self._eof = True
+            return False
         if not chunk:
             self._eof = True
             return False
@@ -104,6 +111,9 @@ class ZappyClient:
             try:
                 chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
             except TimeoutError:
+                return None
+            except OSError:
+                self._eof = True
                 return None
             finally:
                 self._sock.settimeout(None)

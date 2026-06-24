@@ -1,6 +1,7 @@
 """Core bot logic for the Zappy AI client."""
 from __future__ import annotations
 
+import uuid
 from typing import TYPE_CHECKING, Callable
 
 from ia.bonus.map import WorldMap
@@ -31,7 +32,6 @@ class Bot:
         client: "ZappyClient",
         mental_map: bool = False,
     ) -> None:
-        import uuid
         self._client = client
         self.width = width
         self.height = height

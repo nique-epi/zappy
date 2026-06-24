@@ -1,8 +1,6 @@
 """Unit tests for IncantationState."""
 # pylint: disable=redefined-outer-name,protected-access
-import pytest
-
-from ia.config import FOOD_SAFE_THRESHOLD
+from ia.config import FOOD_THRESHOLD
 from ia.core.bot import Bot
 from ia.game.elevation import MAX_LEVEL
 from ia.network.client import ZappyClient
@@ -128,40 +126,28 @@ class TestChefIncantation:
         assert result == State.SURVIVAL
         assert bot.level == 3
 
-    def test_waits_for_safe_food_before_incantating(self):
+    def test_waits_for_food_before_incantating(self):
         """
-        Given a chef bot whose food is above the critical but below the
-        safe threshold
+        Given a chef bot whose food is at or below the critical threshold
         When handle is called
         Then it returns EATING without sending Incantation
         """
         bot = _make_bot([])
-        bot.inventory[Resource.FOOD] = FOOD_SAFE_THRESHOLD - 1
+        bot.inventory[Resource.FOOD] = FOOD_THRESHOLD
         result = IncantationState(bot).handle()
         sent = b"".join(bot.client._sock.sent).decode()
         assert result == State.EATING
         assert "Incantation" not in sent
 
-    def test_exits_at_max_level(self):
+    def test_reaches_max_level_without_exiting(self):
         """
         Given a chef bot at level 7 receiving Current level: 8
         When handle is called
-        Then sys.exit(0) is raised
+        Then bot.level is updated to 8 and State.SURVIVAL is returned
         """
         bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
-        with pytest.raises(SystemExit) as exc_info:
-            IncantationState(bot).handle()
-        assert exc_info.value.code == 0
-
-    def test_exits_updates_level_before_exit(self):
-        """
-        Given a chef bot at level 7 receiving Current level: 8
-        When handle triggers sys.exit
-        Then bot.level is 8 at the time of exit
-        """
-        bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1)
-        with pytest.raises(SystemExit):
-            IncantationState(bot).handle()
+        result = IncantationState(bot).handle()
+        assert result == State.SURVIVAL
         assert bot.level == MAX_LEVEL
 
 
@@ -207,13 +193,13 @@ class TestFollowerIncantation:
         bot = _make_bot(["ko"], chef=False)
         assert IncantationState(bot).handle() == State.SURVIVAL
 
-    def test_exits_at_max_level(self):
+    def test_reaches_max_level_without_exiting(self):
         """
         Given a follower bot at level 7 receiving Current level: 8
         When handle is called
-        Then sys.exit(0) is raised
+        Then bot.level is updated to 8 and State.SURVIVAL is returned
         """
         bot = _make_bot(["Current level: 8"], level=MAX_LEVEL - 1, chef=False)
-        with pytest.raises(SystemExit) as exc_info:
-            IncantationState(bot).handle()
-        assert exc_info.value.code == 0
+        result = IncantationState(bot).handle()
+        assert result == State.SURVIVAL
+        assert bot.level == MAX_LEVEL

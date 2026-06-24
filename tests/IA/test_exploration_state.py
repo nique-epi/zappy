@@ -379,16 +379,32 @@ def test_spawn_player_receives_incremented_depth():
 
 def test_fork_needed_broadcast_triggers_fork():
     """
-    Given an available level-1 bot
+    Given an available level-1 bot with no free team slot left
     When a FORK_NEEDED broadcast arrives during exploration
-    Then it forks and resumes exploration without interruption
+    Then it checks Connect_nbr, forks and resumes exploration
     """
-    bot = _make_bot([_fork_needed_line(), "ok"])
+    bot = _make_bot([_fork_needed_line(), "ok", "0", "ok"])
     state = ExplorationState(bot)
     result = state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
+    assert "Connect_nbr" in sent
     assert "Fork" in sent
     assert bot.fork_count == 1
+    assert result == State.EXPLORATION
+
+
+def test_fork_needed_broadcast_skipped_when_slot_already_free():
+    """
+    Given an available level-1 bot with a free team slot remaining
+    When a FORK_NEEDED broadcast arrives during exploration
+    Then it does not lay a new egg
+    """
+    bot = _make_bot([_fork_needed_line(), "ok", "1"])
+    state = ExplorationState(bot)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert "Fork" not in sent
+    assert bot.fork_count == 0
     assert result == State.EXPLORATION
 
 

@@ -1,6 +1,7 @@
 """
 Unit tests for the main module.
 """
+# pylint: disable=protected-access
 import pytest
 from ia.main import parse_arguments, main
 from ia.network.client import ZappyClient
@@ -42,7 +43,8 @@ def test_parse_arguments_empty_name():
 
 def test_main_success():
     """
-    Given valid arguments and real client and bot factories backed by a FakeSocket
+    Given valid arguments and real client/bot factories backed by a
+    FakeSocket
     When main runs
     Then the client connects, the bot runs and the socket is closed
     """
@@ -105,7 +107,8 @@ def test_main_spawns_second_player_on_fork():
     """
     Given two FakeSockets and an inline thread_factory
     When the first bot's spawn_player callback is invoked
-    Then a second client/bot handshake runs via client_factory before main returns
+    Then a second client/bot handshake runs via client_factory before
+    main returns
     """
     first_socket = FakeSocket([b"WELCOME\n", b"1\n", b"10 20\n", b""])
     second_socket = FakeSocket([b"WELCOME\n", b"2\n", b"10 20\n", b""])

@@ -20,7 +20,10 @@ def test_parse_inventory_parses_all_resources():
     When parse_inventory is called
     Then every resource value matches the server response
     """
-    response = "[food 10, linemate 1, deraumere 2, sibur 3, mendiane 4, phiras 5, thystame 6]"
+    response = (
+        "[food 10, linemate 1, deraumere 2, sibur 3, "
+        "mendiane 4, phiras 5, thystame 6]"
+    )
     result = parse_inventory(response)
     assert result[Resource.FOOD] == 10
     assert result[Resource.LINEMATE] == 1
@@ -131,7 +134,8 @@ def test_needs_food_safe_false_when_food_above_safe_threshold():
 
 def test_needs_food_safe_true_when_food_below_safe_threshold():
     """
-    Given an inventory with food below FOOD_SAFE_THRESHOLD but above FOOD_THRESHOLD
+    Given an inventory with food below FOOD_SAFE_THRESHOLD but above
+    FOOD_THRESHOLD
     When needs_food_safe is called
     Then it returns True
     """

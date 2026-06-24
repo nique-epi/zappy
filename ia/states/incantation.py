@@ -1,10 +1,7 @@
 """Incantation state: send Incantation, wait for result, update bot level."""
-import sys
-
-from ia.config import COORDINATION_MAX_WAIT_STEPS, COORDINATION_POLL_TIMEOUT
+from ia.config import COORDINATION_POLL_TIMEOUT
 from ia.core.bot import Bot
-from ia.game.elevation import MAX_LEVEL
-from ia.parsing.inventory import needs_food, needs_food_safe
+from ia.parsing.inventory import needs_food
 from ia.shared.enum import State
 
 
@@ -49,13 +46,9 @@ class IncantationState:  # pylint: disable=too-few-public-methods
 
     def _apply_level(self, line: str) -> State:
         """Parse the new level, update bot, exit if max level reached."""
-        import logging
         try:
             new_level = int(line.split(":")[1].strip())
         except (ValueError, IndexError):
             return State.SURVIVAL
         self._bot.level = new_level
-        
-        logging.debug(f"Player {self._bot.bot_id} leveled up to {new_level}")
-        
         return State.SURVIVAL
