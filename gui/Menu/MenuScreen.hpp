@@ -10,6 +10,7 @@
 #include <raylib.h>
 #include <cstdint>
 #include <optional>
+#include <vector>
 #include "Bindings/KeyBindings.hpp"
 #include "GuiConfig.hpp"  // NOLINT(misc-include-cleaner)
 #include "Menu/KeyBindingsDialog.hpp"
@@ -63,10 +64,16 @@ class MenuScreen {
   enum class State : std::uint8_t { Menu, ConnectDialog, EditBindings };
 
   void drawSimulation();
+  void drawFoodMarkers() const;
   void drawTitle() const;
+  void initSimulation();
+  void updateSimulation(float dt);
 
   WorldState world_;
   MenuCamera camera_;
+  Texture2D skyTex_{};
+  std::vector<float> playerMoveTimers_{};
+  float foodRespawnTimer_{};
 
   Font titleFont_;
 

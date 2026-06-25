@@ -8,6 +8,7 @@ FetchContent_Declare(
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_GAMES    OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
+target_compile_definitions(raylib PUBLIC SUPPORT_FILEFORMAT_HDR)
 
 set(RAYGUI_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Render/raygui.h)
 if(NOT EXISTS ${RAYGUI_HEADER})

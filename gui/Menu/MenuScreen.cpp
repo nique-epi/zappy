@@ -58,22 +58,49 @@ std::string assetPath(const char* filename) {
 
 }  // namespace
 
-MenuScreen::~MenuScreen() { UnloadFont(titleFont_); }
+MenuScreen::~MenuScreen() {
+  UnloadFont(titleFont_);
+  if (skyTex_.id > 0) {
+    UnloadTexture(skyTex_);
+  }
+}
 
 MenuScreen::MenuScreen()
     : world_(buildSimulationWorld()),
       camera_(worldCenter(world_)),
       titleFont_(LoadFontEx(assetPath("KiwiSoda.ttf").c_str(),
                             cfg::titleFontSize * 2, nullptr, 0)),
-      playButton_(assetPath("btn_play.png").c_str(),
+      playButton_("Play",
                   Rectangle{cfg::buttonX, cfg::playButtonY, cfg::buttonWidth,
-                            cfg::buttonHeight}),
-      controlsButton_(assetPath("btn_controls.png").c_str(),
+                            cfg::buttonHeight},
+                  titleFont_, cfg::buttonFontSize),
+      controlsButton_("Controls",
                       Rectangle{cfg::buttonX, cfg::controlsButtonY,
-                                cfg::buttonWidth, cfg::buttonHeight}),
-      exitButton_(assetPath("btn_exit.png").c_str(),
+                                cfg::buttonWidth, cfg::buttonHeight},
+                      titleFont_, cfg::buttonFontSize),
+      exitButton_("Exit",
                   Rectangle{cfg::buttonX, cfg::exitButtonY, cfg::buttonWidth,
-                            cfg::buttonHeight}) {}
+                            cfg::buttonHeight},
+                  titleFont_, cfg::buttonFontSize) {
+  Image hdr = LoadImage(assetPath("sky.hdr").c_str());
+  if (hdr.data != nullptr) {
+    if (hdr.format == PIXELFORMAT_UNCOMPRESSED_R32G32B32) {
+      constexpr float exposure = 1.5F;
+      constexpr int rgbChannels = 3;
+      auto* pixels = static_cast<float*>(hdr.data);
+      const int count = hdr.width * hdr.height * rgbChannels;
+      for (int i = 0; i < count; ++i) {
+        const float v = pixels[i] * exposure;
+        pixels[i] = v / (v + 1.0F);
+      }
+    }
+    ImageFormat(&hdr, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    ImageResize(&hdr, wcfg::WINDOW_WIDTH, wcfg::WINDOW_HEIGHT);
+    skyTex_ = LoadTextureFromImage(hdr);
+    SetTextureFilter(skyTex_, TEXTURE_FILTER_BILINEAR);
+    UnloadImage(hdr);
+  }
+}
 
 std::optional<GuiConfig> MenuScreen::run() {
   while (!WindowShouldClose()) {
@@ -123,6 +150,14 @@ std::optional<GuiConfig> MenuScreen::run() {
 }
 
 void MenuScreen::drawSimulation() {
+  if (skyTex_.id > 0) {
+    const Rectangle src{0.0F, 0.0F, static_cast<float>(skyTex_.width),
+                        static_cast<float>(skyTex_.height)};
+    const Rectangle dst{0.0F, 0.0F, static_cast<float>(wcfg::WINDOW_WIDTH),
+                        static_cast<float>(wcfg::WINDOW_HEIGHT)};
+    DrawTexturePro(skyTex_, src, dst, {0.0F, 0.0F}, 0.0F, WHITE);
+  }
+
   BeginMode3D(camera_.camera());
   TileGridRenderer::draw(world_);
   EndMode3D();
