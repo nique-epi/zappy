@@ -56,6 +56,10 @@ constexpr std::array<Color, 8> TEAM_COLORS = {{
 
 constexpr float PLAYER_PICK_RADIUS = 26.0F;
 
+constexpr float PLAYER_EJECT_FLASH_DURATION = 0.4F;
+constexpr float PLAYER_EJECT_SCALE_PEAK = 1.6F;
+constexpr Color PLAYER_EJECT_FLASH_COLOR = {255, 255, 255, 255};
+
 constexpr float PLAYER_CHEVRON_Y = PLAYER_LABEL_Y + 0.35F;
 constexpr float PLAYER_CHEVRON_HALF_WIDTH = 9.0F;
 constexpr float PLAYER_CHEVRON_HEIGHT = 11.0F;
