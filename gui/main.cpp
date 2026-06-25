@@ -31,6 +31,7 @@
 #include "Render/Panel/HudPanel.hpp"
 #include "Render/Panel/InfoPanel.hpp"
 #include "Render/Panel/PlayerPanel.hpp"
+#include "Render/SkyRenderer.hpp"
 #include "Render/SpeedControl.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
@@ -191,9 +192,10 @@ int main(int argc, char** argv) {
         }
 
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
 
         BeginMode3D(camera.camera());
+        zappy::gui::SkyRenderer::draw(camera.camera());
         zappy::gui::TileGridRenderer::draw(world);
         zappy::gui::ResourceRenderer::draw3D(world);
         zappy::gui::EggRenderer::draw3D(world);

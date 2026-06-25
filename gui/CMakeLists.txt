@@ -108,6 +108,7 @@ add_executable(zappy_gui
     Render/Entity/PlayerPicker.cpp
     Render/Entity/PlayerRenderer.cpp
     Render/Entity/PlayerSelection.cpp
+    Render/SkyRenderer.cpp
     Render/SpeedControl.cpp
     Render/WorldCamera.cpp
     Render/TileGridRenderer.cpp

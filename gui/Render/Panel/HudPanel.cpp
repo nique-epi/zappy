@@ -24,9 +24,9 @@ void HudPanel::draw(const GuiConfig& config, const WorldState& world) {
                   world.players.size(), world.teams.size());
 
   DrawText(cfg::WINDOW_TITLE, cfg::MARGIN_X, cfg::TITLE_Y, cfg::TITLE_FONT_SIZE,
-           DARKBLUE);
+           WHITE);
   DrawText(summary.c_str(), cfg::MARGIN_X, cfg::HUD_Y, cfg::HUD_FONT_SIZE,
-           DARKGRAY);
+           LIGHTGRAY);
 }
 
 }  // namespace zappy::gui

@@ -16,6 +16,7 @@
 #include "Menu/KeyBindingsDialog.hpp"
 #include "Menu/MenuConfig.hpp"
 #include "Menu/PortInputDialog.hpp"
+#include "Render/SkyRenderer.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/raygui.h"
@@ -60,9 +61,7 @@ std::string assetPath(const char* filename) {
 
 MenuScreen::~MenuScreen() {
   UnloadFont(titleFont_);
-  if (skyTex_.id > 0) {
-    UnloadTexture(skyTex_);
-  }
+  SkyRenderer::unload();
 }
 
 MenuScreen::MenuScreen()
@@ -82,24 +81,7 @@ MenuScreen::MenuScreen()
                   Rectangle{cfg::buttonX, cfg::exitButtonY, cfg::buttonWidth,
                             cfg::buttonHeight},
                   titleFont_, cfg::buttonFontSize) {
-  Image hdr = LoadImage(assetPath("sky.hdr").c_str());
-  if (hdr.data != nullptr) {
-    if (hdr.format == PIXELFORMAT_UNCOMPRESSED_R32G32B32) {
-      constexpr float exposure = 1.5F;
-      constexpr int rgbChannels = 3;
-      auto* pixels = static_cast<float*>(hdr.data);
-      const int count = hdr.width * hdr.height * rgbChannels;
-      for (int i = 0; i < count; ++i) {
-        const float v = pixels[i] * exposure;
-        pixels[i] = v / (v + 1.0F);
-      }
-    }
-    ImageFormat(&hdr, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-    ImageResize(&hdr, wcfg::WINDOW_WIDTH, wcfg::WINDOW_HEIGHT);
-    skyTex_ = LoadTextureFromImage(hdr);
-    SetTextureFilter(skyTex_, TEXTURE_FILTER_BILINEAR);
-    UnloadImage(hdr);
-  }
+  SkyRenderer::load();
 }
 
 std::optional<GuiConfig> MenuScreen::run() {
@@ -150,15 +132,8 @@ std::optional<GuiConfig> MenuScreen::run() {
 }
 
 void MenuScreen::drawSimulation() {
-  if (skyTex_.id > 0) {
-    const Rectangle src{0.0F, 0.0F, static_cast<float>(skyTex_.width),
-                        static_cast<float>(skyTex_.height)};
-    const Rectangle dst{0.0F, 0.0F, static_cast<float>(wcfg::WINDOW_WIDTH),
-                        static_cast<float>(wcfg::WINDOW_HEIGHT)};
-    DrawTexturePro(skyTex_, src, dst, {0.0F, 0.0F}, 0.0F, WHITE);
-  }
-
   BeginMode3D(camera_.camera());
+  SkyRenderer::draw(camera_.camera());
   TileGridRenderer::draw(world_);
   EndMode3D();
 }

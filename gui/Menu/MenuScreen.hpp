@@ -17,6 +17,7 @@
 #include "Menu/MenuButton.hpp"
 #include "Menu/MenuCamera.hpp"
 #include "Menu/PortInputDialog.hpp"
+#include "Render/SkyRenderer.hpp"  // NOLINT(misc-include-cleaner)
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {
@@ -64,16 +65,10 @@ class MenuScreen {
   enum class State : std::uint8_t { Menu, ConnectDialog, EditBindings };
 
   void drawSimulation();
-  void drawFoodMarkers() const;
   void drawTitle() const;
-  void initSimulation();
-  void updateSimulation(float dt);
 
   WorldState world_;
   MenuCamera camera_;
-  Texture2D skyTex_{};
-  std::vector<float> playerMoveTimers_{};
-  float foodRespawnTimer_{};
 
   Font titleFont_;
 
