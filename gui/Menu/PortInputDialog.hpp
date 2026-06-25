@@ -57,7 +57,7 @@ class PortInputDialog {
   bool portEditActive_{false};
   bool portInvalid_{false};
   bool justOpened_{true};
-  std::string connectionError_{};
+  std::string connectionError_;
   GuiConfig result_{};
 };
 
