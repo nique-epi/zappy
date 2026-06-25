@@ -17,6 +17,7 @@ class PlayerRenderer {
  public:
   static void draw3D(WorldState& world);
   static void drawLevelLabels(const WorldState& world, const Camera3D& camera);
+  static void drawBroadcastIcons(WorldState& world, const Camera3D& camera);
 };
 
 }  // namespace zappy::gui

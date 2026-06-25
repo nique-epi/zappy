@@ -117,6 +117,7 @@ int main(int argc, char** argv) {
       zappy::gui::IncantationRenderer::draw3D(world);
       EndMode3D();
       zappy::gui::PlayerRenderer::drawLevelLabels(world, camera.camera());
+      zappy::gui::PlayerRenderer::drawBroadcastIcons(world, camera.camera());
       zappy::gui::PlayerChevron::draw(world, camera.camera(), hoveredPlayer,
                                       selection.selectedId());
 
