@@ -38,7 +38,7 @@ constexpr std::array<RowDef, 5> kRows{{
     {.label = "Back to Menu", .field = &KeyBindings::backToMenu},
 }};
 
-constexpr float dialogWidth = 600.0F;
+constexpr float dialogWidth = 740.0F;
 constexpr float dialogHeight = 440.0F;
 constexpr float dialogX = (cfg::WINDOW_WIDTH - dialogWidth) / 2.0F;
 constexpr float dialogY = (cfg::WINDOW_HEIGHT - dialogHeight) / 2.0F;
@@ -46,7 +46,7 @@ constexpr float padding = 18.0F;
 constexpr float panelHeader = 28.0F;
 constexpr float rowHeight = 34.0F;
 constexpr float rowGap = 10.0F;
-constexpr float labelWidth = 310.0F;
+constexpr float labelWidth = 430.0F;
 constexpr float labelKeyGap = 14.0F;
 constexpr float btnHeight = 38.0F;
 constexpr unsigned char overlayOpacity = 150U;

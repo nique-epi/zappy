@@ -29,6 +29,73 @@ namespace wcfg = config;
 
 namespace {
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
+constexpr Color themeBeige = {245, 232, 210, 255};
+constexpr Color themeBeigeLight = {255, 248, 235, 255};
+constexpr Color themedBeigeFocus = {230, 215, 188, 255};
+constexpr Color themeBeigePress = {210, 195, 165, 255};
+constexpr Color themeBrown = {101, 67, 33, 255};
+constexpr Color themeBrownDark = {80, 50, 25, 255};
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
+
+void applyMenuTheme() {
+  GuiSetStyle(DEFAULT, BACKGROUND_COLOR,
+              static_cast<int>(ColorToInt(themeBeige)));
+  GuiSetStyle(DEFAULT, LINE_COLOR, static_cast<int>(ColorToInt(themeBrown)));
+  GuiSetStyle(DEFAULT, BORDER_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrown)));
+  GuiSetStyle(DEFAULT, BASE_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBeige)));
+  GuiSetStyle(DEFAULT, TEXT_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+  GuiSetStyle(DEFAULT, BORDER_WIDTH, 2);
+  GuiSetStyle(DEFAULT, TEXT_SIZE, 16);
+
+  GuiSetStyle(STATUSBAR, BASE_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBeigePress)));
+  GuiSetStyle(STATUSBAR, BORDER_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrown)));
+  GuiSetStyle(STATUSBAR, TEXT_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+
+  GuiSetStyle(BUTTON, BASE_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBeige)));
+  GuiSetStyle(BUTTON, BASE_COLOR_FOCUSED,
+              static_cast<int>(ColorToInt(themedBeigeFocus)));
+  GuiSetStyle(BUTTON, BASE_COLOR_PRESSED,
+              static_cast<int>(ColorToInt(themeBeigePress)));
+  GuiSetStyle(BUTTON, BORDER_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrown)));
+  GuiSetStyle(BUTTON, BORDER_COLOR_FOCUSED,
+              static_cast<int>(ColorToInt(themeBrown)));
+  GuiSetStyle(BUTTON, BORDER_COLOR_PRESSED,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+  GuiSetStyle(BUTTON, TEXT_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+  GuiSetStyle(BUTTON, TEXT_COLOR_FOCUSED,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+  GuiSetStyle(BUTTON, TEXT_COLOR_PRESSED,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+
+  GuiSetStyle(TEXTBOX, BASE_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBeigeLight)));
+  GuiSetStyle(TEXTBOX, BASE_COLOR_FOCUSED,
+              static_cast<int>(ColorToInt(themeBeigeLight)));
+  GuiSetStyle(TEXTBOX, BORDER_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrown)));
+  GuiSetStyle(TEXTBOX, BORDER_COLOR_FOCUSED,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+
+  GuiSetStyle(LABEL, TEXT_COLOR_NORMAL,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+  GuiSetStyle(LABEL, TEXT_COLOR_FOCUSED,
+              static_cast<int>(ColorToInt(themeBrownDark)));
+}
+
 WorldState buildSimulationWorld() {
   constexpr int mapSize = cfg::simulationMapSize;
   WorldState world;
@@ -82,6 +149,7 @@ MenuScreen::MenuScreen()
                             cfg::buttonHeight},
                   titleFont_, cfg::buttonFontSize) {
   SkyRenderer::load();
+  applyMenuTheme();
 }
 
 std::optional<GuiConfig> MenuScreen::run() {

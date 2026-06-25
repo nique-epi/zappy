@@ -55,12 +55,14 @@ std::string keyName(int key) {  // NOLINT(misc-use-internal-linkage)
     return found->second;
   }
   if (key >= KEY_A && key <= KEY_Z) {
-    return {1, static_cast<char>(
-                   key)};  // NOLINT(modernize-return-braced-init-list)
+    return std::string(
+        1,
+        static_cast<char>(key));  // NOLINT(modernize-return-braced-init-list)
   }
   if (key >= KEY_ZERO && key <= KEY_NINE) {
-    return {1, static_cast<char>(
-                   key)};  // NOLINT(modernize-return-braced-init-list)
+    return std::string(
+        1,
+        static_cast<char>(key));  // NOLINT(modernize-return-braced-init-list)
   }
   return "Key" + std::to_string(key);
 }
