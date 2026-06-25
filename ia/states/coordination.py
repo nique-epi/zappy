@@ -12,7 +12,7 @@ from ia.config import (
 from ia.core.bot import Bot
 from ia.game.elevation import ELEVATION_REQUIREMENTS
 from ia.game.navigation import broadcast_direction_to_moves
-from ia.parsing.inventory import needs_food, parse_inventory
+from ia.parsing.inventory import needs_food
 from ia.shared.enum import State
 
 
@@ -49,7 +49,6 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
             ticks_waited += 7
 
             for _ in range(COORDINATION_REBROADCAST_TICKS):
-                self._refresh_inventory()
                 ticks_waited += 1
                 if self._bot.food_critical():
                     return State.EATING
@@ -111,7 +110,6 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
         found_lead = False
 
         for _ in range(COORDINATION_WAIT_LEAD_TICKS):
-            self._refresh_inventory()
             if self._bot.food_critical():
                 return direction, leader_id, State.EATING
 
@@ -135,13 +133,6 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
                 break
 
         return direction, leader_id, None
-
-    def _refresh_inventory(self) -> None:
-        """Fetch the current inventory so food_critical() sees fresh data."""
-        self._bot.client.send("Inventory")
-        resp = self._bot.client.recv_ack()
-        if resp:
-            self._bot.inventory = parse_inventory(resp)
 
     @staticmethod
     def _parse_rival_id(data: str) -> int | None:
