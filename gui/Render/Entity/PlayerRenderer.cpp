@@ -7,7 +7,11 @@
 
 #include "Render/Entity/PlayerRenderer.hpp"
 #include <raylib.h>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
 #include <format>
+#include <numbers>
 #include <string>
 #include "Render/Entity/PlayerRendererConfig.hpp"
 #include "Render/RenderUtils.hpp"
@@ -33,15 +37,21 @@ DirectionVec orientationDirection(Orientation orientation) {
   return {.x = 0.0F, .z = -1.0F};
 }
 
-void drawPlayerBody(Vector3 position, Color color) {
+void drawPlayerBody(Vector3 position, Color color, float scale = 1.0F) {
+  const float radius = cfg::PLAYER_RADIUS * scale;
+  const float height = cfg::PLAYER_HEIGHT * scale;
   const Vector3 basePos{position.x, cfg::PLAYER_BASE_Y, position.z};
-  const Vector3 topPos{position.x, cfg::PLAYER_BASE_Y + cfg::PLAYER_HEIGHT,
-                       position.z};
-  DrawCylinderEx(basePos, topPos, cfg::PLAYER_RADIUS, cfg::PLAYER_RADIUS,
-                 cfg::PLAYER_CYLINDER_SIDES, color);
-  DrawCylinderWiresEx(basePos, topPos, cfg::PLAYER_RADIUS, cfg::PLAYER_RADIUS,
+  const Vector3 topPos{position.x, cfg::PLAYER_BASE_Y + height, position.z};
+  DrawCylinderEx(basePos, topPos, radius, radius, cfg::PLAYER_CYLINDER_SIDES,
+                 color);
+  DrawCylinderWiresEx(basePos, topPos, radius, radius,
                       cfg::PLAYER_CYLINDER_SIDES,
                       ColorBrightness(color, -cfg::PLAYER_WIRE_DARKNESS));
+}
+
+float ejectPulseScale(float progress) {
+  return 1.0F + ((cfg::PLAYER_EJECT_SCALE_PEAK - 1.0F) *
+                 std::sin(progress * std::numbers::pi_v<float>));
 }
 
 void drawOrientationArrow(Vector3 position, Orientation orientation) {
@@ -62,7 +72,9 @@ void drawOrientationArrow(Vector3 position, Orientation orientation) {
 
 }  // namespace
 
-void PlayerRenderer::draw3D(const WorldState& world) {
+void PlayerRenderer::draw3D(WorldState& world) {
+  const auto now = std::chrono::steady_clock::now();
+
   for (const auto& player : world.players) {
     if (!player.alive) {
       continue;
@@ -70,9 +82,28 @@ void PlayerRenderer::draw3D(const WorldState& world) {
     const Vector3 position{tileToWorld(player.x), 0.0F, tileToWorld(player.y)};
     const Color color = teamColor(world, player.teamName);
 
-    drawPlayerBody(position, color);
+    const auto ejection = std::ranges::find_if(
+        world.playerEjections, [&](const PlayerEjection& candidate) {
+          return candidate.playerId == player.id;
+        });
+    if (ejection != world.playerEjections.end()) {
+      const float elapsed =
+          std::chrono::duration<float>(now - ejection->startTime).count();
+      const float progress =
+          std::clamp(elapsed / cfg::PLAYER_EJECT_FLASH_DURATION, 0.0F, 1.0F);
+      const Color flashColor =
+          ColorLerp(cfg::PLAYER_EJECT_FLASH_COLOR, color, progress);
+      drawPlayerBody(position, flashColor, ejectPulseScale(progress));
+    } else {
+      drawPlayerBody(position, color);
+    }
     drawOrientationArrow(position, player.orientation);
   }
+
+  std::erase_if(world.playerEjections, [&now](const PlayerEjection& ejection) {
+    return std::chrono::duration<float>(now - ejection.startTime).count() >=
+           cfg::PLAYER_EJECT_FLASH_DURATION;
+  });
 }
 
 void PlayerRenderer::drawLevelLabels(const WorldState& world,

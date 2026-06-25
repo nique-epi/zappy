@@ -15,7 +15,7 @@ struct WorldState;
 
 class PlayerRenderer {
  public:
-  static void draw3D(const WorldState& world);
+  static void draw3D(WorldState& world);
   static void drawLevelLabels(const WorldState& world, const Camera3D& camera);
 };
 

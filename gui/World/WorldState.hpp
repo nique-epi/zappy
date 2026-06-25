@@ -62,6 +62,11 @@ struct IncantationEnd {
   std::chrono::steady_clock::time_point endTime{};
 };
 
+struct PlayerEjection {
+  int playerId{};
+  std::chrono::steady_clock::time_point startTime{};
+};
+
 struct WorldState {
   int width{};
   int height{};
@@ -74,6 +79,7 @@ struct WorldState {
   std::string winnerTeam;
   std::vector<Incantation> activeIncantations;
   std::vector<IncantationEnd> finishedIncantations;
+  std::vector<PlayerEjection> playerEjections;
 };
 
 WorldState mockWorld();

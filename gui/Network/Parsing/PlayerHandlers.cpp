@@ -5,6 +5,8 @@
 ** PlayerHandlers — handlers for player-related server messages
 */
 
+#include <algorithm>
+#include <chrono>
 #include <sstream>
 #include <string>
 #include "Network/Parsing/HandlerTypes.hpp"
@@ -68,6 +70,19 @@ void registerPlayerHandlers(HandlerMap& handlers, WorldState& world) {
     targetPlayer->y = posY;
     for (auto& slot : targetPlayer->inventory) {
       stream >> slot;
+    }
+  };
+
+  handlers["pex"] = [&world](std::istringstream& stream) {
+    const int playerId = parseId(stream);
+    const bool alreadyEjected = std::ranges::any_of(
+        world.playerEjections, [&](const PlayerEjection& ejection) {
+          return ejection.playerId == playerId;
+        });
+    if (!alreadyEjected) {
+      world.playerEjections.push_back(
+          {.playerId = playerId,
+           .startTime = std::chrono::steady_clock::now()});
     }
   };
 
