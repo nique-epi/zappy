@@ -6,12 +6,14 @@
 */
 
 #include <raylib.h>
+#include <exception>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
-#include "Cli/ArgsParser.hpp"
+#include "Bindings/KeyBindings.hpp"
+#include "Cli/ArgsParser.hpp"                  // NOLINT(misc-include-cleaner)
 #include "Cli/Exceptions/ParserException.hpp"  // NOLINT(misc-include-cleaner)
 #include "Menu/MenuScreen.hpp"
 #include "Network/CommandSender.hpp"
@@ -39,12 +41,13 @@
 
 namespace cfg = zappy::gui::config;
 
-static constexpr std::string_view USAGE =
-    "USAGE: ./zappy_gui -p port -h machine";
-static constexpr int EXIT_CODE_ERROR = 84;
-static constexpr int STARTUP_POLL_TIMEOUT_MS = 50;
+namespace {
 
-static bool hasBothCLIFlags(int argc, char** argv) {
+constexpr std::string_view USAGE = "USAGE: ./zappy_gui -p port -h machine";
+constexpr int EXIT_CODE_ERROR = 84;
+constexpr int STARTUP_POLL_TIMEOUT_MS = 50;
+
+bool hasBothCLIFlags(int argc, char** argv) {
   bool hasPort = false;
   bool hasHost = false;
   for (int i = 1; i < argc - 1; ++i) {
@@ -58,10 +61,10 @@ static bool hasBothCLIFlags(int argc, char** argv) {
   return hasPort && hasHost;
 }
 
-static bool runHandshakeAndInit(zappy::gui::NetworkManager& network,
-                                zappy::gui::WorldState& world,
-                                zappy::gui::MessageParser& parser) {
-  zappy::gui::ServerHandshake handshake(network);
+bool runHandshakeAndInit(zappy::gui::NetworkManager& network,
+                         zappy::gui::WorldState& world,
+                         zappy::gui::MessageParser& parser) {
+  const zappy::gui::ServerHandshake handshake(network);
   while (handshake.status() != zappy::gui::HandshakeStatus::Done) {
     if (WindowShouldClose()) {
       return false;
@@ -85,6 +88,8 @@ static bool runHandshakeAndInit(zappy::gui::NetworkManager& network,
       [&parser](const std::string& line) { parser.parseLine(line); });
   return true;
 }
+
+}  // namespace
 
 int main(int argc, char** argv) {
   for (int i = 1; i < argc; ++i) {
@@ -139,6 +144,7 @@ int main(int argc, char** argv) {
 
       const zappy::gui::GuiConfig config = *configOpt;
       zappy::gui::NetworkManager& network = *networkPtr;
+      const zappy::gui::KeyBindings bindings = menu.keyBindings();
 
       zappy::gui::WorldState world;
       zappy::gui::MessageParser parser(world);
@@ -161,13 +167,13 @@ int main(int argc, char** argv) {
 
       bool returnToMenu = false;
       while (!WindowShouldClose()) {
-        if (IsKeyPressed(KEY_ESCAPE)) {
+        if (IsKeyPressed(bindings.backToMenu)) {
           returnToMenu = true;
           break;
         }
 
         network.runOnce(0);
-        camera.update(GetFrameTime());
+        camera.update(GetFrameTime(), bindings);
 
         selection.syncWithWorld(world);
         const std::optional<int> hoveredPlayer =

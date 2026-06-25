@@ -5,15 +5,18 @@
 ** PortInputDialog — raygui modal for server host + port entry
 */
 
-#pragma once
+#pragma once  // NOLINT(llvm-header-guard)
 
+#include <array>
+#include <cstdint>
 #include <optional>
+#include <string>
 #include "GuiConfig.hpp"
-#include "Menu/MenuConfig.hpp"
+#include "Menu/MenuConfig.hpp"  // NOLINT(misc-include-cleaner)
 
 namespace zappy::gui {
 
-enum class DialogResult { Open, Cancelled, Connected };
+enum class DialogResult : std::uint8_t { Open, Cancelled, Connected };
 
 /**
  * @brief Immediate-mode overlay dialog that collects hostname and port.
@@ -33,6 +36,7 @@ class PortInputDialog {
    * @returns Open while waiting, Cancelled if the user dismissed, Connected on
    *          successful validation.
    */
+  void open();
   DialogResult draw();
 
   [[nodiscard]] const GuiConfig& result() const;
@@ -47,12 +51,13 @@ class PortInputDialog {
   static constexpr int portMin = 1;
   static constexpr int portMax = 65535;
 
-  char hostBuffer_[menu::config::textBufferSize];
-  char portBuffer_[menu::config::textBufferSize];
+  std::array<char, menu::config::textBufferSize> hostBuffer_{};
+  std::array<char, menu::config::textBufferSize> portBuffer_{};
   bool hostEditActive_{false};
   bool portEditActive_{false};
   bool portInvalid_{false};
-  std::string connectionError_;
+  bool justOpened_{true};
+  std::string connectionError_{};
   GuiConfig result_{};
 };
 

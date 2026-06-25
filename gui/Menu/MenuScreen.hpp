@@ -5,10 +5,14 @@
 ** MenuScreen — main menu with 3D simulation background
 */
 
-#pragma once
+#pragma once  // NOLINT(llvm-header-guard)
 
+#include <raylib.h>
+#include <cstdint>
 #include <optional>
-#include "GuiConfig.hpp"
+#include "Bindings/KeyBindings.hpp"
+#include "GuiConfig.hpp"  // NOLINT(misc-include-cleaner)
+#include "Menu/KeyBindingsDialog.hpp"
 #include "Menu/MenuButton.hpp"
 #include "Menu/MenuCamera.hpp"
 #include "Menu/PortInputDialog.hpp"
@@ -26,7 +30,7 @@ namespace zappy::gui {
 class MenuScreen {
  public:
   MenuScreen();
-  ~MenuScreen() = default;
+  ~MenuScreen();
 
   MenuScreen(const MenuScreen&) = delete;
   MenuScreen& operator=(const MenuScreen&) = delete;
@@ -41,35 +45,37 @@ class MenuScreen {
 
   /**
    * @brief Re-opens the connect dialog with a connection-level error message.
-   *
-   * Call this after run() returns and the connection attempt fails, then call
-   * run() again so the user can fix the host/port without leaving the menu.
    */
   void showConnectionError(const std::string& message);
 
   /**
    * @brief Resets the menu to its initial state (buttons visible, no dialog
    * open).
-   *
-   * Call this before re-entering run() after a game session ends.
    */
   void reset();
 
+  /**
+   * @brief Returns the currently committed key bindings.
+   */
+  [[nodiscard]] const KeyBindings& keyBindings() const;
+
  private:
-  enum class State { Menu, ConnectDialog, ShowControls };
+  enum class State : std::uint8_t { Menu, ConnectDialog, EditBindings };
 
   void drawSimulation();
   void drawTitle() const;
-  void drawControlsDialog();
 
   WorldState world_;
   MenuCamera camera_;
+
+  Font titleFont_;
 
   MenuButton playButton_;
   MenuButton controlsButton_;
   MenuButton exitButton_;
 
   PortInputDialog portDialog_;
+  KeyBindingsDialog kbDialog_;
   State state_{State::Menu};
 };
 

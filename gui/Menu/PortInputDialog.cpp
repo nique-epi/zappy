@@ -9,6 +9,8 @@
 #include <raylib.h>
 #include <charconv>
 #include <cstring>
+#include <system_error>
+#include "GuiConfig.hpp"
 #include "Menu/MenuConfig.hpp"
 #include "Render/raygui.h"
 
@@ -16,15 +18,23 @@ namespace zappy::gui {
 
 namespace cfg = menu::config;
 
-PortInputDialog::PortInputDialog() {
-  std::strncpy(hostBuffer_, "localhost", cfg::textBufferSize - 1);
+PortInputDialog::
+    PortInputDialog() {  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default,cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+  std::strncpy(hostBuffer_.data(), "localhost", cfg::textBufferSize - 1);
   hostBuffer_[cfg::textBufferSize - 1] = '\0';
-  std::strncpy(portBuffer_, "4242", cfg::textBufferSize - 1);
+  std::strncpy(portBuffer_.data(), "4242", cfg::textBufferSize - 1);
   portBuffer_[cfg::textBufferSize - 1] = '\0';
+}
+
+void PortInputDialog::open() {
+  justOpened_ = true;
+  portInvalid_ = false;
+  connectionError_.clear();
 }
 
 void PortInputDialog::setConnectionError(const std::string& message) {
   connectionError_ = message;
+  justOpened_ = true;
 }
 
 DialogResult PortInputDialog::draw() {
@@ -36,16 +46,17 @@ DialogResult PortInputDialog::draw() {
   GuiPanel(panel, "Connect to server");
 
   const float contentX = panel.x + cfg::dialogPadding;
-  const float contentWidth = panel.width - 2.0F * cfg::dialogPadding;
-  float cursorY = panel.y + 28.0F + cfg::dialogGap;
+  const float contentWidth = panel.width - (2.0F * cfg::dialogPadding);
+  float cursorY = panel.y + cfg::dialogPanelHeader + cfg::dialogGap;
 
   GuiLabel(Rectangle{contentX, cursorY, contentWidth, cfg::dialogLabelHeight},
            "Server hostname:");
-  cursorY += cfg::dialogLabelHeight + 4.0F;
+  cursorY += cfg::dialogLabelHeight + cfg::dialogSmallGap;
 
   const Rectangle hostRect{contentX, cursorY, contentWidth,
                            cfg::dialogInputHeight};
-  if (GuiTextBox(hostRect, hostBuffer_, cfg::textBufferSize, hostEditActive_)) {
+  if (GuiTextBox(hostRect, hostBuffer_.data(), cfg::textBufferSize,
+                 hostEditActive_) != 0) {
     hostEditActive_ = !hostEditActive_;
     portEditActive_ = false;
     connectionError_.clear();
@@ -55,15 +66,17 @@ DialogResult PortInputDialog::draw() {
   GuiLabel(Rectangle{contentX, cursorY, contentWidth, cfg::dialogLabelHeight},
            "Port:");
   if (portInvalid_) {
-    DrawText("Invalid port (1-65535)",
-             static_cast<int>(contentX + contentWidth - 195),
-             static_cast<int>(cursorY), 14, RED);
+    DrawText(
+        "Invalid port (1-65535)",
+        static_cast<int>(contentX + contentWidth - cfg::portInvalidTextOffset),
+        static_cast<int>(cursorY), cfg::dialogErrorFontSize, RED);
   }
-  cursorY += cfg::dialogLabelHeight + 4.0F;
+  cursorY += cfg::dialogLabelHeight + cfg::dialogSmallGap;
 
   const Rectangle portRect{contentX, cursorY, contentWidth,
                            cfg::dialogInputHeight};
-  if (GuiTextBox(portRect, portBuffer_, cfg::textBufferSize, portEditActive_)) {
+  if (GuiTextBox(portRect, portBuffer_.data(), cfg::textBufferSize,
+                 portEditActive_) != 0) {
     portEditActive_ = !portEditActive_;
     hostEditActive_ = false;
     connectionError_.clear();
@@ -72,20 +85,25 @@ DialogResult PortInputDialog::draw() {
 
   if (!connectionError_.empty()) {
     DrawText(connectionError_.c_str(), static_cast<int>(contentX),
-             static_cast<int>(cursorY), 13, RED);
+             static_cast<int>(cursorY), cfg::dialogHintFontSize, RED);
   }
   cursorY += cfg::dialogLabelHeight + cfg::dialogGap;
 
   const float halfWidth = (contentWidth - cfg::dialogGap) / 2.0F;
+  const bool canInteract = !justOpened_;
+  justOpened_ = false;
+
   const bool connectPressed =
-      GuiButton(
-          Rectangle{contentX, cursorY, halfWidth, cfg::dialogButtonHeight},
-          "Connect") ||
+      ((GuiButton(
+            Rectangle{contentX, cursorY, halfWidth, cfg::dialogButtonHeight},
+            "Connect") != 0) &&
+       canInteract) ||
       (IsKeyPressed(KEY_ENTER) && (portEditActive_ || hostEditActive_));
   const bool cancelPressed =
-      GuiButton(Rectangle{contentX + halfWidth + cfg::dialogGap, cursorY,
-                          halfWidth, cfg::dialogButtonHeight},
-                "Cancel");
+      (GuiButton(Rectangle{contentX + halfWidth + cfg::dialogGap, cursorY,
+                           halfWidth, cfg::dialogButtonHeight},
+                 "Cancel") != 0) &&
+      canInteract;
 
   if (cancelPressed) {
     portInvalid_ = false;
@@ -95,14 +113,16 @@ DialogResult PortInputDialog::draw() {
 
   if (connectPressed) {
     connectionError_.clear();
-    int port = 0;
-    const char* end = portBuffer_ + std::strlen(portBuffer_);
-    const auto [ptr, ec] = std::from_chars(portBuffer_, end, port);
+    int port = 0;            // NOLINT(misc-const-correctness)
+    const char* const end =  // NOLINT(cppcoreguidelines-init-variables)
+        portBuffer_.data() + std::strlen(portBuffer_.data());
+    const auto [ptr, ec] = std::from_chars(portBuffer_.data(), end, port);
     if (ec != std::errc{} || port < portMin || port > portMax) {
       portInvalid_ = true;
     } else {
       portInvalid_ = false;
-      result_ = GuiConfig{.port = port, .hostname = std::string(hostBuffer_)};
+      result_ =
+          GuiConfig{.port = port, .hostname = std::string(hostBuffer_.data())};
       return DialogResult::Connected;
     }
   }

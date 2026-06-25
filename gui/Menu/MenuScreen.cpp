@@ -7,9 +7,15 @@
 
 #include "Menu/MenuScreen.hpp"
 #include <raylib.h>
+#include <cstddef>
+#include <optional>
 #include <string>
 #include <vector>
+#include "Bindings/KeyBindings.hpp"
+#include "GuiConfig.hpp"
+#include "Menu/KeyBindingsDialog.hpp"
 #include "Menu/MenuConfig.hpp"
+#include "Menu/PortInputDialog.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/raygui.h"
@@ -39,9 +45,11 @@ WorldState buildSimulationWorld() {
   return world;
 }
 
+constexpr float half = 2.0F;
+
 Vector3 worldCenter(const WorldState& world) {
-  return Vector3{static_cast<float>(world.width) * wcfg::TILE_SIZE / 2.0F, 0.0F,
-                 static_cast<float>(world.height) * wcfg::TILE_SIZE / 2.0F};
+  return Vector3{static_cast<float>(world.width) * wcfg::TILE_SIZE / half, 0.0F,
+                 static_cast<float>(world.height) * wcfg::TILE_SIZE / half};
 }
 
 std::string assetPath(const char* filename) {
@@ -50,9 +58,13 @@ std::string assetPath(const char* filename) {
 
 }  // namespace
 
+MenuScreen::~MenuScreen() { UnloadFont(titleFont_); }
+
 MenuScreen::MenuScreen()
     : world_(buildSimulationWorld()),
       camera_(worldCenter(world_)),
+      titleFont_(LoadFontEx(assetPath("KiwiSoda.ttf").c_str(),
+                            cfg::titleFontSize * 2, nullptr, 0)),
       playButton_(assetPath("btn_play.png").c_str(),
                   Rectangle{cfg::buttonX, cfg::playButtonY, cfg::buttonWidth,
                             cfg::buttonHeight}),
@@ -72,16 +84,18 @@ std::optional<GuiConfig> MenuScreen::run() {
 
     drawSimulation();
     DrawRectangle(0, 0, wcfg::WINDOW_WIDTH, wcfg::WINDOW_HEIGHT,
-                  Color{0, 0, 0, 110});
+                  Color{0, 0, 0, cfg::menuBackgroundOverlay});
     drawTitle();
 
     const bool clicksActive = (state_ == State::Menu);
 
     if (playButton_.draw() && clicksActive) {
+      portDialog_.open();
       state_ = State::ConnectDialog;
     }
     if (controlsButton_.draw() && clicksActive) {
-      state_ = State::ShowControls;
+      kbDialog_.open();
+      state_ = State::EditBindings;
     }
     if (exitButton_.draw() && clicksActive) {
       EndDrawing();
@@ -89,15 +103,18 @@ std::optional<GuiConfig> MenuScreen::run() {
     }
 
     if (state_ == State::ConnectDialog) {
-      const DialogResult result = portDialog_.draw();
+      const DialogResult result =  // NOLINT(cppcoreguidelines-init-variables)
+          portDialog_.draw();
       if (result == DialogResult::Cancelled) {
         state_ = State::Menu;
       } else if (result == DialogResult::Connected) {
         EndDrawing();
         return portDialog_.result();
       }
-    } else if (state_ == State::ShowControls) {
-      drawControlsDialog();
+    } else if (state_ == State::EditBindings) {
+      if (kbDialog_.draw() == BindingsResult::Closed) {
+        state_ = State::Menu;
+      }
     }
 
     EndDrawing();
@@ -113,9 +130,11 @@ void MenuScreen::drawSimulation() {
 
 void MenuScreen::drawTitle() const {
   const char* title = "ZAPPY";
-  const int titleWidth = MeasureText(title, cfg::titleFontSize);
-  DrawText(title, (wcfg::WINDOW_WIDTH - titleWidth) / 2,
-           static_cast<int>(cfg::titleY), cfg::titleFontSize, WHITE);
+  const auto fontSize = static_cast<float>(cfg::titleFontSize);
+  const Vector2 size = MeasureTextEx(titleFont_, title, fontSize, 0.0F);
+  const Vector2 pos{(static_cast<float>(wcfg::WINDOW_WIDTH) - size.x) / 2.0F,
+                    cfg::titleY};
+  DrawTextEx(titleFont_, title, pos, fontSize, 0.0F, WHITE);
 }
 
 void MenuScreen::showConnectionError(const std::string& message) {
@@ -125,29 +144,8 @@ void MenuScreen::showConnectionError(const std::string& message) {
 
 void MenuScreen::reset() { state_ = State::Menu; }
 
-void MenuScreen::drawControlsDialog() {
-  DrawRectangle(0, 0, wcfg::WINDOW_WIDTH, wcfg::WINDOW_HEIGHT,
-                Color{0, 0, 0, static_cast<unsigned char>(cfg::overlayAlpha)});
-
-  const int dialogX = (wcfg::WINDOW_WIDTH - cfg::controlsDialogWidth) / 2;
-  const int dialogY = (wcfg::WINDOW_HEIGHT - cfg::controlsDialogHeight) / 2;
-
-  const int result = GuiMessageBox(
-      Rectangle{static_cast<float>(dialogX), static_cast<float>(dialogY),
-                static_cast<float>(cfg::controlsDialogWidth),
-                static_cast<float>(cfg::controlsDialogHeight)},
-      "Controls",
-      "Camera movement:  WASD / Arrow keys\n"
-      "Zoom:             Mouse wheel\n"
-      "Rotate view:      Right-click drag\n"
-      "Select player:    Left-click\n"
-      "Speed +/-:        PageUp / PageDown\n"
-      "Back to menu:     Escape",
-      "Close");
-
-  if (result >= 0) {
-    state_ = State::Menu;
-  }
+const KeyBindings& MenuScreen::keyBindings() const {
+  return kbDialog_.result();
 }
 
 }  // namespace zappy::gui

@@ -115,9 +115,11 @@ add_executable(zappy_gui
     Render/Panel/PanelChrome.cpp
     Render/Panel/PlayerPanel.cpp
     Render/Panel/ResourceList.cpp
+    Bindings/KeyBindings.cpp
     Menu/MenuButton.cpp
     Menu/MenuCamera.cpp
     Menu/PortInputDialog.cpp
+    Menu/KeyBindingsDialog.cpp
     Menu/MenuScreen.cpp
 )
 

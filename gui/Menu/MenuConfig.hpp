@@ -5,7 +5,7 @@
 ** MenuConfig — layout and rendering constants for the main menu
 */
 
-#pragma once
+#pragma once  // NOLINT(llvm-header-guard)
 
 namespace zappy::gui::menu::config {
 
@@ -23,9 +23,10 @@ constexpr float playButtonY = 285.0F;
 constexpr float controlsButtonY = 420.0F;
 constexpr float exitButtonY = 555.0F;
 
-constexpr int titleFontSize = 80;
-constexpr float titleY = 120.0F;
+constexpr int titleFontSize = 120;
+constexpr float titleY = 60.0F;
 
+constexpr unsigned char menuBackgroundOverlay = 110U;
 constexpr float overlayAlpha = 150.0F;
 
 constexpr float dialogWidth = 500.0F;
@@ -37,6 +38,12 @@ constexpr float dialogLabelHeight = 20.0F;
 constexpr float dialogInputHeight = 36.0F;
 constexpr float dialogButtonHeight = 38.0F;
 constexpr float dialogGap = 10.0F;
+constexpr float dialogPanelHeader = 28.0F;
+constexpr float dialogSmallGap = 4.0F;
+
+constexpr int portInvalidTextOffset = 195;
+constexpr int dialogErrorFontSize = 14;
+constexpr int dialogHintFontSize = 13;
 
 constexpr int textBufferSize = 64;
 
