@@ -7,6 +7,7 @@ from ia.config import (
     FORK_LIMIT,
     FORK_MAX_LEVEL,
     INVENTORY_CHECK_INTERVAL,
+    MAX_FORK_DEPTH,
 )
 from ia.core.bot import Bot
 from ia.network.client import ZappyClient
@@ -249,6 +250,21 @@ def test_self_fork_when_no_free_slot():
     assert result == State.EXPLORATION
 
 
+def test_self_fork_calls_spawn_player_when_set():
+    """
+    Given a level-1 bot with spawn_player set and no free Connect_nbr slot
+    When the periodic fork check fires during exploration
+    Then spawn_player is called exactly once
+    """
+    bot = _make_bot(["0", "ok", _NO_STONES, "ok"])
+    calls = []
+    bot.spawn_player = calls.append
+    state = ExplorationState(bot)
+    state._fork_counter = FORK_CHECK_INTERVAL - 1
+    state.handle()
+    assert calls == [1]
+
+
 def test_self_fork_ignores_non_numeric_connect_reply():
     """
     Given a level-1 bot whose Connect_nbr recv returns a non-numeric frame
@@ -278,6 +294,23 @@ def test_no_fork_when_free_slot_available():
     sent = b"".join(bot.client._sock.sent).decode()
     assert "Fork" not in sent
     assert bot.fork_count == 0
+
+
+def test_self_claims_free_slot_without_forking():
+    """
+    Given a level-1 bot with spawn_player set and a free Connect_nbr slot
+    When the periodic fork check fires during exploration
+    Then spawn_player is called and no Fork command is sent
+    """
+    bot = _make_bot(["1", _NO_STONES, "ok"])
+    calls = []
+    bot.spawn_player = calls.append
+    state = ExplorationState(bot)
+    state._fork_counter = FORK_CHECK_INTERVAL - 1
+    state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert "Fork" not in sent
+    assert calls == [1]
 
 
 def test_no_fork_check_when_level_too_high():
@@ -312,18 +345,66 @@ def test_no_fork_when_limit_reached():
     assert bot.fork_count == FORK_LIMIT
 
 
+def test_no_fork_when_depth_limit_reached():
+    """
+    Given a level-1 bot already at MAX_FORK_DEPTH generations deep
+    When the periodic fork check would otherwise fire
+    Then Connect_nbr is never queried and no further fork happens
+    """
+    bot = _make_bot([_NO_STONES, "ok"])
+    bot.fork_depth = MAX_FORK_DEPTH
+    state = ExplorationState(bot)
+    state._fork_counter = FORK_CHECK_INTERVAL - 1
+    state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert "Connect_nbr" not in sent
+    assert bot.fork_count == 0
+
+
+def test_spawn_player_receives_incremented_depth():
+    """
+    Given a bot already two generations deep that needs to fork
+    When the periodic fork check forks because no slot is free
+    Then spawn_player is called with depth incremented by one
+    """
+    bot = _make_bot(["0", "ok", _NO_STONES, "ok"])
+    bot.fork_depth = 2
+    calls = []
+    bot.spawn_player = calls.append
+    state = ExplorationState(bot)
+    state._fork_counter = FORK_CHECK_INTERVAL - 1
+    state.handle()
+    assert calls == [3]
+
+
 def test_fork_needed_broadcast_triggers_fork():
     """
-    Given an available level-1 bot
+    Given an available level-1 bot with no free team slot left
     When a FORK_NEEDED broadcast arrives during exploration
-    Then it forks and resumes exploration without interruption
+    Then it checks Connect_nbr, forks and resumes exploration
     """
-    bot = _make_bot([_fork_needed_line(), "ok"])
+    bot = _make_bot([_fork_needed_line(), "ok", "0", "ok"])
     state = ExplorationState(bot)
     result = state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
+    assert "Connect_nbr" in sent
     assert "Fork" in sent
     assert bot.fork_count == 1
+    assert result == State.EXPLORATION
+
+
+def test_fork_needed_broadcast_skipped_when_slot_already_free():
+    """
+    Given an available level-1 bot with a free team slot remaining
+    When a FORK_NEEDED broadcast arrives during exploration
+    Then it does not lay a new egg
+    """
+    bot = _make_bot([_fork_needed_line(), "ok", "1"])
+    state = ExplorationState(bot)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert "Fork" not in sent
+    assert bot.fork_count == 0
     assert result == State.EXPLORATION
 
 

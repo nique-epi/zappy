@@ -2,9 +2,10 @@
 """Main entry point for the Zappy AI client."""
 import argparse
 import sys
+import threading
 from ia.network.client import ZappyClient
 from ia.core.bot import Bot
-from ia.core.fsm import StateMachine
+from ia.core.player_spawner import PlayerSpawner, run_player
 
 
 def parse_arguments(argv=None) -> argparse.Namespace:
@@ -38,9 +39,15 @@ def parse_arguments(argv=None) -> argparse.Namespace:
     return args
 
 
-def main(argv=None, client_factory=ZappyClient, bot_factory=Bot) -> None:
+def main(
+    argv=None,
+    client_factory=ZappyClient,
+    bot_factory=Bot,
+    thread_factory=threading.Thread,
+) -> None:
     """Main entry point."""
     args = parse_arguments(argv)
+    spawner = PlayerSpawner(args, client_factory, bot_factory, thread_factory)
 
     client = client_factory(args.host, args.port)
 
@@ -50,14 +57,8 @@ def main(argv=None, client_factory=ZappyClient, bot_factory=Bot) -> None:
         print(f"[ERROR] {e}", file=sys.stderr)
         sys.exit(1)
 
-    bot = bot_factory(
-        width, height, client_num, client, mental_map=args.mental_map
-    )
-    machine = StateMachine(bot)
-    try:
-        machine.run()
-    finally:
-        client.close()
+    run_player(width, height, client_num, client, spawner, depth=0)
+    spawner.join_all()
 
 
 if __name__ == "__main__":

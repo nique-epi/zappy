@@ -1,16 +1,22 @@
 """Unit tests for CoordinationState."""
 # pylint: disable=redefined-outer-name,protected-access
-from ia.communication.broadcast import format_message, MessageType
+from ia.communication.broadcast import MessageType, format_message
 from ia.core.bot import Bot
 from ia.network.client import ZappyClient
 from ia.shared.enum import Resource, State
 from ia.states.coordination import CoordinationState
 from tests.IA.mocks.fake_socket import FakeSocket
 
+_FOOD_OK = "[food 50]"
+_LOWER_ID = "-1"
+_HIGHER_ID = "2000000"
 
-def _broadcast(msg_type: MessageType, level: int, direction: int) -> str:
+
+def _broadcast(
+    msg_type: MessageType, level: int, direction: int, data: str = ""
+) -> str:
     """Build a raw server broadcast line."""
-    payload = format_message(msg_type, level)
+    payload = format_message(msg_type, level, data)
     return f"message {direction}, {payload}"
 
 
@@ -27,7 +33,18 @@ def _make_bot(responses: list, level: int = 1) -> Bot:
     bot = Bot(10, 10, 1, zc)
     bot.level = level
     bot.inventory = dict.fromkeys(Resource, 0)
+    bot.inventory[Resource.FOOD] = 50
     return bot
+
+
+def _set_responses(bot: Bot, responses: list) -> None:
+    """Replace the FakeSocket queue once bot.bot_id is known."""
+    encoded = [
+        r if isinstance(r, bytes)
+        else (r.encode() + b"\n") if r else b""
+        for r in responses
+    ]
+    bot.client._sock._responses = encoded
 
 
 def test_level1_solo_transitions_to_incantation():
@@ -48,13 +65,10 @@ def test_level1_solo_transitions_to_incantation():
 def test_chef_broadcasts_ready_then_lead():
     """
     Given a bot at level 2 (requires 2 players) with no incoming messages
-    When handle is called and wait steps are exhausted
+    When handle is called and the wait budget is exhausted
     Then READY and LEAD are broadcast before abandoning
     """
-    bot = _make_bot(
-        ["ok", "ok"] + ["irrelevant"] * 40 + ["ok"],
-        level=2,
-    )
+    bot = _make_bot([], level=2)
     state = CoordinationState(bot)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
@@ -66,16 +80,30 @@ def test_chef_transitions_to_incantation_on_quorum():
     """
     Given a bot at level 2 (requires 2 players) and one JOIN with direction 0
     When handle reaches quorum
-    Then it becomes chef, transitions to INCANTATION and asks no fork
+    Then it becomes chef and transitions to INCANTATION
     """
     join_msg = _broadcast(MessageType.JOIN, 2, 0)
-    bot = _make_bot(["ok", "ok", join_msg], level=2)
+    bot = _make_bot([join_msg], level=2)
     state = CoordinationState(bot)
     result = state.handle()
-    sent = b"".join(bot.client._sock.sent).decode()
     assert result == State.INCANTATION
     assert bot.is_incantation_chef is True
-    assert "FORK_NEEDED" not in sent
+
+
+def test_chef_requests_fork_immediately_alongside_ready():
+    """
+    Given a bot at level 2 (requires 2 players)
+    When handle starts coordinating
+    Then FORK_NEEDED is broadcast right away, before waiting for a quorum
+    """
+    join_msg = _broadcast(MessageType.JOIN, 2, 0)
+    bot = _make_bot([join_msg], level=2)
+    state = CoordinationState(bot)
+    state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert sent.startswith(
+        "Broadcast ZAPPY:READY:2:\nBroadcast ZAPPY:FORK_NEEDED:2:\n"
+    )
 
 
 def test_chef_requests_fork_when_quorum_unreached():
@@ -84,7 +112,7 @@ def test_chef_requests_fork_when_quorum_unreached():
     When handle gives up on the incantation
     Then it broadcasts FORK_NEEDED to grow the team
     """
-    bot = _make_bot(["ok"] * 100, level=2)
+    bot = _make_bot([], level=2)
     state = CoordinationState(bot)
     result = state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
@@ -99,10 +127,7 @@ def test_chef_ignores_join_from_wrong_level():
     Then the JOIN is ignored and quorum is not reached
     """
     wrong_join = _broadcast(MessageType.JOIN, 3, 0)
-    bot = _make_bot(
-        ["ok", "ok"] + [wrong_join] * 5 + ["ok"] * 40,
-        level=2,
-    )
+    bot = _make_bot([wrong_join], level=2)
     state = CoordinationState(bot)
     result = state.handle()
     assert result == State.EXPLORATION
@@ -115,52 +140,41 @@ def test_chef_ignores_join_from_nonzero_direction():
     Then the JOIN is ignored and quorum is not reached
     """
     distant_join = _broadcast(MessageType.JOIN, 2, 3)
-    bot = _make_bot(
-        ["ok", "ok"] + [distant_join] * 5 + ["ok"] * 40,
-        level=2,
-    )
+    bot = _make_bot([distant_join], level=2)
     state = CoordinationState(bot)
     result = state.handle()
     assert result == State.EXPLORATION
 
 
-def test_chef_defers_to_other_lead():
+def test_chef_keeps_priority_over_higher_rival_id():
     """
-    Given a bot at level 2 receiving a LEAD from another bot at direction 1
-    When handle is called
-    Then the bot switches to follower mode (moves Forward)
+    Given two bots leading simultaneously
+    When a rival LEAD carries a higher bot_id as tie-break data
+    Then this bot ignores it, keeps leading, and reaches quorum on JOIN
     """
-    lead_msg = _broadcast(MessageType.LEAD, 2, 1)
-    bot = _make_bot(
-        ["ok", "ok", lead_msg, "ok", "Current level: 3"],
-        level=2,
-    )
+    rival_lead = _broadcast(MessageType.LEAD, 2, 1, data=_HIGHER_ID)
+    join_msg = _broadcast(MessageType.JOIN, 2, 0)
+    bot = _make_bot([rival_lead, join_msg], level=2)
+    state = CoordinationState(bot)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert result == State.INCANTATION
+    assert bot.is_incantation_chef is True
+    assert "Forward" not in sent
+
+
+def test_chef_yields_to_lower_rival_id():
+    """
+    Given two bots leading simultaneously
+    When a rival LEAD carries a lower bot_id as tie-break data
+    Then this bot yields and switches to follower mode (moves Forward)
+    """
+    rival_lead = _broadcast(MessageType.LEAD, 2, 1, data=_LOWER_ID)
+    bot = _make_bot([rival_lead], level=2)
     state = CoordinationState(bot)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
     assert "Forward" in sent
-
-
-def test_chef_returns_exploration_on_disconnect_while_waiting():
-    """
-    Given a bot at level 2 whose connection drops while waiting for followers
-    When handle is called
-    Then State.EXPLORATION is returned
-    """
-    bot = _make_bot(["ok", "ok"], level=2)
-    state = CoordinationState(bot)
-    assert state.handle() == State.EXPLORATION
-
-
-def test_chef_returns_exploration_when_timeout_expires():
-    """
-    Given a bot at level 2 that receives only noise responses
-    When handle times out without reaching quorum
-    Then State.EXPLORATION is returned
-    """
-    bot = _make_bot(["ok"] * 100, level=2)
-    state = CoordinationState(bot)
-    assert state.handle() == State.EXPLORATION
 
 
 def test_follower_moves_toward_direction():
@@ -169,32 +183,30 @@ def test_follower_moves_toward_direction():
     When handle switches to follower mode
     Then Right is sent toward the chef
     """
-    lead_from_side = _broadcast(MessageType.LEAD, 2, 3)
-    bot = _make_bot(
-        ["ok", "ok", lead_from_side, "ok", "Current level: 3"],
-        level=2,
-    )
+    lead_from_side = _broadcast(MessageType.LEAD, 2, 3, data=_LOWER_ID)
+    bot = _make_bot([lead_from_side], level=2)
     state = CoordinationState(bot)
     state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
     assert "Right" in sent
 
 
-def test_follower_broadcasts_join_when_on_same_tile():
+def test_chef_ignores_own_lead_echo():
     """
-    Given a follower that receives LEAD with direction 0 (same tile)
-    When _follow is called with direction 0 initially
-    Then JOIN is broadcast before awaiting incantation
+    Given a chef that hears its own LEAD broadcast echoed back (direction 0)
+    When handle processes that echo
+    Then it keeps leading instead of deferring to itself
     """
-    lead_same_tile = _broadcast(MessageType.LEAD, 2, 0)
-    bot = _make_bot(
-        ["ok", "ok", lead_same_tile, "ok", "Current level: 3"],
-        level=2,
+    bot = _make_bot([], level=2)
+    own_lead_echo = _broadcast(
+        MessageType.LEAD, 2, 0, data=str(bot.bot_id)
     )
+    join_msg = _broadcast(MessageType.JOIN, 2, 0)
+    _set_responses(bot, [own_lead_echo, join_msg])
     state = CoordinationState(bot)
-    state.handle()
-    sent = b"".join(bot.client._sock.sent).decode()
-    assert "ZAPPY:JOIN:2:" in sent
+    result = state.handle()
+    assert result == State.INCANTATION
+    assert bot.is_incantation_chef is True
 
 
 def test_follower_transitions_to_incantation_after_join():
@@ -203,8 +215,18 @@ def test_follower_transitions_to_incantation_after_join():
     When handle broadcasts JOIN
     Then it becomes follower and transitions to INCANTATION once
     """
-    lead_same_tile = _broadcast(MessageType.LEAD, 2, 0)
-    bot = _make_bot(["ok", "ok", lead_same_tile, "ok"], level=2)
+    lead_other_player = _broadcast(
+        MessageType.LEAD, 2, 1, data=_LOWER_ID
+    )
+    lead_same_tile = _broadcast(MessageType.LEAD, 2, 0, data=_LOWER_ID)
+    bot = _make_bot(
+        [
+            _FOOD_OK, _FOOD_OK, _FOOD_OK, lead_other_player,
+            _FOOD_OK, _FOOD_OK, _FOOD_OK, lead_same_tile,
+            _FOOD_OK, _FOOD_OK, _FOOD_OK,
+        ],
+        level=2,
+    )
     state = CoordinationState(bot)
     result = state.handle()
     sent = b"".join(bot.client._sock.sent).decode()
@@ -217,18 +239,14 @@ def test_follower_updates_direction_on_new_lead():
     """
     Given a follower that first receives LEAD from direction 1 then 0
     When handle follows those broadcasts
-    Then bot eventually broadcasts JOIN (direction reached 0)
+    Then it eventually broadcasts JOIN (direction reached 0)
     """
-    lead_forward = _broadcast(MessageType.LEAD, 2, 1)
-    lead_arrived = _broadcast(MessageType.LEAD, 2, 0)
+    lead_forward = _broadcast(MessageType.LEAD, 2, 1, data=_LOWER_ID)
+    lead_arrived = _broadcast(MessageType.LEAD, 2, 0, data=_LOWER_ID)
     bot = _make_bot(
         [
-            "ok", "ok",
-            lead_forward,
-            "ok",
-            lead_arrived,
-            "ok",
-            "Current level: 3",
+            _FOOD_OK, _FOOD_OK, _FOOD_OK, lead_forward, _FOOD_OK, _FOOD_OK,
+            _FOOD_OK, lead_arrived, _FOOD_OK, _FOOD_OK, _FOOD_OK,
         ],
         level=2,
     )

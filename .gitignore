@@ -7,7 +7,7 @@ build/
 # Compiled binaries (built into repo root via CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 /zappy_server
 /zappy_gui
-/zappy_ai
+
 
 *_tests
 

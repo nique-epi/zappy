@@ -144,23 +144,39 @@ def test_is_ready_to_elevate_true_for_each_level_with_exact_inventory(level):
     assert is_ready_to_elevate(level, inventory) is True
 
 
-@pytest.mark.parametrize("level", [0, 8])
-def test_stones_missing_raises_for_invalid_level(level):
+def test_stones_missing_raises_for_invalid_level():
     """
-    Given a level outside the valid range 1-7
+    Given a level outside the valid range 1-8
     When stones_missing is called
     Then it raises ValueError
     """
     with pytest.raises(ValueError):
-        stones_missing(level, {})
+        stones_missing(0, {})
 
 
-@pytest.mark.parametrize("level", [0, 8])
-def test_is_ready_to_elevate_raises_for_invalid_level(level):
+def test_is_ready_to_elevate_raises_for_invalid_level():
     """
-    Given a level outside the valid range 1-7
+    Given a level outside the valid range 1-8
     When is_ready_to_elevate is called
     Then it raises ValueError
     """
     with pytest.raises(ValueError):
-        is_ready_to_elevate(level, {})
+        is_ready_to_elevate(0, {})
+
+
+def test_stones_missing_returns_empty_at_max_level():
+    """
+    Given the max level (8), which has no further elevation
+    When stones_missing is called
+    Then it returns an empty dict instead of raising
+    """
+    assert stones_missing(8, {}) == {}
+
+
+def test_is_ready_to_elevate_false_at_max_level():
+    """
+    Given the max level (8), which has no further elevation
+    When is_ready_to_elevate is called
+    Then it returns False instead of raising
+    """
+    assert is_ready_to_elevate(8, {}) is False

@@ -22,6 +22,7 @@ def _make_bot(responses=None, target=0) -> Bot:
     zc._sock = fake_socket
     bot = Bot(10, 10, 1, zc)
     bot.collect_target = target
+    bot.inventory[Resource.FOOD] = 50
     return bot
 
 
@@ -73,7 +74,7 @@ def test_handle_updates_inventory_on_ok():
     Then bot.inventory[LINEMATE] is incremented and not yet dropped, since
     deraumere/sibur are still missing
     """
-    bot = _make_bot(["ok", _LOOK_LINEMATE, "ok"], target=0)
+    bot = _make_bot([_LOOK_LINEMATE, "ok"], target=0)
     bot.level = 2
     bot.inventory[Resource.LINEMATE] = 0
     state = CollectState(bot)

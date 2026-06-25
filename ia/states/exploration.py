@@ -9,8 +9,10 @@ from ia.config import (
     FORK_LIMIT,
     FORK_MAX_LEVEL,
     INVENTORY_CHECK_INTERVAL,
+    MAX_FORK_DEPTH,
 )
 from ia.game.elevation import stones_missing
+from ia.game.navigation import broadcast_direction_to_moves
 from ia.parsing.connect import parse_connect_nbr
 from ia.parsing.eject import parse_eject
 from ia.parsing.look import parse_look
@@ -35,17 +37,10 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         self._maybe_self_fork()
 
         self.bot.client.send("Look")
-        response = self.bot.client.recv()
+        response = self.bot.client.recv_ack()
         if response is None:
             return State.EXPLORATION
-
-        broadcast = parse_broadcast(response)
-        if broadcast is not None:
-            self._handle_broadcast(broadcast)
-            return State.EXPLORATION
-
-        if parse_eject(response) is not None:
-            return State.EXPLORATION
+        self._drain_notifications()
 
         tiles = parse_look(
             response, self.bot.pos, self.bot.orientation, self.bot.level
@@ -71,21 +66,49 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         return State.EXPLORATION
 
     def _can_fork(self) -> bool:
-        """True when this bot is a low-level candidate below the fork cap."""
+        """True when this bot is a low-level, shallow-enough candidate."""
         return (
             self.bot.level <= FORK_MAX_LEVEL
             and self.bot.fork_count < FORK_LIMIT
+            and self.bot.fork_depth < MAX_FORK_DEPTH
         )
 
     def _maybe_self_fork(self) -> None:
-        """Periodically fork when no free team slot remains."""
+        """Periodically claim a free slot, or fork one if none remains."""
         self._fork_counter += 1
         if self._fork_counter % FORK_CHECK_INTERVAL != 0:
             return
         if not self._can_fork():
             return
         self.bot.client.send("Connect_nbr")
-        response = self.bot.client.recv()
+        response = self.bot.client.recv_ack()
+        if response is None:
+            return
+        try:
+            free_slots = parse_connect_nbr(response)
+        except ValueError:
+            return
+        if free_slots == 0:
+            self._fork()
+        elif self.bot.spawn_player is not None:
+            self.bot.spawn_player(self.bot.fork_depth + 1)
+
+    def _drain_notifications(self) -> None:
+        """Process broadcasts and ejects queued since the last tick."""
+        while (line := self.bot.client.pop_notification()) is not None:
+            broadcast = parse_broadcast(line)
+            if broadcast is not None:
+                self._handle_broadcast(broadcast)
+                continue
+            if line.startswith("eject:"):
+                self._handle_eject_notification(line)
+
+    def _handle_broadcast(self, message: BroadcastMessage) -> None:
+        """Fork on a FORK_NEEDED call only when no free slot remains."""
+        if message.msg_type != MessageType.FORK_NEEDED or not self._can_fork():
+            return
+        self.bot.client.send("Connect_nbr")
+        response = self.bot.client.recv_ack()
         if response is None:
             return
         try:
@@ -95,16 +118,26 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
         if free_slots == 0:
             self._fork()
 
-    def _handle_broadcast(self, message: BroadcastMessage) -> None:
-        """Fork on a FORK_NEEDED call when this bot is available."""
-        if message.msg_type == MessageType.FORK_NEEDED and self._can_fork():
-            self._fork()
+    def _handle_eject_notification(self, line: str) -> None:
+        """Apply the server-driven displacement carried by an eject line."""
+        direction = parse_eject(line)
+        if direction is None:
+            return
+        for move in broadcast_direction_to_moves(direction):
+            if move == Move.FORWARD:
+                self.bot.advance()
+            elif move == Move.LEFT:
+                self.bot.turn_left()
+            else:
+                self.bot.turn_right()
 
     def _fork(self) -> None:
         """Lay an egg so a new teammate can connect, then keep exploring."""
         self.bot.client.send("Fork")
-        self.bot.client.recv()
+        self.bot.client.recv_ack()
         self.bot.fork_count += 1
+        if self.bot.spawn_player is not None:
+            self.bot.spawn_player(self.bot.fork_depth + 1)
 
     def _explore(self) -> None:
         """Head for a known resource, or wander while turning periodically."""
@@ -143,17 +176,17 @@ class ExplorationState:  # pylint: disable=too-few-public-methods
 
     def _send_forward(self) -> None:
         self.bot.client.send("Forward")
-        if self.bot.client.recv() is not None:
+        if self.bot.client.recv_ack() is not None:
             self.bot.advance()
 
     def _send_left(self) -> None:
         self.bot.client.send("Left")
-        if self.bot.client.recv() is not None:
+        if self.bot.client.recv_ack() is not None:
             self.bot.turn_left()
 
     def _send_right(self) -> None:
         self.bot.client.send("Right")
-        if self.bot.client.recv() is not None:
+        if self.bot.client.recv_ack() is not None:
             self.bot.turn_right()
 
     def _handle_farmer(self) -> State:

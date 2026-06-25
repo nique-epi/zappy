@@ -1,12 +1,14 @@
 """Core bot logic for the Zappy AI client."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import uuid
+from typing import TYPE_CHECKING, Callable
 
 from ia.bonus.map import WorldMap
 from ia.config import STALE_TURNS
 from ia.game.elevation import stones_missing
 from ia.game.navigation import ORIENTATION_DELTAS
+from ia.parsing.inventory import needs_food, parse_inventory
 from ia.shared.enum import Direction, Resource, State
 
 if TYPE_CHECKING:
@@ -34,6 +36,7 @@ class Bot:
         self.width = width
         self.height = height
         self.client_num = client_num
+        self.bot_id = uuid.uuid4().int % 1000000
         self.mental_map_enabled = mental_map
 
         self.level = 1
@@ -48,6 +51,8 @@ class Bot:
         self.collect_target: int = 0
         self.is_incantation_chef: bool = True
         self.fork_count: int = 0
+        self.fork_depth: int = 0
+        self.spawn_player: Callable[[int], None] | None = None
 
     @property
     def client(self) -> "ZappyClient":
@@ -101,6 +106,14 @@ class Bot:
                 best_distance = distance
                 best_target = target
         return best_target
+
+    def food_critical(self) -> bool:
+        """Refreshes inventory via the server and reports if food is low."""
+        self.client.send("Inventory")
+        response = self.client.recv_ack()
+        if response is not None:
+            self.inventory = parse_inventory(response)
+        return needs_food(self.inventory)
 
     def _assign_role(self, client_num: int) -> str:
         """Role assignment based on the connection slot. (ZAP-21 Bonus, stub)

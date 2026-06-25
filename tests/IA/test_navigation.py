@@ -1,5 +1,9 @@
 """Unit tests for the Look tile index to movement command conversion."""
-from ia.game.navigation import tile_to_moves, tile_index_to_offset
+from ia.game.navigation import (
+    broadcast_direction_to_moves,
+    tile_index_to_offset,
+    tile_to_moves,
+)
 from ia.shared.enum import Move
 
 
@@ -113,3 +117,16 @@ def test_without_width_lateral_is_not_wrapped():
     assert tile_to_moves(8) == (
         [Move.FORWARD] * 2 + [Move.RIGHT] + [Move.FORWARD] * 2
     )
+
+
+def test_broadcast_directions_always_end_with_a_forward():
+    """
+    Given each of the 8 broadcast directions K
+    When converted to a move sequence
+    Then every sequence ends with Forward, so the bot always gets closer
+    """
+    for direction in range(1, 9):
+        moves = broadcast_direction_to_moves(direction)
+        assert moves[-1] == Move.FORWARD, (
+            f"direction {direction} never advances: {moves}"
+        )

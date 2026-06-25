@@ -13,11 +13,11 @@ ORIENTATION_DELTAS: dict[Direction, tuple[int, int, int, int]] = {
 _BROADCAST_DIRECTION_MOVES: dict[int, list[Move]] = {
     1: [Move.FORWARD],
     2: [Move.RIGHT, Move.FORWARD],
-    3: [Move.RIGHT],
+    3: [Move.RIGHT, Move.FORWARD],
     4: [Move.RIGHT, Move.RIGHT, Move.FORWARD],
-    5: [Move.RIGHT, Move.RIGHT],
+    5: [Move.RIGHT, Move.RIGHT, Move.FORWARD],
     6: [Move.LEFT, Move.LEFT, Move.FORWARD],
-    7: [Move.LEFT],
+    7: [Move.LEFT, Move.FORWARD],
     8: [Move.LEFT, Move.FORWARD],
 }
 

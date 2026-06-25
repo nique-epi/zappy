@@ -1,5 +1,6 @@
 from ia.game.elevation import ELEVATION_REQUIREMENTS, stones_missing
 from ia.game.navigation import tile_to_moves
+from ia.parsing.inventory import needs_food
 from ia.parsing.look import parse_look
 from ia.shared.enum import State
 from ia.core.bot import Bot
@@ -11,13 +12,17 @@ class CollectState:  # pylint: disable=too-few-public-methods
 
     def handle(self) -> State:
         """Move to the target tile, take all useful stones."""
+        if needs_food(self.bot.inventory):
+            return State.EATING
+
         if not self._move_to_target():
             return State.EXPLORATION
 
-        self._eject_competitors()
+        if ELEVATION_REQUIREMENTS[self.bot.level]["players"] == 1:
+            self._eject_competitors()
 
         self.bot.client.send("Look")
-        response = self.bot.client.recv()
+        response = self.bot.client.recv_ack()
         if response is None:
             return State.EXPLORATION
 
@@ -41,7 +46,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
         """Execute the move sequence; return False if any move fails."""
         for move in tile_to_moves(self.bot.collect_target):
             self.bot.client.send(move.value)
-            response = self.bot.client.recv()
+            response = self.bot.client.recv_ack()
             if response is None or response.strip() == "ko":
                 return False
         return True
@@ -49,7 +54,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
     def _eject_competitors(self) -> None:
         """Clear rival players from the tile before claiming its stones."""
         self.bot.client.send("Eject")
-        self.bot.client.recv()
+        self.bot.client.recv_ack()
 
     def _drop_required_stones(self) -> None:
         """Set every stone needed for the next elevation onto the ground.
@@ -68,7 +73,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
                 continue
             for _ in range(amount):
                 self.bot.client.send(f"Set {stone}")
-                response = self.bot.client.recv()
+                response = self.bot.client.recv_ack()
                 if response and response.strip() == "ok":
                     self.bot.inventory[resource] -= 1
 
@@ -82,7 +87,7 @@ class CollectState:  # pylint: disable=too-few-public-methods
             if obj not in missing:
                 continue
             self.bot.client.send(f"Take {obj}")
-            response = self.bot.client.recv()
+            response = self.bot.client.recv_ack()
             if response and response.strip() == "ok":
                 resource = next(
                     (r for r in self.bot.inventory if r.value == obj), None

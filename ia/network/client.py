@@ -27,6 +27,7 @@ class ZappyClient:
         self._buffer = Buffer()
         self._queue = CommandQueue()
         self._eof = False
+        self._notifications: list[str] = []
 
     @property
     def connected(self) -> bool:
@@ -69,8 +70,11 @@ class ZappyClient:
         return client_num, width, height
 
     def _send_line(self, msg: str) -> None:
-        """Sends a line terminated by \\n."""
-        self._sock.sendall((msg + "\n").encode())
+        """Sends a line terminated by \\n, treating a dead socket as EOF."""
+        try:
+            self._sock.sendall((msg + "\n").encode())
+        except OSError:
+            self._eof = True
 
     def _fill_buffer(self) -> bool:
         """Reads one chunk from the socket into the reception buffer.
@@ -78,7 +82,11 @@ class ZappyClient:
         Returns:
             True if data was read, False if the server closed the connection.
         """
-        chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
+        try:
+            chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
+        except OSError:
+            self._eof = True
+            return False
         if not chunk:
             self._eof = True
             return False
@@ -94,6 +102,25 @@ class ZappyClient:
         while not self._buffer.has_line():
             if not self._fill_buffer():
                 return None
+        return self._buffer.pop_line()
+
+    def _recv_line_timeout(self, timeout: float) -> str | None:
+        """Reads a complete line, or None on timeout or closed connection."""
+        while not self._buffer.has_line():
+            self._sock.settimeout(timeout)
+            try:
+                chunk = self._sock.recv(BUFFER_SIZE).decode(errors="replace")
+            except TimeoutError:
+                return None
+            except OSError:
+                self._eof = True
+                return None
+            finally:
+                self._sock.settimeout(None)
+            if not chunk:
+                self._eof = True
+                return None
+            self._buffer.feed(chunk)
         return self._buffer.pop_line()
 
     def _flush(self) -> None:
@@ -119,9 +146,42 @@ class ZappyClient:
             return None
         if line == DEAD_MESSAGE:
             raise PlayerDeadError()
+        if line.startswith("message ") or line.startswith("eject:"):
+            self._notifications.append(line)
+            return line
         self._queue.on_response()
         self._flush()
         return line
+
+    def recv_timeout(self, timeout: float) -> str | None:
+        """Reads one response, or None on timeout/closed; raises on death."""
+        line = self._recv_line_timeout(timeout)
+        if line is None:
+            return None
+        if line == DEAD_MESSAGE:
+            raise PlayerDeadError()
+        if line.startswith("message ") or line.startswith("eject:"):
+            self._notifications.append(line)
+            return line
+        self._queue.on_response()
+        self._flush()
+        return line
+
+    def recv_ack(self) -> str | None:
+        """Reads the next ack, queuing any broadcast/eject heard first."""
+        while True:
+            line = self.recv()
+            if line is None:
+                return None
+            if line.startswith("message ") or line.startswith("eject:"):
+                continue
+            return line
+
+    def pop_notification(self) -> str | None:
+        """Pops the oldest notification queued by a prior recv_ack() call."""
+        if not self._notifications:
+            return None
+        return self._notifications.pop(0)
 
     def close(self) -> None:
         """Closes the socket and resets the buffering state."""
@@ -130,3 +190,4 @@ class ZappyClient:
             self._sock = None
             self._buffer = Buffer()
             self._queue = CommandQueue()
+            self._notifications = []
