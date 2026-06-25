@@ -16,12 +16,12 @@ constexpr float cameraPitchDegrees = 52.0F;
 constexpr float cameraYawSpeedDegrees = 6.0F;
 constexpr float cameraFieldOfViewDegrees = 45.0F;
 
-constexpr float buttonWidth = 380.0F;
-constexpr float buttonHeight = 126.7F;
+constexpr float buttonWidth = 260.0F;
+constexpr float buttonHeight = 86.0F;
 constexpr float buttonX = (1280.0F - buttonWidth) / 2.0F;
-constexpr float playButtonY = 285.0F;
+constexpr float playButtonY = 310.0F;
 constexpr float controlsButtonY = 420.0F;
-constexpr float exitButtonY = 555.0F;
+constexpr float exitButtonY = 530.0F;
 
 constexpr int titleFontSize = 120;
 constexpr float titleY = 60.0F;
