@@ -115,6 +115,10 @@ add_executable(zappy_gui
     Render/Panel/PanelChrome.cpp
     Render/Panel/PlayerPanel.cpp
     Render/Panel/ResourceList.cpp
+    Menu/MenuButton.cpp
+    Menu/MenuCamera.cpp
+    Menu/PortInputDialog.cpp
+    Menu/MenuScreen.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES
@@ -122,6 +126,10 @@ set_source_files_properties(Render/Raygui.cpp PROPERTIES
 )
 
 set_source_files_properties(Render/WorldCamera.cpp PROPERTIES
+    COMPILE_OPTIONS "-Wno-missing-field-initializers"
+)
+
+set_source_files_properties(Menu/MenuCamera.cpp PROPERTIES
     COMPILE_OPTIONS "-Wno-missing-field-initializers"
 )
 
