@@ -66,6 +66,9 @@ std::size_t foodIndexForTile(int tileX, int tileY) {
 }
 
 void drawAtSlot(Model& model, cfg::SlotDrawConfig drawCfg) {
+  if (model.meshCount == 0) {
+    return;
+  }
   const cfg::ResourceLayoutSlot& slot = cfg::RESOURCE_LAYOUT[drawCfg.slotIndex];
   const auto time = static_cast<float>(GetTime());
   const float bobY = sinf((time * cfg::RESOURCE_BOB_SPEED) + slot.phase) *
