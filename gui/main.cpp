@@ -90,6 +90,116 @@ bool runHandshakeAndInit(zappy::gui::NetworkManager& network,
   return true;
 }
 
+struct Session {
+  std::optional<zappy::gui::GuiConfig> config;
+  std::unique_ptr<zappy::gui::NetworkManager> network;
+};
+
+Session connectViaCLI(int argc, char** argv, zappy::gui::MenuScreen& menu) {
+  auto config = zappy::gui::parseArguments(argc, argv);
+  try {
+    return {.config = config,
+            .network = std::make_unique<zappy::gui::NetworkManager>(
+                config.hostname, config.port)};
+  } catch (const zappy::network::ConnectError& error) {
+    menu.showConnectionError(error.what());
+    return {};
+  }
+}
+
+Session runMenuUntilConnected(zappy::gui::MenuScreen& menu) {
+  while (!WindowShouldClose()) {
+    auto config = menu.run();
+    if (!config) {
+      return {};
+    }
+    try {
+      return {.config = config,
+              .network = std::make_unique<zappy::gui::NetworkManager>(
+                  config->hostname, config->port)};
+    } catch (const zappy::network::ConnectError& error) {
+      menu.showConnectionError(error.what());
+    }
+  }
+  return {};
+}
+
+bool runGameSession(const zappy::gui::GuiConfig& config,
+                    zappy::gui::NetworkManager& network,
+                    const zappy::gui::KeyBindings& bindings) {
+  zappy::gui::WorldState world;
+  zappy::gui::MessageParser parser(world);
+  if (!runHandshakeAndInit(network, world, parser)) {
+    return false;
+  }
+
+  zappy::gui::CommandSender sender(network);
+  zappy::gui::SpeedControl speedControl(sender);
+  sender.requestTimeUnit();
+
+  zappy::gui::IncantationRenderer::loadTextures();
+  zappy::gui::ResourceRenderer::loadModels();
+
+  const Vector3 mapCenter{
+      static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
+      static_cast<float>(world.height) * cfg::TILE_SIZE / 2.0F};
+  zappy::gui::WorldCamera camera(mapCenter);
+  zappy::gui::PlayerSelection selection;
+
+  bool returnToMenu = false;
+  while (!WindowShouldClose()) {
+    if (IsKeyPressed(bindings.backToMenu)) {
+      returnToMenu = true;
+      break;
+    }
+
+    network.runOnce(0);
+    camera.update(GetFrameTime(), bindings);
+
+    selection.syncWithWorld(world);
+    const std::optional<int> hoveredPlayer =
+        zappy::gui::PlayerPicker::nearest(world, camera.camera());
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      const bool insidePanel =
+          selection.selectedId().has_value() &&
+          zappy::gui::PlayerPanel::contains(GetMousePosition());
+      const std::optional<int> picked =
+          selection.click(hoveredPlayer, insidePanel);
+      if (picked.has_value()) {
+        sender.requestPlayerInventory(*picked);
+        sender.requestPlayerLevel(*picked);
+      }
+    }
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    BeginMode3D(camera.camera());
+    zappy::gui::SkyRenderer::draw(camera.camera());
+    zappy::gui::TileGridRenderer::draw(world);
+    zappy::gui::ResourceRenderer::draw3D(world);
+    zappy::gui::EggRenderer::draw3D(world);
+    zappy::gui::PlayerRenderer::draw3D(world);
+    zappy::gui::IncantationRenderer::draw3D(world);
+    EndMode3D();
+    zappy::gui::PlayerRenderer::drawLevelLabels(world, camera.camera());
+    zappy::gui::PlayerChevron::draw(world, camera.camera(), hoveredPlayer,
+                                    selection.selectedId());
+    zappy::gui::HudPanel::draw(config, world);
+    zappy::gui::InfoPanel::draw(world, camera.camera());
+    speedControl.draw(world.timeUnit);
+    if (selection.selectedId().has_value()) {
+      if (zappy::gui::PlayerPanel::draw(world, *selection.selectedId())) {
+        selection.close();
+      }
+    }
+    EndDrawing();
+  }
+
+  zappy::gui::IncantationRenderer::unloadTextures();
+  zappy::gui::ResourceRenderer::unloadModels();
+  return returnToMenu;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -109,118 +219,20 @@ int main(int argc, char** argv) {
     zappy::gui::MenuScreen menu;
 
     while (!WindowShouldClose()) {
-      std::optional<zappy::gui::GuiConfig> configOpt;
-      std::unique_ptr<zappy::gui::NetworkManager> networkPtr;
-
+      Session session;
       if (useCLI) {
         useCLI = false;
-        configOpt = zappy::gui::parseArguments(argc, argv);
-        try {
-          networkPtr = std::make_unique<zappy::gui::NetworkManager>(
-              configOpt->hostname, configOpt->port);
-        } catch (const zappy::network::ConnectError& connectError) {
-          menu.showConnectionError(connectError.what());
-          configOpt = std::nullopt;
-        }
+        session = connectViaCLI(argc, argv, menu);
       }
-
-      if (!configOpt) {
-        while (!WindowShouldClose()) {
-          configOpt = menu.run();
-          if (!configOpt) {
-            break;
-          }
-          try {
-            networkPtr = std::make_unique<zappy::gui::NetworkManager>(
-                configOpt->hostname, configOpt->port);
-            break;
-          } catch (const zappy::network::ConnectError& connectError) {
-            menu.showConnectionError(connectError.what());
-          }
-        }
-        if (!configOpt) {
+      if (!session.config) {
+        session = runMenuUntilConnected(menu);
+        if (!session.config) {
           break;
         }
       }
 
-      const zappy::gui::GuiConfig config = *configOpt;
-      zappy::gui::NetworkManager& network = *networkPtr;
-      const zappy::gui::KeyBindings bindings = menu.keyBindings();
-
-      zappy::gui::WorldState world;
-      zappy::gui::MessageParser parser(world);
-      if (!runHandshakeAndInit(network, world, parser)) {
-        break;
-      }
-
-      zappy::gui::CommandSender sender(network);
-      zappy::gui::SpeedControl speedControl(sender);
-      sender.requestTimeUnit();
-
-      zappy::gui::IncantationRenderer::loadTextures();
-      zappy::gui::ResourceRenderer::loadModels();
-
-      const Vector3 mapCenter{
-          static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
-          static_cast<float>(world.height) * cfg::TILE_SIZE / 2.0F};
-      zappy::gui::WorldCamera camera(mapCenter);
-      zappy::gui::PlayerSelection selection;
-
-      bool returnToMenu = false;
-      while (!WindowShouldClose()) {
-        if (IsKeyPressed(bindings.backToMenu)) {
-          returnToMenu = true;
-          break;
-        }
-
-        network.runOnce(0);
-        camera.update(GetFrameTime(), bindings);
-
-        selection.syncWithWorld(world);
-        const std::optional<int> hoveredPlayer =
-            zappy::gui::PlayerPicker::nearest(world, camera.camera());
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-          const bool insidePanel =
-              selection.selectedId().has_value() &&
-              zappy::gui::PlayerPanel::contains(GetMousePosition());
-          const std::optional<int> picked =
-              selection.click(hoveredPlayer, insidePanel);
-          if (picked.has_value()) {
-            sender.requestPlayerInventory(*picked);
-            sender.requestPlayerLevel(*picked);
-          }
-        }
-
-        BeginDrawing();
-        ClearBackground(BLACK);
-
-        BeginMode3D(camera.camera());
-        zappy::gui::SkyRenderer::draw(camera.camera());
-        zappy::gui::TileGridRenderer::draw(world);
-        zappy::gui::ResourceRenderer::draw3D(world);
-        zappy::gui::EggRenderer::draw3D(world);
-        zappy::gui::PlayerRenderer::draw3D(world);
-        zappy::gui::IncantationRenderer::draw3D(world);
-        EndMode3D();
-        zappy::gui::PlayerRenderer::drawLevelLabels(world, camera.camera());
-        zappy::gui::PlayerChevron::draw(world, camera.camera(), hoveredPlayer,
-                                        selection.selectedId());
-
-        zappy::gui::HudPanel::draw(config, world);
-        zappy::gui::InfoPanel::draw(world, camera.camera());
-        speedControl.draw(world.timeUnit);
-        if (selection.selectedId().has_value()) {
-          if (zappy::gui::PlayerPanel::draw(world, *selection.selectedId())) {
-            selection.close();
-          }
-        }
-        EndDrawing();
-      }
-
-      zappy::gui::IncantationRenderer::unloadTextures();
-      zappy::gui::ResourceRenderer::unloadModels();
-      networkPtr.reset();
-
+      const bool returnToMenu =
+          runGameSession(*session.config, *session.network, menu.keyBindings());
       if (!returnToMenu) {
         break;
       }
