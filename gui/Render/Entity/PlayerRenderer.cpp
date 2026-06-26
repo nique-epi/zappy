@@ -186,7 +186,7 @@ void PlayerRenderer::drawOverlay(WorldState& world, const Camera3D& camera) {
         std::ranges::find_if(world.players, [&](const Player& candidate) {
           return candidate.id == broadcast.playerId;
         });
-    if (player == world.players.end()) {
+    if (player == world.players.end() || !player->alive) {
       continue;
     }
 
