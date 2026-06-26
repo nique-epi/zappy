@@ -22,7 +22,7 @@ namespace zappy::server {
  * @param arguments     Argument vector (argv).
  * @returns True when help was requested.
  */
-bool helpRequested(int argumentCount, char **arguments);
+bool helpRequested(int argumentCount, char** arguments);
 
 /**
  * @brief The server `--help` usage text, with no trailing newline.
@@ -47,6 +47,6 @@ std::string usageMessage();
  * @throws MissingValueException  When a required value is absent.
  * @throws InvalidValueException  When a value is not a valid in-range integer.
  */
-ServerConfig parseArguments(int argumentCount, char **arguments);
+ServerConfig parseArguments(int argumentCount, char** arguments);
 
 }  // namespace zappy::server

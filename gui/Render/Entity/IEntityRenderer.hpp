@@ -51,10 +51,10 @@ class IEntityRenderer {
   /**
    * @brief Draw the 2D screen overlay for this entity kind, after EndMode3D.
    *
-   * @param world  Read-only world snapshot.
+   * @param world  Mutable world; some renderers purge expired overlay anims.
    * @param camera Active 3D camera, used to project world positions to screen.
    */
-  virtual void drawOverlay(const WorldState& world, const Camera3D& camera) = 0;
+  virtual void drawOverlay(WorldState& world, const Camera3D& camera) = 0;
 
   /**
    * @brief Release the GPU assets acquired by @ref loadAssets.

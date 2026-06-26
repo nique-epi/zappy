@@ -42,7 +42,7 @@ class WorldRenderer {
   /**
    * @brief Draw every entity kind's 2D overlay, after EndMode3D.
    */
-  void drawOverlay(const WorldState& world, const Camera3D& camera);
+  void drawOverlay(WorldState& world, const Camera3D& camera);
 
  private:
   std::vector<std::unique_ptr<IEntityRenderer>> renderers_;

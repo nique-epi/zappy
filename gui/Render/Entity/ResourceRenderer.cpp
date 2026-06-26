@@ -177,7 +177,7 @@ void ResourceRenderer::draw(WorldState& world) {
   }
 }
 
-void ResourceRenderer::drawOverlay([[maybe_unused]] const WorldState& world,
+void ResourceRenderer::drawOverlay([[maybe_unused]] WorldState& world,
                                    [[maybe_unused]] const Camera3D& camera) {}
 
 void ResourceRenderer::unloadAssets() {

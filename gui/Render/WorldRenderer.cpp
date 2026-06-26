@@ -31,8 +31,7 @@ void WorldRenderer::drawWorld(WorldState& world) {
   }
 }
 
-void WorldRenderer::drawOverlay(const WorldState& world,
-                                const Camera3D& camera) {
+void WorldRenderer::drawOverlay(WorldState& world, const Camera3D& camera) {
   for (auto& renderer : renderers_) {
     renderer->drawOverlay(world, camera);
   }

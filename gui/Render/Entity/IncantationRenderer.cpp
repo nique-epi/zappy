@@ -93,7 +93,7 @@ void IncantationRenderer::draw(WorldState& world) {
   });
 }
 
-void IncantationRenderer::drawOverlay([[maybe_unused]] const WorldState& world,
+void IncantationRenderer::drawOverlay([[maybe_unused]] WorldState& world,
                                       [[maybe_unused]] const Camera3D& camera) {
 }
 

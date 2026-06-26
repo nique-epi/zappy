@@ -67,6 +67,11 @@ struct PlayerEjection {
   std::chrono::steady_clock::time_point startTime{};
 };
 
+struct PlayerBroadcast {
+  int playerId{};
+  std::chrono::steady_clock::time_point startTime{};
+};
+
 struct WorldState {
   int width{};
   int height{};
@@ -80,6 +85,7 @@ struct WorldState {
   std::vector<Incantation> activeIncantations;
   std::vector<IncantationEnd> finishedIncantations;
   std::vector<PlayerEjection> playerEjections;
+  std::vector<PlayerBroadcast> playerBroadcasts;
 };
 
 WorldState mockWorld();

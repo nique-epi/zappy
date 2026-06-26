@@ -28,7 +28,7 @@ void EggRenderer::draw(WorldState& world) {
   }
 }
 
-void EggRenderer::drawOverlay([[maybe_unused]] const WorldState& world,
+void EggRenderer::drawOverlay([[maybe_unused]] WorldState& world,
                               [[maybe_unused]] const Camera3D& camera) {}
 
 void EggRenderer::unloadAssets() {}

@@ -19,7 +19,7 @@ class ResourceRenderer : public IEntityRenderer {
  public:
   void loadAssets() override;
   void draw(WorldState& world) override;
-  void drawOverlay(const WorldState& world, const Camera3D& camera) override;
+  void drawOverlay(WorldState& world, const Camera3D& camera) override;
   void unloadAssets() override;
 
  private:
