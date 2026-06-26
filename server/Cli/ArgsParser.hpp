@@ -7,9 +7,29 @@
 
 #pragma once
 
+#include <string>
 #include "App/ServerConfig.hpp"
 
 namespace zappy::server {
+
+/**
+ * @brief Whether the command line requests the usage message (`-h`/`--help`).
+ *
+ * Checked before @ref parseArguments so `./zappy_server --help` prints the
+ * usage and exits successfully instead of failing on the missing `-n`.
+ *
+ * @param argumentCount Number of entries in @p arguments (argc).
+ * @param arguments     Argument vector (argv).
+ * @returns True when help was requested.
+ */
+bool helpRequested(int argumentCount, char** arguments);
+
+/**
+ * @brief The server `--help` usage text, with no trailing newline.
+ *
+ * @returns The formatted usage block describing every server option.
+ */
+std::string usageMessage();
 
 /**
  * @brief Parse the server command line into a ServerConfig.
@@ -27,6 +47,6 @@ namespace zappy::server {
  * @throws MissingValueException  When a required value is absent.
  * @throws InvalidValueException  When a value is not a valid in-range integer.
  */
-ServerConfig parseArguments(int argumentCount, char **arguments);
+ServerConfig parseArguments(int argumentCount, char** arguments);
 
 }  // namespace zappy::server

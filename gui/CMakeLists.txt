@@ -8,6 +8,7 @@ FetchContent_Declare(
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_GAMES    OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(raylib)
+target_compile_definitions(raylib PUBLIC SUPPORT_FILEFORMAT_HDR)
 
 set(RAYGUI_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/Render/raygui.h)
 if(NOT EXISTS ${RAYGUI_HEADER})
@@ -107,6 +108,7 @@ add_executable(zappy_gui
     Render/Entity/PlayerPicker.cpp
     Render/Entity/PlayerRenderer.cpp
     Render/Entity/PlayerSelection.cpp
+    Render/SkyRenderer.cpp
     Render/SpeedControl.cpp
     Render/WorldCamera.cpp
     Render/TileGridRenderer.cpp
@@ -115,6 +117,12 @@ add_executable(zappy_gui
     Render/Panel/PanelChrome.cpp
     Render/Panel/PlayerPanel.cpp
     Render/Panel/ResourceList.cpp
+    Bindings/KeyBindings.cpp
+    Menu/Button/MenuButton.cpp
+    Menu/Camera/MenuCamera.cpp
+    Menu/Dialogs/PortInputDialog.cpp
+    Menu/Dialogs/KeyBindingsDialog.cpp
+    Menu/MenuScreen.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES
@@ -122,6 +130,10 @@ set_source_files_properties(Render/Raygui.cpp PROPERTIES
 )
 
 set_source_files_properties(Render/WorldCamera.cpp PROPERTIES
+    COMPILE_OPTIONS "-Wno-missing-field-initializers"
+)
+
+set_source_files_properties(Menu/Camera/MenuCamera.cpp PROPERTIES
     COMPILE_OPTIONS "-Wno-missing-field-initializers"
 )
 
