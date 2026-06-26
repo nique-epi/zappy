@@ -118,7 +118,9 @@ void drawBroadcastDots(Vector2 center, unsigned char alpha) {
 
 }  // namespace
 
-void PlayerRenderer::draw3D(WorldState& world) {
+void PlayerRenderer::loadAssets() {}
+
+void PlayerRenderer::draw(WorldState& world) {
   const auto now = std::chrono::steady_clock::now();
 
   for (const auto& player : world.players) {
@@ -152,8 +154,7 @@ void PlayerRenderer::draw3D(WorldState& world) {
   });
 }
 
-void PlayerRenderer::drawLevelLabels(const WorldState& world,
-                                     const Camera3D& camera) {
+void PlayerRenderer::drawOverlay(WorldState& world, const Camera3D& camera) {
   for (const auto& player : world.players) {
     if (!player.alive) {
       continue;
@@ -178,18 +179,14 @@ void PlayerRenderer::drawLevelLabels(const WorldState& world,
     DrawText(label.c_str(), drawX, drawY, cfg::PLAYER_LABEL_FONT_SIZE,
              cfg::PLAYER_LABEL_COLOR);
   }
-}
 
-void PlayerRenderer::drawBroadcastIcons(WorldState& world,
-                                        const Camera3D& camera) {
   const auto now = std::chrono::steady_clock::now();
-
   for (const auto& broadcast : world.playerBroadcasts) {
     const auto player =
         std::ranges::find_if(world.players, [&](const Player& candidate) {
           return candidate.id == broadcast.playerId;
         });
-    if (player == world.players.end()) {
+    if (player == world.players.end() || !player->alive) {
       continue;
     }
 
@@ -211,5 +208,7 @@ void PlayerRenderer::drawBroadcastIcons(WorldState& world,
            cfg::PLAYER_BROADCAST_DURATION;
   });
 }
+
+void PlayerRenderer::unloadAssets() {}
 
 }  // namespace zappy::gui

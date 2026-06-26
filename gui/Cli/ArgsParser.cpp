@@ -14,6 +14,7 @@
 #include <vector>
 #include "Cli/Exceptions/ParserException.hpp"
 #include "Cli/OptionSchema.hpp"
+#include "Cli/UsageHelp.hpp"
 #include "GuiConfig.hpp"
 #include "Schema/Fields/BoundedNumberFieldType.hpp"
 #include "Schema/Fields/StringFieldType.hpp"
@@ -58,11 +59,23 @@ void validateGuiConfig(const GuiConfig& config) {
   }
 }
 
+constexpr const char* usageSynopsis = "./zappy_gui -p port -h machine";
+
+zappy::cli::UsageHelp<GuiConfig> guiUsageHelp() {
+  return {usageSynopsis, buildGuiOptionSchema()};
+}
+
 }  // namespace
 
 GuiConfig parseArguments(int argumentCount, char** arguments) {
   return zappy::cli::parseWithSchema<GuiConfig>(
       argumentCount, arguments, buildGuiOptionSchema(), validateGuiConfig);
 }
+
+bool helpRequested(int argumentCount, char** arguments) {
+  return guiUsageHelp().isRequested(argumentCount, arguments);
+}
+
+std::string usageMessage() { return guiUsageHelp().text(); }
 
 }  // namespace zappy::gui
