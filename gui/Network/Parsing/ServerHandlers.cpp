@@ -46,7 +46,7 @@ void registerDiagnosticHandlers(HandlerMap& handlers) {
     std::cerr << "[sbp] bad parameter sent by GUI\n";
   };
 
-  for (const auto* cmd : {"pbc", "pfk", "smg"}) {
+  for (const auto* cmd : {"pfk", "smg"}) {
     handlers[cmd] = [](std::istringstream&) {};
   }
 }

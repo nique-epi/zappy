@@ -48,7 +48,7 @@ class UsageHelp {
    * @param arguments     Argument vector (argv).
    * @returns True when the usage was requested.
    */
-  [[nodiscard]] bool isRequested(int argumentCount, char **arguments) const;
+  [[nodiscard]] bool isRequested(int argumentCount, char** arguments) const;
 
   /**
    * @brief The rendered usage text, without a trailing newline.
@@ -64,9 +64,9 @@ class UsageHelp {
  private:
   [[nodiscard]] bool reservesShortFlag() const;
 
-  static constexpr const char *longFlag = "--help";
-  static constexpr const char *shortFlag = "-h";
-  static constexpr const char *rowIndent = "    ";
+  static constexpr const char* longFlag = "--help";
+  static constexpr const char* shortFlag = "-h";
+  static constexpr const char* rowIndent = "    ";
   static constexpr std::size_t rowColumnGap = 2;
 
   std::string synopsis_;

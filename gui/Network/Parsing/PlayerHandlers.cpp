@@ -86,6 +86,12 @@ void registerPlayerHandlers(HandlerMap& handlers, WorldState& world) {
     }
   };
 
+  handlers["pbc"] = [&world](std::istringstream& stream) {
+    const int playerId = parseId(stream);
+    world.playerBroadcasts.push_back(
+        {.playerId = playerId, .startTime = std::chrono::steady_clock::now()});
+  };
+
   handlers["pdi"] = [&world](std::istringstream& stream) {
     auto* targetPlayer = findPlayer(world, parseId(stream));
     if (targetPlayer != nullptr) {
