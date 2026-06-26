@@ -10,6 +10,7 @@
 #include <exception>
 #include <iostream>
 #include "App/GameSession.hpp"
+#include "Cli/ArgsParser.hpp"
 #include "Cli/Exceptions/ParserException.hpp"
 #include "Cli/LaunchMode.hpp"
 #include "Menu/MenuScreen.hpp"
@@ -64,7 +65,7 @@ int Application::run() {
       CloseWindow();
     }
     std::cerr << error.what() << '\n';
-    std::cerr << GUI_USAGE << '\n';
+    std::cerr << usageMessage() << '\n';
     return EXIT_CODE_ERROR;
   } catch (const std::exception& error) {
     if (IsWindowReady()) {
