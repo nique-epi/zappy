@@ -152,49 +152,63 @@ MenuScreen::MenuScreen()
   applyMenuTheme();
 }
 
+bool MenuScreen::drawButtons() {
+  const bool active = (state_ == State::Menu);
+  if (playButton_.draw() && active) {
+    portDialog_.open();
+    state_ = State::ConnectDialog;
+  }
+  if (controlsButton_.draw() && active) {
+    kbDialog_.open();
+    state_ = State::EditBindings;
+  }
+  return exitButton_.draw() && active;
+}
+
+std::optional<GuiConfig> MenuScreen::tickActiveDialog() {
+  switch (state_) {
+    case State::ConnectDialog: {
+      const DialogResult result =  // NOLINT(cppcoreguidelines-init-variables)
+          portDialog_.draw();
+      if (result == DialogResult::Cancelled) {
+        state_ = State::Menu;
+      } else if (result == DialogResult::Connected) {
+        return portDialog_.result();
+      }
+      break;
+    }
+    case State::EditBindings:
+      if (kbDialog_.draw() == BindingsResult::Closed) {
+        state_ = State::Menu;
+      }
+      break;
+    case State::Menu:
+      break;
+  }
+  return std::nullopt;
+}
+
 std::optional<GuiConfig> MenuScreen::run() {
   while (!WindowShouldClose()) {
     camera_.update(GetFrameTime());
 
     BeginDrawing();
     ClearBackground(BLACK);
-
     drawSimulation();
     DrawRectangle(0, 0, wcfg::WINDOW_WIDTH, wcfg::WINDOW_HEIGHT,
                   Color{0, 0, 0, cfg::menuBackgroundOverlay});
     drawTitle();
 
-    const bool clicksActive = (state_ == State::Menu);
+    const bool wantsExit = drawButtons();
+    const auto connected = tickActiveDialog();
+    EndDrawing();
 
-    if (playButton_.draw() && clicksActive) {
-      portDialog_.open();
-      state_ = State::ConnectDialog;
-    }
-    if (controlsButton_.draw() && clicksActive) {
-      kbDialog_.open();
-      state_ = State::EditBindings;
-    }
-    if (exitButton_.draw() && clicksActive) {
-      EndDrawing();
+    if (wantsExit) {
       return std::nullopt;
     }
-
-    if (state_ == State::ConnectDialog) {
-      const DialogResult result =  // NOLINT(cppcoreguidelines-init-variables)
-          portDialog_.draw();
-      if (result == DialogResult::Cancelled) {
-        state_ = State::Menu;
-      } else if (result == DialogResult::Connected) {
-        EndDrawing();
-        return portDialog_.result();
-      }
-    } else if (state_ == State::EditBindings) {
-      if (kbDialog_.draw() == BindingsResult::Closed) {
-        state_ = State::Menu;
-      }
+    if (connected) {
+      return connected;
     }
-
-    EndDrawing();
   }
   return std::nullopt;
 }

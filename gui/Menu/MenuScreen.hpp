@@ -64,6 +64,8 @@ class MenuScreen {
  private:
   enum class State : std::uint8_t { Menu, ConnectDialog, EditBindings };
 
+  [[nodiscard]] bool drawButtons();
+  [[nodiscard]] std::optional<GuiConfig> tickActiveDialog();
   void drawSimulation();
   void drawTitle() const;
 
