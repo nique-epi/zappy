@@ -51,6 +51,13 @@ class PortInputDialog {
   static constexpr int portMin = 1;
   static constexpr int portMax = 65535;
 
+  void drawHostField(float contentX, float contentWidth, float& cursorY);
+  void drawPortField(float contentX, float contentWidth, float& cursorY);
+  void drawConnectionError(float contentX, float cursorY) const;
+  DialogResult drawActionButtons(float contentX, float contentWidth,
+                                 float cursorY);
+  DialogResult tryConnect();
+
   std::array<char, menu::config::textBufferSize> hostBuffer_{};
   std::array<char, menu::config::textBufferSize> portBuffer_{};
   bool hostEditActive_{false};
