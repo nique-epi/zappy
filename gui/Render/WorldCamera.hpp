@@ -5,9 +5,10 @@
 ** WorldCamera
 */
 
-#pragma once
+#pragma once  // NOLINT(llvm-header-guard)
 
 #include <raylib.h>
+#include "Bindings/KeyBindings.hpp"
 
 namespace zappy::gui {
 
@@ -24,12 +25,12 @@ class WorldCamera {
    *
    * @param[in] deltaTime Time elapsed since the last frame, in seconds.
    */
-  void update(float deltaTime);
+  void update(float deltaTime, const KeyBindings& bindings);
 
   [[nodiscard]] const Camera3D& camera() const;
 
  private:
-  void applyMovement(float deltaTime);
+  void applyMovement(float deltaTime, const KeyBindings& bindings);
   void applyZoom();
   void applyRotation();
 
