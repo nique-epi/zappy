@@ -5,7 +5,7 @@
 ** PortInputDialog
 */
 
-#include "Menu/PortInputDialog.hpp"
+#include "Menu/Dialogs/PortInputDialog.hpp"
 #include <raylib.h>
 #include <charconv>
 #include <cstring>

@@ -5,7 +5,7 @@
 ** MenuButton
 */
 
-#include "Menu/MenuButton.hpp"
+#include "Menu/Button/MenuButton.hpp"
 #include <raylib.h>
 #include <string>
 #include <string_view>

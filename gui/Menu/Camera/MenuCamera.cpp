@@ -5,7 +5,7 @@
 ** MenuCamera
 */
 
-#include "Menu/MenuCamera.hpp"
+#include "Menu/Camera/MenuCamera.hpp"
 #include <raylib.h>
 #include <raymath.h>  // NOLINT(misc-include-cleaner)
 #include <cmath>

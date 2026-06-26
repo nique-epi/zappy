@@ -13,10 +13,10 @@
 #include <vector>
 #include "Bindings/KeyBindings.hpp"
 #include "GuiConfig.hpp"  // NOLINT(misc-include-cleaner)
-#include "Menu/KeyBindingsDialog.hpp"
-#include "Menu/MenuButton.hpp"
-#include "Menu/MenuCamera.hpp"
-#include "Menu/PortInputDialog.hpp"
+#include "Menu/Button/MenuButton.hpp"
+#include "Menu/Camera/MenuCamera.hpp"
+#include "Menu/Dialogs/KeyBindingsDialog.hpp"
+#include "Menu/Dialogs/PortInputDialog.hpp"
 #include "Render/SkyRenderer.hpp"  // NOLINT(misc-include-cleaner)
 #include "World/WorldState.hpp"
 

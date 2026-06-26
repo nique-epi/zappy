@@ -118,10 +118,10 @@ add_executable(zappy_gui
     Render/Panel/PlayerPanel.cpp
     Render/Panel/ResourceList.cpp
     Bindings/KeyBindings.cpp
-    Menu/MenuButton.cpp
-    Menu/MenuCamera.cpp
-    Menu/PortInputDialog.cpp
-    Menu/KeyBindingsDialog.cpp
+    Menu/Button/MenuButton.cpp
+    Menu/Camera/MenuCamera.cpp
+    Menu/Dialogs/PortInputDialog.cpp
+    Menu/Dialogs/KeyBindingsDialog.cpp
     Menu/MenuScreen.cpp
 )
 
@@ -133,7 +133,7 @@ set_source_files_properties(Render/WorldCamera.cpp PROPERTIES
     COMPILE_OPTIONS "-Wno-missing-field-initializers"
 )
 
-set_source_files_properties(Menu/MenuCamera.cpp PROPERTIES
+set_source_files_properties(Menu/Camera/MenuCamera.cpp PROPERTIES
     COMPILE_OPTIONS "-Wno-missing-field-initializers"
 )
 

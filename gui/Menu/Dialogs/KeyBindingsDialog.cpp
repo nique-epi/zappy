@@ -5,7 +5,7 @@
 ** KeyBindingsDialog
 */
 
-#include "Menu/KeyBindingsDialog.hpp"
+#include "Menu/Dialogs/KeyBindingsDialog.hpp"
 #include <raylib.h>
 #include <array>
 #include <cstddef>

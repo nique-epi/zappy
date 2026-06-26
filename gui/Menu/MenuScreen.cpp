@@ -13,9 +13,9 @@
 #include <vector>
 #include "Bindings/KeyBindings.hpp"
 #include "GuiConfig.hpp"
-#include "Menu/KeyBindingsDialog.hpp"
+#include "Menu/Dialogs/KeyBindingsDialog.hpp"
+#include "Menu/Dialogs/PortInputDialog.hpp"
 #include "Menu/MenuConfig.hpp"
-#include "Menu/PortInputDialog.hpp"
 #include "Render/SkyRenderer.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
