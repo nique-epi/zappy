@@ -15,8 +15,10 @@ using zappy::cli::InvalidValueException;
 using zappy::cli::MissingValueException;
 using zappy::cli::ParserException;
 using zappy::cli::UnknownOptionException;
+using zappy::server::helpRequested;
 using zappy::server::parseArguments;
 using zappy::server::ServerConfig;
+using zappy::server::usageMessage;
 
 namespace {
 
@@ -27,6 +29,15 @@ ServerConfig parse(std::vector<std::string> tokens) {
     argv.push_back(token.data());
   }
   return parseArguments(static_cast<int>(argv.size()), argv.data());
+}
+
+bool helpRequestedFor(std::vector<std::string> tokens) {
+  std::vector<char*> argv;
+  argv.reserve(tokens.size());
+  for (std::string& token : tokens) {
+    argv.push_back(token.data());
+  }
+  return helpRequested(static_cast<int>(argv.size()), argv.data());
 }
 
 }  // namespace
@@ -115,4 +126,46 @@ TEST(ArgsParser, EveryFailureIsAParserException) {
   EXPECT_THROW(parse({"zappy_server", "-z"}), ParserException);
   EXPECT_THROW(parse({"zappy_server", "-p", "abc", "-n", "red"}),
                ParserException);
+}
+
+// Given a command line carrying --help
+// When help detection runs
+// Then it reports that the usage was requested
+TEST(ArgsParser, LongHelpFlagIsDetected) {
+  EXPECT_TRUE(helpRequestedFor({"zappy_server", "--help"}));
+}
+
+// Given a command line carrying -h, a flag the server does not reserve
+// When help detection runs
+// Then it reports that the usage was requested
+TEST(ArgsParser, ShortHelpFlagIsDetected) {
+  EXPECT_TRUE(helpRequestedFor({"zappy_server", "-h"}));
+}
+
+// Given a command line where --help follows otherwise valid options
+// When help detection runs
+// Then it still reports that the usage was requested
+TEST(ArgsParser, HelpFlagIsDetectedAmongOtherArguments) {
+  EXPECT_TRUE(
+      helpRequestedFor({"zappy_server", "-p", "8080", "--help", "-n", "red"}));
+}
+
+// Given a regular command line with no help flag
+// When help detection runs
+// Then it reports that the usage was not requested
+TEST(ArgsParser, NoHelpFlagMeansNoHelpRequested) {
+  EXPECT_FALSE(helpRequestedFor({"zappy_server", "-p", "8080", "-n", "red"}));
+}
+
+// Given the server option schema
+// When the usage message is rendered
+// Then it carries the USAGE synopsis plus every flag and its description
+TEST(ArgsParser, UsageMessageListsSynopsisFlagsAndDescriptions) {
+  const std::string usage = usageMessage();
+
+  EXPECT_NE(usage.find("USAGE: ./zappy_server"), std::string::npos);
+  EXPECT_NE(usage.find("-p port"), std::string::npos);
+  EXPECT_NE(usage.find("TCP port to listen on"), std::string::npos);
+  EXPECT_NE(usage.find("-n teamName"), std::string::npos);
+  EXPECT_NE(usage.find("team names"), std::string::npos);
 }

@@ -11,6 +11,10 @@
 #include "Cli/ArgsParser.hpp"
 
 int main(int argc, char **argv) {
+  if (zappy::server::helpRequested(argc, argv)) {
+    std::cout << zappy::server::usageMessage() << '\n';
+    return 0;
+  }
   try {
     const zappy::server::ServerConfig config =
         zappy::server::parseArguments(argc, argv);
