@@ -72,7 +72,9 @@ void drawOrientationArrow(Vector3 position, Orientation orientation) {
 
 }  // namespace
 
-void PlayerRenderer::draw3D(WorldState& world) {
+void PlayerRenderer::loadAssets() {}
+
+void PlayerRenderer::draw(WorldState& world) {
   const auto now = std::chrono::steady_clock::now();
 
   for (const auto& player : world.players) {
@@ -106,8 +108,8 @@ void PlayerRenderer::draw3D(WorldState& world) {
   });
 }
 
-void PlayerRenderer::drawLevelLabels(const WorldState& world,
-                                     const Camera3D& camera) {
+void PlayerRenderer::drawOverlay(const WorldState& world,
+                                 const Camera3D& camera) {
   for (const auto& player : world.players) {
     if (!player.alive) {
       continue;
@@ -133,5 +135,7 @@ void PlayerRenderer::drawLevelLabels(const WorldState& world,
              cfg::PLAYER_LABEL_COLOR);
   }
 }
+
+void PlayerRenderer::unloadAssets() {}
 
 }  // namespace zappy::gui

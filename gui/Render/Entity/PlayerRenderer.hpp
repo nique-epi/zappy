@@ -8,15 +8,18 @@
 #pragma once
 
 #include <raylib.h>
+#include "Render/Entity/IEntityRenderer.hpp"
 
 namespace zappy::gui {
 
 struct WorldState;
 
-class PlayerRenderer {
+class PlayerRenderer : public IEntityRenderer {
  public:
-  static void draw3D(WorldState& world);
-  static void drawLevelLabels(const WorldState& world, const Camera3D& camera);
+  void loadAssets() override;
+  void draw(WorldState& world) override;
+  void drawOverlay(const WorldState& world, const Camera3D& camera) override;
+  void unloadAssets() override;
 };
 
 }  // namespace zappy::gui

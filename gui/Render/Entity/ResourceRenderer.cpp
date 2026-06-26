@@ -58,13 +58,6 @@ constexpr std::array<const char*, gemCount> gemModelPaths{{
     ASSETS_DIR "/models/resources/gems/Diamond.obj",
 }};
 
-Texture2D
-    colormap{};  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-std::array<Model, foodModelCount>
-    foodModels{};  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-std::array<Model, gemCount>
-    gemModels{};  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
 std::size_t foodIndexForTile(int tileX, int tileY) {
   const auto hash = (static_cast<unsigned>(tileX) * 31U +
                      static_cast<unsigned>(tileY) * 97U) &
@@ -89,41 +82,49 @@ void drawAtSlot(Model& model, cfg::SlotDrawConfig drawCfg) {
               {drawCfg.scale, drawCfg.scale, drawCfg.scale}, WHITE);
 }
 
-void loadColormap() {
-  colormap = LoadTexture(colormapPath);
+Texture2D loadColormap() {
+  const Texture2D colormap = LoadTexture(colormapPath);
   if (colormap.id == 0) {
     std::cerr << "[ResourceRenderer] failed to load colormap: " << colormapPath
               << '\n';
   }
+  return colormap;
 }
 
-void loadFoodModels() {
+std::vector<Model> loadFoodModels(const Texture2D& colormap) {
+  std::vector<Model> models;
+  models.reserve(foodModelCount);
   for (std::size_t i = 0; i < foodModelCount; ++i) {
-    foodModels[i] = LoadModel(foodModelPaths[i]);
-    if (foodModels[i].meshCount == 0) {
+    Model model = LoadModel(foodModelPaths[i]);
+    if (model.meshCount == 0) {
       std::cerr << "[ResourceRenderer] failed to load " << foodModelPaths[i]
                 << '\n';
-      continue;
+    } else {
+      for (int matIdx = 0; matIdx < model.materialCount; ++matIdx) {
+        model.materials[matIdx].maps[MATERIAL_MAP_DIFFUSE].texture = colormap;
+      }
     }
-    for (int matIdx = 0; matIdx < foodModels[i].materialCount; ++matIdx) {
-      foodModels[i].materials[matIdx].maps[MATERIAL_MAP_DIFFUSE].texture =
-          colormap;
-    }
+    models.push_back(model);
   }
+  return models;
 }
 
-void loadGemModels() {
+std::vector<Model> loadGemModels() {
+  std::vector<Model> models;
+  models.reserve(gemCount);
   for (std::size_t i = 0; i < gemCount; ++i) {
-    gemModels[i] = LoadModel(gemModelPaths[i]);
-    if (gemModels[i].meshCount == 0) {
+    const Model model = LoadModel(gemModelPaths[i]);
+    if (model.meshCount == 0) {
       std::cerr << "[ResourceRenderer] failed to load " << gemModelPaths[i]
                 << '\n';
     }
+    models.push_back(model);
   }
+  return models;
 }
 
-void drawTileFood(const Tile& tile, int tileX, int tileY,
-                  cfg::TileWorldPos pos) {
+void drawTileFood(std::vector<Model>& foodModels, const Tile& tile, int tileX,
+                  int tileY, cfg::TileWorldPos pos) {
   if (tile.resources[0] == 0) {
     return;
   }
@@ -133,7 +134,8 @@ void drawTileFood(const Tile& tile, int tileX, int tileY,
       {.slotIndex = 0, .scale = cfg::RESOURCE_FOOD_SCALE, .worldPos = pos});
 }
 
-void drawTileGems(const Tile& tile, cfg::TileWorldPos pos) {
+void drawTileGems(std::vector<Model>& gemModels, const Tile& tile,
+                  cfg::TileWorldPos pos) {
   for (std::size_t i = 1; i < RESOURCE_COUNT; ++i) {
     if (tile.resources[i] > 0) {
       drawAtSlot(
@@ -143,45 +145,45 @@ void drawTileGems(const Tile& tile, cfg::TileWorldPos pos) {
   }
 }
 
-void unloadFoodModels() {
-  for (auto& model : foodModels) {
-    for (int matIdx = 0; matIdx < model.materialCount; ++matIdx) {
-      model.materials[matIdx].maps[MATERIAL_MAP_DIFFUSE].texture = {};
+void unloadModels(std::vector<Model>& models, bool clearDiffuseTexture) {
+  for (auto& model : models) {
+    if (clearDiffuseTexture) {
+      for (int matIdx = 0; matIdx < model.materialCount; ++matIdx) {
+        model.materials[matIdx].maps[MATERIAL_MAP_DIFFUSE].texture = {};
+      }
     }
     UnloadModel(model);
   }
-}
-
-void unloadGemModels() {
-  for (auto& model : gemModels) {
-    UnloadModel(model);
-  }
+  models.clear();
 }
 
 }  // namespace
 
-void ResourceRenderer::loadModels() {
-  loadColormap();
-  loadFoodModels();
-  loadGemModels();
+void ResourceRenderer::loadAssets() {
+  colormap_ = loadColormap();
+  foodModels_ = loadFoodModels(colormap_);
+  gemModels_ = loadGemModels();
 }
 
-void ResourceRenderer::draw3D(const WorldState& world) {
+void ResourceRenderer::draw(WorldState& world) {
   for (int tileY = 0; tileY < world.height; ++tileY) {
     for (int tileX = 0; tileX < world.width; ++tileX) {
       const Tile& tile = world.tiles[tileY][tileX];
       const cfg::TileWorldPos pos{.x = tileToWorld(tileX),
                                   .z = tileToWorld(tileY)};
-      drawTileFood(tile, tileX, tileY, pos);
-      drawTileGems(tile, pos);
+      drawTileFood(foodModels_, tile, tileX, tileY, pos);
+      drawTileGems(gemModels_, tile, pos);
     }
   }
 }
 
-void ResourceRenderer::unloadModels() {
-  unloadFoodModels();
-  UnloadTexture(colormap);
-  unloadGemModels();
+void ResourceRenderer::drawOverlay([[maybe_unused]] const WorldState& world,
+                                   [[maybe_unused]] const Camera3D& camera) {}
+
+void ResourceRenderer::unloadAssets() {
+  unloadModels(foodModels_, true);
+  UnloadTexture(colormap_);
+  unloadModels(gemModels_, false);
 }
 
 }  // namespace zappy::gui

@@ -8,16 +8,23 @@
 #pragma once
 
 #include <raylib.h>
+#include <vector>
+#include "Render/Entity/IEntityRenderer.hpp"
 
 namespace zappy::gui {
 
 struct WorldState;
 
-class IncantationRenderer {
+class IncantationRenderer : public IEntityRenderer {
  public:
-  static void loadTextures();
-  static void unloadTextures();
-  static void draw3D(WorldState& world);
+  void loadAssets() override;
+  void draw(WorldState& world) override;
+  void drawOverlay(const WorldState& world, const Camera3D& camera) override;
+  void unloadAssets() override;
+
+ private:
+  std::vector<Texture2D> frames_;
+  Model planeModel_{};
 };
 
 }  // namespace zappy::gui
