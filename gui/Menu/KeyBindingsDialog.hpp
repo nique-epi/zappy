@@ -24,6 +24,13 @@ class KeyBindingsDialog {
  private:
   enum class InternalState : std::uint8_t { Idle, ConfirmDiscard };
 
+  void pollKeyCapture();
+  void drawBindingRows(float contentX, float keyBtnWidth, float& cursorY);
+  void drawFooterText(float contentX, float& cursorY) const;
+  BindingsResult drawActionButtons(float contentX, float halfW, float cursorY,
+                                   bool canInteract);
+  BindingsResult drawDiscardPopup();
+
   [[nodiscard]] bool hasConflict() const;
   [[nodiscard]] bool hasUnsavedChanges() const;
 
