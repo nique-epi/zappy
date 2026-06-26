@@ -1,8 +1,9 @@
 *.o
 .cache/
 compile_commands.json
-Makefile
 build*/
+# The root Makefile is a tracked deliverable (subject requirement); CMake's
+# generated Makefiles live under build*/ and are already ignored above.
 
 # Compiled binaries (built into repo root via CMAKE_RUNTIME_OUTPUT_DIRECTORY)
 /zappy_server
