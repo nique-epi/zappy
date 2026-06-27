@@ -20,6 +20,7 @@
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
 #include "Render/raygui.h"
+#include "Theme/Theme.hpp"
 #include "World/WorldState.hpp"
 
 namespace zappy::gui {
@@ -29,14 +30,12 @@ namespace wcfg = config;
 
 namespace {
 
-// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-constexpr Color themeBeige = {245, 232, 210, 255};
-constexpr Color themeBeigeLight = {255, 248, 235, 255};
-constexpr Color themedBeigeFocus = {230, 215, 188, 255};
-constexpr Color themeBeigePress = {210, 195, 165, 255};
-constexpr Color themeBrown = {101, 67, 33, 255};
-constexpr Color themeBrownDark = {80, 50, 25, 255};
-// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
+constexpr Color themeBeige = theme::parchment;
+constexpr Color themeBeigeLight = theme::parchmentLight;
+constexpr Color themedBeigeFocus = theme::parchmentHover;
+constexpr Color themeBeigePress = theme::parchmentPressed;
+constexpr Color themeBrown = theme::inkBrown;
+constexpr Color themeBrownDark = theme::inkBrownDark;
 
 void applyMenuTheme() {
   GuiSetStyle(DEFAULT, BACKGROUND_COLOR,
