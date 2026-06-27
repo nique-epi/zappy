@@ -10,6 +10,7 @@
 #include <optional>
 #include "Network/ConnectionBootstrap.hpp"
 #include "Network/NetworkManager.hpp"
+#include "Render/EndScreen/EndScreen.hpp"
 #include "Render/Entity/PlayerChevron.hpp"
 #include "Render/Entity/PlayerPicker.hpp"
 #include "Render/Panel/HudPanel.hpp"
@@ -46,6 +47,7 @@ bool GameSession::run() {
     processInput();
     render();
   }
+  EndScreen::unloadFont();
   return returnToMenu_;
 }
 
@@ -58,6 +60,7 @@ bool GameSession::connectAndInitialize() {
       static_cast<float>(world_.height) * cfg::TILE_SIZE / 2.0F};
   camera_.emplace(mapCenter);
   worldRenderer_.emplace();
+  EndScreen::loadFont();
   sender_.requestTimeUnit();
   return true;
 }
@@ -70,6 +73,14 @@ void GameSession::update() {
 }
 
 void GameSession::processInput() {
+  if (IsKeyPressed(KEY_V) && !world_.gameOver) {
+    world_.gameOver = true;
+    world_.winnerTeam = world_.teams.empty() ? "Team1" : world_.teams.front();
+  }
+  if (IsKeyPressed(KEY_L) && !world_.gameOver) {
+    world_.gameOver = true;
+    world_.winnerTeam = world_.teams.size() > 1 ? world_.teams[1] : "Unknown";
+  }
   if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     return;
   }
@@ -102,6 +113,9 @@ void GameSession::render() {
     if (PlayerPanel::draw(world_, *selection_.selectedId())) {
       selection_.close();
     }
+  }
+  if (world_.gameOver) {
+    EndScreen::draw(world_, "ESC");
   }
   EndDrawing();
 }

@@ -131,6 +131,9 @@ add_executable(zappy_gui
     Menu/Dialogs/PortInputDialog.cpp
     Menu/Dialogs/KeyBindingsDialog.cpp
     Menu/MenuScreen.cpp
+    Render/EndScreen/EndScreen.cpp
+    Render/EndScreen/Background/EndBackground.cpp
+    Render/EndScreen/Panel/TeamResultPanel.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES
