@@ -12,6 +12,7 @@ class MessageType(Enum):
     LEAD = "LEAD"
     JOIN = "JOIN"
     FORK_NEEDED = "FORK_NEEDED"
+    ROLE_CLAIM = "ROLE_CLAIM"
 
 
 @dataclass

@@ -36,3 +36,11 @@ class Resource(Enum):
     MENDIANE = "mendiane"
     PHIRAS = "phiras"
     THYSTAME = "thystame"
+
+
+class Role(Enum):
+    """Fixed team role assigned to a bot at connection (ZAP-21 bonus)."""
+    GENERIC = "generic"
+    FARMER = "farmer"
+    COLLECTOR = "collector"
+    CHEF = "chef"

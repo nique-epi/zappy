@@ -1,6 +1,10 @@
 """Unit tests for ExplorationState."""
 # pylint: disable=redefined-outer-name,protected-access
-from ia.communication.broadcast import MessageType, format_message
+from ia.communication.broadcast import (
+    MessageType,
+    format_message,
+    parse_broadcast,
+)
 from ia.config import (
     EXPLORATION_TURN_INTERVAL,
     FORK_CHECK_INTERVAL,
@@ -8,10 +12,11 @@ from ia.config import (
     FORK_MAX_LEVEL,
     INVENTORY_CHECK_INTERVAL,
     MAX_FORK_DEPTH,
+    ROLE_VACANCY_TIMEOUT,
 )
 from ia.core.bot import Bot
 from ia.network.client import ZappyClient
-from ia.shared.enum import Direction, Resource, State
+from ia.shared.enum import Direction, Resource, Role, State
 from ia.states.exploration import ExplorationState
 from tests.IA.mocks.fake_socket import FakeSocket
 
@@ -422,3 +427,72 @@ def test_fork_needed_broadcast_ignored_when_unavailable():
     assert "Fork" not in sent
     assert bot.fork_count == 0
     assert result == State.EXPLORATION
+
+
+def _role_claim_line(level: int = 1) -> str:
+    """Build a raw ROLE_CLAIM farmer heartbeat line from another player."""
+    return (
+        f"message 0, {format_message(MessageType.ROLE_CLAIM, level, 'farmer')}"
+    )
+
+
+def test_handle_dispatches_farmer_role_never_collects_stones():
+    """
+    Given a farmer-role bot seeing a missing stone in its Look
+    When handle dispatches to the farmer behaviour
+    Then it never takes the stone and stays in EXPLORATION
+    """
+    bot = _make_bot([_LINEMATE_VISIBLE, "ok"])
+    bot.role = Role.FARMER
+    bot.inventory[Resource.LINEMATE] = 0
+    state = ExplorationState(bot)
+    result = state.handle()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert result == State.EXPLORATION
+    assert "Take" not in sent
+
+
+def test_collector_promotes_to_farmer_after_vacancy_timeout():
+    """
+    Given a collector that hears no farmer heartbeat for the timeout window
+    When the vacancy is tracked past the threshold
+    Then it promotes itself to farmer and broadcasts a ROLE_CLAIM
+    """
+    bot = _make_bot(["ok"])
+    bot.bot_id = 0
+    bot.role = Role.COLLECTOR
+    state = ExplorationState(bot)
+    for _ in range(ROLE_VACANCY_TIMEOUT):
+        state.track_farmer_vacancy()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert bot.role == Role.FARMER
+    assert "ROLE_CLAIM" in sent
+
+
+def test_collector_resets_vacancy_on_farmer_heartbeat():
+    """
+    Given a collector with an ongoing farmer-vacancy countdown
+    When a ROLE_CLAIM farmer heartbeat is processed
+    Then the vacancy counter is reset to zero
+    """
+    bot = _make_bot([])
+    state = ExplorationState(bot)
+    state.farmer_vacancy_ticks = 10
+    state._handle_broadcast(parse_broadcast(_role_claim_line()))
+    assert state.farmer_vacancy_ticks == 0
+
+
+def test_farmer_role_does_not_promote_on_vacancy_tracking():
+    """
+    Given a bot already holding the farmer role
+    When farmer-vacancy tracking runs repeatedly
+    Then it never changes role nor broadcasts
+    """
+    bot = _make_bot([])
+    bot.role = Role.FARMER
+    state = ExplorationState(bot)
+    for _ in range(ROLE_VACANCY_TIMEOUT + 5):
+        state.track_farmer_vacancy()
+    sent = b"".join(bot.client._sock.sent).decode()
+    assert bot.role == Role.FARMER
+    assert sent == ""

@@ -1,6 +1,7 @@
 """Unit tests for the Bot class."""
 # pylint: disable=redefined-outer-name
-from ia.shared.enum import Resource, State
+from ia.core.bot import Bot
+from ia.shared.enum import Resource, Role, State
 
 
 def test_bot_init(bot):
@@ -13,18 +14,28 @@ def test_bot_init(bot):
     assert bot.height == 10
     assert bot.client_num == 1
     assert bot.level == 1
-    assert bot.role == "generic"
+    assert bot.role == Role.GENERIC
     assert len(bot.world_map.world_map) == 10
     assert len(bot.world_map.world_map[0]) == 10
 
 
-def test_bot_assign_role(bot):
+def test_bot_role_generic_without_flag(bot):
     """
-    Given a bot built from a connection slot
-    When the role is assigned
-    Then it defaults to the generic role
+    Given a bot built without the roles bonus flag
+    When its role is read
+    Then it defaults to the generic role, keeping the base behaviour
     """
-    assert bot._assign_role(1) == "generic"  # pylint: disable=protected-access
+    assert bot.role == Role.GENERIC
+
+
+def test_bot_role_assigned_when_roles_enabled(connected_client):
+    """
+    Given a bot built from connection slot 1 with the roles bonus enabled
+    When its role is read
+    Then assign_role maps the connection slot to the collector role
+    """
+    bot = Bot(10, 10, 1, connected_client, roles=True)
+    assert bot.role == Role.COLLECTOR
 
 
 def test_bot_inventory_initialised_to_zeros(bot):

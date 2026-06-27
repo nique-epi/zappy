@@ -29,6 +29,9 @@ def parse_arguments(argv=None) -> argparse.Namespace:
     parser.add_argument("-b", action="store_true",
                         dest="mental_map",
                         help="enable the mental-map pathfinding bonus")
+    parser.add_argument("-r", "--roles", action="store_true",
+                        dest="roles",
+                        help="enable the fixed role specialisation bonus")
 
     args = parser.parse_args(argv)
     if not 1 <= args.port <= 65535:
