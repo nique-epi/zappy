@@ -144,9 +144,10 @@ class CoordinationState:  # pylint: disable=too-few-public-methods
 
     def _move_toward(self, direction: int) -> None:
         """Send movement commands toward broadcast direction K."""
-        for move in broadcast_direction_to_moves(direction):
-            self._bot.client.send(move.value)
-            self._bot.client.recv_ack()
+        directions = broadcast_direction_to_moves(direction)
+        moves = [move.value for move in directions]
+        self._bot.client.send_many(moves)
+        self._bot.client.recv_many(len(moves))
 
     def _send_broadcast(self, msg_type: MessageType, data: str) -> None:
         """Send a ZAPPY broadcast and consume the server acknowledgement."""

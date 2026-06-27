@@ -71,9 +71,9 @@ class CollectState:  # pylint: disable=too-few-public-methods
             )
             if resource is None:
                 continue
-            for _ in range(amount):
-                self.bot.client.send(f"Set {stone}")
-                response = self.bot.client.recv_ack()
+            self.bot.client.send_many([f"Set {stone}"] * amount)
+            responses = self.bot.client.recv_many(amount)
+            for response in responses:
                 if response and response.strip() == "ok":
                     self.bot.inventory[resource] -= 1
 

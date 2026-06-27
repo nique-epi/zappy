@@ -256,3 +256,56 @@ def test_client_connected_false_after_close(client, fake_socket):
     client.close()
 
     assert client.connected is False
+
+
+def test_client_send_many_transmits_in_order(client, fake_socket):
+    """
+    Given a connected client
+    When send_many is called with several commands
+    Then each one is transmitted in the order given
+    """
+    client._sock = fake_socket
+
+    client.send_many(["Forward", "Left", "Take food"])
+
+    assert fake_socket.sent == [b"Forward\n", b"Left\n", b"Take food\n"]
+
+
+def test_client_send_many_respects_pending_limit(client, fake_socket):
+    """
+    Given a connected client
+    When send_many is called with more commands than the pending limit
+    Then only the first ten are transmitted immediately
+    """
+    client._sock = fake_socket
+
+    client.send_many([f"cmd{i}" for i in range(12)])
+
+    assert len(fake_socket.sent) == 10
+    assert client._queue.pending == 10
+    assert len(client._queue) == 2
+
+
+def test_client_recv_many_returns_acks_in_order(client, fake_socket):
+    """
+    Given a server replying to several pipelined commands
+    When recv_many is called with the matching count
+    Then the acks are returned in the order they were sent
+    """
+    client._sock = fake_socket
+    fake_socket._responses = [b"ok\nko\nmehari\n"]
+
+    assert client.recv_many(3) == ["ok", "ko", "mehari"]
+
+
+def test_client_recv_many_skips_notifications(client, fake_socket):
+    """
+    Given a broadcast interleaved before two command acks
+    When recv_many is called with count 2
+    Then only the two acks are returned and the broadcast is queued
+    """
+    client._sock = fake_socket
+    fake_socket._responses = [b"message 3,hello\nok\nko\n"]
+
+    assert client.recv_many(2) == ["ok", "ko"]
+    assert client.pop_notification() == "message 3,hello"
