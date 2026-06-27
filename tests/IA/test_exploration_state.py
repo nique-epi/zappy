@@ -469,6 +469,23 @@ def test_collector_promotes_to_farmer_after_vacancy_timeout():
     assert "ROLE_CLAIM" in sent
 
 
+def test_collector_promoting_on_useful_stone_does_not_collect():
+    """
+    Given a collector at the vacancy threshold that also sees a missing stone
+    When handle promotes it to farmer on the same tick
+    Then it returns EXPLORATION instead of COLLECTING so it never takes stones
+    """
+    bot = _make_bot([_LINEMATE_VISIBLE, "ok"])
+    bot.bot_id = 0
+    bot.role = Role.COLLECTOR
+    bot.inventory[Resource.LINEMATE] = 0
+    state = ExplorationState(bot)
+    state.farmer_vacancy_ticks = ROLE_VACANCY_TIMEOUT - 1
+    result = state.handle()
+    assert bot.role == Role.FARMER
+    assert result == State.EXPLORATION
+
+
 def test_collector_resets_vacancy_on_farmer_heartbeat():
     """
     Given a collector with an ongoing farmer-vacancy countdown

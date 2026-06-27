@@ -49,6 +49,8 @@ class ExplorationState:
         handler = _ROLE_HANDLERS.get(self.bot.role, roles.handle_collector)
         result = handler(self)
         self.track_farmer_vacancy()
+        if self.bot.role == Role.FARMER and result == State.COLLECTING:
+            return State.EXPLORATION
         return result
 
     def explore_for_stones(self, allow_fork: bool = True) -> State:
