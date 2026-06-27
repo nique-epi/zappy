@@ -27,6 +27,7 @@ endif()
 add_library(zappy_gui_cli STATIC
     Exceptions/GuiException.cpp
     Cli/ArgsParser.cpp
+    Cli/LaunchMode.cpp
 )
 
 target_include_directories(zappy_gui_cli PUBLIC
@@ -96,11 +97,17 @@ target_compile_options(zappy_gui_world_init PRIVATE -Wall -Wextra -Werror)
 
 add_executable(zappy_gui
     main.cpp
+    App/Application.cpp
+    App/GameSession.cpp
+    Network/ConnectionBootstrap.cpp
+    Network/SessionConnector.cpp
     Network/NetworkManager.cpp
     World/MockWorld.cpp
     World/WorldQuery.cpp
     Render/Raygui.cpp
     Render/RenderUtils.cpp
+    Render/WorldRenderer.cpp
+    Render/Entity/EntityRendererFactory.cpp
     Render/Entity/EggRenderer.cpp
     Render/Entity/IncantationRenderer.cpp
     Render/Entity/ResourceRenderer.cpp

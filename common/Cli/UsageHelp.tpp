@@ -25,13 +25,13 @@ UsageHelp<Config>::UsageHelp(std::string synopsis,
 
 template <typename Config>
 bool UsageHelp<Config>::reservesShortFlag() const {
-  return std::ranges::any_of(options_, [](const OptionSchema<Config> &option) {
+  return std::ranges::any_of(options_, [](const OptionSchema<Config>& option) {
     return option.flag == shortFlag;
   });
 }
 
 template <typename Config>
-bool UsageHelp<Config>::isRequested(int argumentCount, char **arguments) const {
+bool UsageHelp<Config>::isRequested(int argumentCount, char** arguments) const {
   const bool shortMeansHelp = !reservesShortFlag();
   for (int index = 1; index < argumentCount; ++index) {
     const std::string token(arguments[index]);
@@ -47,7 +47,7 @@ std::string UsageHelp<Config>::text() const {
   std::vector<std::string> rows;
   rows.reserve(options_.size());
   std::size_t flagWidth = 0;
-  for (const OptionSchema<Config> &option : options_) {
+  for (const OptionSchema<Config>& option : options_) {
     std::string row = option.flag;
     if (option.fieldType) {
       row += ' ';

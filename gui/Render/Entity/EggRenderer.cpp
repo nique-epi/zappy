@@ -15,7 +15,9 @@ namespace zappy::gui {
 
 namespace cfg = config;
 
-void EggRenderer::draw3D(const WorldState& world) {
+void EggRenderer::loadAssets() {}
+
+void EggRenderer::draw(WorldState& world) {
   for (const auto& egg : world.eggs) {
     const Vector3 center{tileToWorld(egg.x), cfg::EGG_CENTER_Y,
                          tileToWorld(egg.y)};
@@ -25,5 +27,10 @@ void EggRenderer::draw3D(const WorldState& world) {
                     cfg::EGG_WIRE_COLOR);
   }
 }
+
+void EggRenderer::drawOverlay([[maybe_unused]] WorldState& world,
+                              [[maybe_unused]] const Camera3D& camera) {}
+
+void EggRenderer::unloadAssets() {}
 
 }  // namespace zappy::gui

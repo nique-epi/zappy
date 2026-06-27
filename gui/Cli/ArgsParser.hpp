@@ -7,9 +7,30 @@
 
 #pragma once
 
+#include <string>
 #include "GuiConfig.hpp"
 
 namespace zappy::gui {
+
+/**
+ * @brief Whether the command line requests the usage message (`--help`).
+ *
+ * Checked before @ref parseArguments so `./zappy_gui --help` prints the usage
+ * and exits successfully instead of failing on the missing flags. The short
+ * `-h` is not help here: the schema binds it to the server hostname.
+ *
+ * @param argumentCount Number of entries in @p arguments (argc).
+ * @param arguments     Argument vector (argv).
+ * @returns True when help was requested.
+ */
+bool helpRequested(int argumentCount, char** arguments);
+
+/**
+ * @brief The GUI `--help` usage text, with no trailing newline.
+ *
+ * @returns The formatted usage block describing every GUI option.
+ */
+std::string usageMessage();
 
 /**
  * @brief Parse the GUI command line into a GuiConfig.
