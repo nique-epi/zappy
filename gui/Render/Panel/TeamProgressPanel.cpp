@@ -76,6 +76,20 @@ void drawRightAligned(const std::string& text, float rightEdge, float topY,
            static_cast<int>(topY), cfg::PANEL_ROW_FONT_SIZE, color);
 }
 
+std::string elideToWidth(const std::string& text, int fontSize,
+                         float maxWidth) {
+  if (static_cast<float>(MeasureText(text.c_str(), fontSize)) <= maxWidth) {
+    return text;
+  }
+  std::string elided = text;
+  while (!elided.empty() &&
+         static_cast<float>(MeasureText((elided + "...").c_str(), fontSize)) >
+             maxWidth) {
+    elided.pop_back();
+  }
+  return elided + "...";
+}
+
 void drawNameRow(const WorldState& world, const Rectangle& panel, float rowY,
                  const TeamProgress& entry, bool champion) {
   const float contentX = panel.x + cfg::PANEL_PADDING;
@@ -88,16 +102,23 @@ void drawNameRow(const WorldState& world, const Rectangle& panel, float rowY,
       swatch, cfg::PANEL_SWATCH_ROUNDNESS, cfg::PANEL_SWATCH_SEGMENTS,
       cfg::PANEL_BORDER_THICKNESS, cfg::PANEL_SWATCH_BORDER_COLOR);
 
+  const std::string aliveText = std::format("{} alive", entry.aliveCount);
+  const auto aliveWidth = static_cast<float>(
+      MeasureText(aliveText.c_str(), cfg::PANEL_ROW_FONT_SIZE));
+  const float rightEdge = panel.x + panel.width - cfg::PANEL_PADDING;
+  const float textY = rowY + cfg::PANEL_ROW_TEXT_TOP;
+
   const float nameX = contentX + cfg::PANEL_SWATCH_SIZE + cfg::PANEL_SWATCH_GAP;
+  const float nameMaxWidth =
+      rightEdge - aliveWidth - cfg::TEAM_PANEL_NAME_ALIVE_GAP - nameX;
+  const std::string name =
+      elideToWidth(entry.name, cfg::PANEL_ROW_FONT_SIZE, nameMaxWidth);
   const Color nameColor =
       champion ? cfg::TEAM_PANEL_VICTORY_COLOR : cfg::PANEL_TITLE_COLOR;
-  DrawText(entry.name.c_str(), static_cast<int>(nameX),
-           static_cast<int>(rowY + cfg::PANEL_ROW_TEXT_TOP),
+  DrawText(name.c_str(), static_cast<int>(nameX), static_cast<int>(textY),
            cfg::PANEL_ROW_FONT_SIZE, nameColor);
 
-  const std::string aliveText = std::format("{} alive", entry.aliveCount);
-  drawRightAligned(aliveText, panel.x + panel.width - cfg::PANEL_PADDING,
-                   rowY + cfg::PANEL_ROW_TEXT_TOP, cfg::PANEL_LABEL_COLOR);
+  drawRightAligned(aliveText, rightEdge, textY, cfg::PANEL_LABEL_COLOR);
 }
 
 void drawProgressBar(const Rectangle& panel, float rowY,

@@ -78,6 +78,7 @@ constexpr float TEAM_PANEL_TOP = 128.0F;
 constexpr float TEAM_PANEL_BOTTOM_PADDING = 12.0F;
 constexpr float TEAM_PANEL_BLOCK_GAP = 12.0F;
 constexpr float TEAM_PANEL_NAME_ROW_HEIGHT = 22.0F;
+constexpr float TEAM_PANEL_NAME_ALIVE_GAP = 8.0F;
 constexpr float TEAM_PANEL_BAR_ROW_HEIGHT = 20.0F;
 constexpr float TEAM_PANEL_BAR_HEIGHT = 12.0F;
 constexpr float TEAM_PANEL_BAR_LABEL_WIDTH = 72.0F;
