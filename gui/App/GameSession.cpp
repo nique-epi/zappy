@@ -15,6 +15,7 @@
 #include "Render/Panel/HudPanel.hpp"
 #include "Render/Panel/InfoPanel.hpp"
 #include "Render/Panel/PlayerPanel.hpp"
+#include "Render/Panel/TeamProgressPanel.hpp"
 #include "Render/SkyRenderer.hpp"
 #include "Render/TileGridRenderer.hpp"
 #include "Render/WindowConfig.hpp"
@@ -96,6 +97,7 @@ void GameSession::render() {
   HudPanel::draw(config_, world_);
   InfoPanel::draw(world_, camera_->camera());
   speedControl_.draw(world_.timeUnit);
+  TeamProgressPanel::draw(world_);
   if (selection_.selectedId().has_value()) {
     if (PlayerPanel::draw(world_, *selection_.selectedId())) {
       selection_.close();

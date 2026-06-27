@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 #include "Menu/MenuConfig.hpp"
+#include "Theme/Theme.hpp"
 
 namespace zappy::gui {
 
@@ -17,13 +18,11 @@ namespace cfg = menu::config;
 
 namespace {
 
-// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-constexpr Color colorBg = {245, 232, 210, 255};
-constexpr Color colorBgHover = {230, 215, 188, 255};
-constexpr Color colorBgHeld = {210, 195, 165, 255};
-constexpr Color colorBorder = {101, 67, 33, 255};
-constexpr Color colorText = {80, 50, 25, 255};
-// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
+constexpr Color colorBg = theme::parchment;
+constexpr Color colorBgHover = theme::parchmentHover;
+constexpr Color colorBgHeld = theme::parchmentPressed;
+constexpr Color colorBorder = theme::inkBrown;
+constexpr Color colorText = theme::inkBrownDark;
 
 }  // namespace
 

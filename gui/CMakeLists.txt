@@ -124,6 +124,7 @@ add_executable(zappy_gui
     Render/Panel/PanelChrome.cpp
     Render/Panel/PlayerPanel.cpp
     Render/Panel/ResourceList.cpp
+    Render/Panel/TeamProgressPanel.cpp
     Bindings/KeyBindings.cpp
     Menu/Button/MenuButton.cpp
     Menu/Camera/MenuCamera.cpp
