@@ -21,6 +21,7 @@
 #include "Network/NetworkManager.hpp"
 #include "Network/Parsing/MessageParser.hpp"
 #include "Network/ServerHandshake.hpp"
+#include "Render/EndScreen/EndScreen.hpp"
 #include "Render/Entity/EggRenderer.hpp"
 #include "Render/Entity/IncantationRenderer.hpp"
 #include "Render/Entity/PlayerChevron.hpp"
@@ -139,6 +140,7 @@ bool runGameSession(const zappy::gui::GuiConfig& config,
 
   zappy::gui::IncantationRenderer::loadTextures();
   zappy::gui::ResourceRenderer::loadModels();
+  zappy::gui::EndScreen::loadFont();
 
   const Vector3 mapCenter{
       static_cast<float>(world.width) * cfg::TILE_SIZE / 2.0F, 0.0F,
@@ -151,6 +153,15 @@ bool runGameSession(const zappy::gui::GuiConfig& config,
     if (IsKeyPressed(bindings.backToMenu)) {
       returnToMenu = true;
       break;
+    }
+
+    if (IsKeyPressed(KEY_V) && !world.gameOver) {
+      world.gameOver = true;
+      world.winnerTeam = world.teams.empty() ? "Team1" : world.teams.front();
+    }
+    if (IsKeyPressed(KEY_L) && !world.gameOver) {
+      world.gameOver = true;
+      world.winnerTeam = world.teams.size() > 1 ? world.teams[1] : "Unknown";
     }
 
     network.runOnce(0);
@@ -192,9 +203,13 @@ bool runGameSession(const zappy::gui::GuiConfig& config,
         selection.close();
       }
     }
+    if (world.gameOver) {
+      zappy::gui::EndScreen::draw(world, "ESC");
+    }
     EndDrawing();
   }
 
+  zappy::gui::EndScreen::unloadFont();
   zappy::gui::IncantationRenderer::unloadTextures();
   zappy::gui::ResourceRenderer::unloadModels();
   return returnToMenu;
