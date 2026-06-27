@@ -117,6 +117,8 @@ add_executable(zappy_gui
     Render/Entity/PlayerSelection.cpp
     Render/SkyRenderer.cpp
     Render/SpeedControl.cpp
+    Render/Stats/Panel/StatsPanel.cpp
+    Render/Stats/Chart/TeamProgressBar.cpp
     Render/WorldCamera.cpp
     Render/TileGridRenderer.cpp
     Render/Panel/HudPanel.cpp

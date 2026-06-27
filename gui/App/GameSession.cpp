@@ -83,8 +83,9 @@ void GameSession::processInput() {
   if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     return;
   }
-  const bool insidePanel = selection_.selectedId().has_value() &&
-                           PlayerPanel::contains(GetMousePosition());
+  const bool insidePanel = statsPanel_.contains(GetMousePosition()) ||
+                           (selection_.selectedId().has_value() &&
+                            PlayerPanel::contains(GetMousePosition()));
   const std::optional<int> picked =
       selection_.click(hoveredPlayer_, insidePanel);
   if (picked.has_value()) {
@@ -107,6 +108,7 @@ void GameSession::render() {
   HudPanel::draw(config_, world_);
   InfoPanel::draw(world_, camera_->camera());
   speedControl_.draw(world_.timeUnit);
+  statsPanel_.draw(world_);
   if (selection_.selectedId().has_value()) {
     if (PlayerPanel::draw(world_, *selection_.selectedId())) {
       selection_.close();

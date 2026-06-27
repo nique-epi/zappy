@@ -14,6 +14,7 @@
 #include "Network/Parsing/MessageParser.hpp"
 #include "Render/Entity/PlayerSelection.hpp"
 #include "Render/SpeedControl.hpp"
+#include "Render/Stats/Panel/StatsPanel.hpp"
 #include "Render/WorldCamera.hpp"
 #include "Render/WorldRenderer.hpp"
 #include "World/WorldState.hpp"
@@ -60,6 +61,7 @@ class GameSession {
   MessageParser parser_;
   CommandSender sender_;
   SpeedControl speedControl_;
+  StatsPanel statsPanel_;
   PlayerSelection selection_;
   std::optional<WorldCamera> camera_;
   std::optional<WorldRenderer> worldRenderer_;
