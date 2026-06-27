@@ -56,6 +56,7 @@ def run_player(
     bot = spawner.bot_factory(
         width, height, client_num, client,
         mental_map=spawner.args.mental_map,
+        roles=spawner.args.roles,
     )
     bot.fork_depth = depth
     bot.spawn_player = spawner.spawn_player

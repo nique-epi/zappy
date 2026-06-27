@@ -11,7 +11,7 @@ def test_format_message_without_data():
     """
     Given a message type and a level with no extra data
     When format_message is called
-    Then it returns a ZAPPY-prefixed colon-separated string with an empty data field
+    Then it returns a ZAPPY-prefixed colon-separated string with empty data
     """
     result = format_message(MessageType.LEAD, 2)
     assert result == "ZAPPY:LEAD:2:"
@@ -45,7 +45,9 @@ def test_parse_broadcast_valid_lead():
     Then it returns a BroadcastMessage with all fields correctly parsed
     """
     result = parse_broadcast("message 3, ZAPPY:LEAD:2:")
-    assert result == BroadcastMessage(direction=3, msg_type=MessageType.LEAD, level=2, data="")
+    assert result == BroadcastMessage(
+        direction=3, msg_type=MessageType.LEAD, level=2, data=""
+    )
 
 
 def test_parse_broadcast_valid_ready():
@@ -55,7 +57,9 @@ def test_parse_broadcast_valid_ready():
     Then it returns a BroadcastMessage with direction, type and level set
     """
     result = parse_broadcast("message 1, ZAPPY:READY:1:")
-    assert result == BroadcastMessage(direction=1, msg_type=MessageType.READY, level=1, data="")
+    assert result == BroadcastMessage(
+        direction=1, msg_type=MessageType.READY, level=1, data=""
+    )
 
 
 def test_parse_broadcast_valid_join():
@@ -142,3 +146,16 @@ def test_parse_broadcast_direction_zero_same_tile():
     result = parse_broadcast("message 0, ZAPPY:READY:1:")
     assert result is not None
     assert result.direction == 0
+
+
+def test_role_claim_round_trip():
+    """
+    Given a ROLE_CLAIM heartbeat carrying the farmer role name
+    When it is formatted then parsed back from a server line
+    Then the message type and the role carried in data survive the round trip
+    """
+    payload = format_message(MessageType.ROLE_CLAIM, 1, "farmer")
+    result = parse_broadcast(f"message 0, {payload}")
+    assert result is not None
+    assert result.msg_type == MessageType.ROLE_CLAIM
+    assert result.data == "farmer"
