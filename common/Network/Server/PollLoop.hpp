@@ -56,6 +56,7 @@ class PollLoop {
   void broadcast(const std::string& data);
 
   [[nodiscard]] std::size_t clientCount() const;
+  [[nodiscard]] bool hasPendingOutput() const;
 
  private:
   void handleNewConnection();

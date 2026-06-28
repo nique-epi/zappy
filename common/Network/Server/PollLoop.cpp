@@ -102,6 +102,15 @@ void PollLoop::broadcast(const std::string& data) {
 
 std::size_t PollLoop::clientCount() const { return clients_.size(); }
 
+bool PollLoop::hasPendingOutput() const {
+  for (const auto& [fd, client] : clients_) {
+    if (client.hasPendingOutput()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void PollLoop::handleNewConnection() {
   struct sockaddr_in address = {};
   socklen_t length = sizeof(address);

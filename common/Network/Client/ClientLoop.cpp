@@ -71,12 +71,14 @@ void ClientLoop::runOnce(int timeoutMs) {
   if (stdinFd_ >= 0 && (fds[stdinIndex].revents & POLLIN)) {
     handleStdin();
   }
-  if (fds[serverIndex].revents & (POLLERR | POLLHUP | POLLNVAL)) {
-    running_ = false;
-    return;
-  }
   if (fds[serverIndex].revents & POLLIN) {
     handleServerRead();
+  }
+  if (fds[serverIndex].revents & (POLLERR | POLLNVAL) ||
+      (fds[serverIndex].revents & POLLHUP &&
+       !(fds[serverIndex].revents & POLLIN))) {
+    running_ = false;
+    return;
   }
   if (fds[serverIndex].revents & POLLOUT) {
     flushOutput();
