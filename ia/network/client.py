@@ -177,6 +177,15 @@ class ZappyClient:
                 continue
             return line
 
+    def send_many(self, commands: list[str]) -> None:
+        """Queues several commands at once, respecting the pending limit."""
+        for command in commands:
+            self.send(command)
+
+    def recv_many(self, count: int) -> list[str | None]:
+        """Reads exactly `count` acks, in the order the commands were sent."""
+        return [self.recv_ack() for _ in range(count)]
+
     def pop_notification(self) -> str | None:
         """Pops the oldest notification queued by a prior recv_ack() call."""
         if not self._notifications:
