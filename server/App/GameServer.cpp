@@ -33,6 +33,7 @@ namespace {
 constexpr const char* graphicTeamName = "GRAPHIC";
 constexpr const char* welcomeGreeting = "WELCOME";
 constexpr int maxFlushAttempts = 100;
+constexpr int flushPollTimeoutMs = 10;
 }  // namespace
 
 using Session = zappy::rpc::Session<ClientContext>;
@@ -75,7 +76,7 @@ void GameServer::run() {
   }
   for (int attempt = 0;
        attempt < maxFlushAttempts && server_.hasPendingOutput(); attempt++) {
-    server_.runOnce(0);
+    server_.runOnce(flushPollTimeoutMs);
   }
 }
 
