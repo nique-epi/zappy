@@ -236,6 +236,13 @@ class RPCServer {
   void runOnce(int timeoutMs = -1) { loop_.runOnce(timeoutMs); }
   void stop() { loop_.stop(); }
 
+  /**
+   * @brief Whether any connected client still has unsent buffered output.
+   */
+  [[nodiscard]] bool hasPendingOutput() const {
+    return loop_.hasPendingOutput();
+  }
+
  private:
   void bindAndListen() {
     struct sockaddr_in address;
