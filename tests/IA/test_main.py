@@ -56,7 +56,8 @@ def test_main_success():
         created["client"] = zc
         return zc
 
-    def bot_factory(width, height, client_num, client, mental_map=False):
+    def bot_factory(width, height, client_num, client, mental_map=False,
+                    roles=False):
         created["bot"] = Bot(
             width, height, client_num, client, mental_map=mental_map
         )
@@ -118,7 +119,8 @@ def test_main_spawns_second_player_on_fork():
     def client_factory(host, port):
         return ZappyClient(host, port, sock_factory=lambda: sockets.pop(0))
 
-    def bot_factory(width, height, client_num, client, mental_map=False):
+    def bot_factory(width, height, client_num, client, mental_map=False,
+                    roles=False):
         bot = Bot(width, height, client_num, client, mental_map=mental_map)
         created.append(bot)
         return bot
@@ -149,7 +151,8 @@ def test_main_spawned_player_connection_error_is_swallowed(capsys):
     def client_factory(host, port):
         return ZappyClient(host, port, sock_factory=lambda: sockets.pop(0))
 
-    def bot_factory(width, height, client_num, client, mental_map=False):
+    def bot_factory(width, height, client_num, client, mental_map=False,
+                    roles=False):
         bot = Bot(width, height, client_num, client, mental_map=mental_map)
         created.append(bot)
         return bot
