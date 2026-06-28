@@ -160,6 +160,7 @@ target_link_libraries(zappy_gui_commands_tests
 
 add_executable(zappy_gui_selection_tests
   Gui/TestPlayerSelection.cpp
+  Gui/TestTeamProgress.cpp
   ${CMAKE_SOURCE_DIR}/gui/Render/Entity/PlayerSelection.cpp
   ${CMAKE_SOURCE_DIR}/gui/World/WorldQuery.cpp
 )

@@ -27,6 +27,7 @@ endif()
 add_library(zappy_gui_cli STATIC
     Exceptions/GuiException.cpp
     Cli/ArgsParser.cpp
+    Cli/LaunchMode.cpp
 )
 
 target_include_directories(zappy_gui_cli PUBLIC
@@ -96,11 +97,17 @@ target_compile_options(zappy_gui_world_init PRIVATE -Wall -Wextra -Werror)
 
 add_executable(zappy_gui
     main.cpp
+    App/Application.cpp
+    App/GameSession.cpp
+    Network/ConnectionBootstrap.cpp
+    Network/SessionConnector.cpp
     Network/NetworkManager.cpp
     World/MockWorld.cpp
     World/WorldQuery.cpp
     Render/Raygui.cpp
     Render/RenderUtils.cpp
+    Render/WorldRenderer.cpp
+    Render/Entity/EntityRendererFactory.cpp
     Render/Entity/EggRenderer.cpp
     Render/Entity/IncantationRenderer.cpp
     Render/Entity/ResourceRenderer.cpp
@@ -117,12 +124,16 @@ add_executable(zappy_gui
     Render/Panel/PanelChrome.cpp
     Render/Panel/PlayerPanel.cpp
     Render/Panel/ResourceList.cpp
+    Render/Panel/TeamProgressPanel.cpp
     Bindings/KeyBindings.cpp
     Menu/Button/MenuButton.cpp
     Menu/Camera/MenuCamera.cpp
     Menu/Dialogs/PortInputDialog.cpp
     Menu/Dialogs/KeyBindingsDialog.cpp
     Menu/MenuScreen.cpp
+    Render/EndScreen/EndScreen.cpp
+    Render/EndScreen/Background/EndBackground.cpp
+    Render/EndScreen/Panel/TeamResultPanel.cpp
 )
 
 set_source_files_properties(Render/Raygui.cpp PROPERTIES

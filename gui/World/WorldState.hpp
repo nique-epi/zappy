@@ -17,6 +17,8 @@ namespace zappy::gui {
 
 constexpr std::size_t RESOURCE_COUNT = 7;
 constexpr std::size_t EGG_ALIGN = 16;
+constexpr int MAX_PLAYER_LEVEL = 8;
+constexpr int PLAYERS_REQUIRED_FOR_VICTORY = 6;
 
 enum class Orientation : std::uint8_t {
   North = 1,

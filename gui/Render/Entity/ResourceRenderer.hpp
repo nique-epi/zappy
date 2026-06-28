@@ -7,15 +7,25 @@
 
 #pragma once
 
+#include <raylib.h>
+#include <vector>
+#include "Render/Entity/IEntityRenderer.hpp"
+
 namespace zappy::gui {
 
 struct WorldState;
 
-class ResourceRenderer {
+class ResourceRenderer : public IEntityRenderer {
  public:
-  static void loadModels();
-  static void draw3D(const WorldState& world);
-  static void unloadModels();
+  void loadAssets() override;
+  void draw(WorldState& world) override;
+  void drawOverlay(WorldState& world, const Camera3D& camera) override;
+  void unloadAssets() override;
+
+ private:
+  Texture2D colormap_{};
+  std::vector<Model> foodModels_;
+  std::vector<Model> gemModels_;
 };
 
 }  // namespace zappy::gui

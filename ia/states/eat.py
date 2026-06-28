@@ -43,22 +43,19 @@ class EatState:  # pylint: disable=too-few-public-methods
     def _move_and_take(self, food_index: int) -> None:
         """Move towards the food and take it."""
         self._steps_without_food = 0
-        for move in tile_to_moves(food_index):
-            self.bot.client.send(move.value)
-            self.bot.client.recv_ack()
-        self.bot.client.send("Take food")
-        self.bot.client.recv_ack()
-        self.bot.client.send("Inventory")
-        response = self.bot.client.recv_ack()
-        if response is not None:
-            self.bot.inventory = parse_inventory(response)
+        moves = [move.value for move in tile_to_moves(food_index)]
+        commands = moves + ["Take food", "Inventory"]
+        self.bot.client.send_many(commands)
+        responses = self.bot.client.recv_many(len(commands))
+        if responses[-1] is not None:
+            self.bot.inventory = parse_inventory(responses[-1])
 
     def _explore(self) -> None:
         """Explore the environment in search of food."""
         self._steps_without_food += 1
+        commands = ["Forward"]
         if self._steps_without_food >= MAX_STEPS_WITHOUT_FOOD:
             self._steps_without_food = 0
-            self.bot.client.send("Left")
-            self.bot.client.recv_ack()
-        self.bot.client.send("Forward")
-        self.bot.client.recv_ack()
+            commands = ["Left", "Forward"]
+        self.bot.client.send_many(commands)
+        self.bot.client.recv_many(len(commands))
